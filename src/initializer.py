@@ -45,42 +45,79 @@ class InitMixin:
 
         # individual data from dataclasses
         self.n_mis: int = input_data.mission.n_mis
+        """Number of missions."""
         self.n_sc_design: int = input_data.mission.n_sc_design
+        """Number of SC design"""
         self.n_sc_per_design: int = input_data.mission.n_sc_per_design
+        """Number of SC per design"""
         self.t_mis_tot: float = input_data.mission.t_mis_tot
+        """Total single mission duration, days"""
         self.t_surf_mis: float = input_data.mission.t_surf_mis
+        """Lunar surface mission duration, days"""
         self.n_crew: int = input_data.mission.n_crew
+        """Number of crew needed on lunar surface"""
         # FIXME: for attributes that are changed later, it may be better to
         # avoid copying the list directly.
-        self.sample_mass_ls: list[float] = input_data.mission.sample_mass_ls
-        self.habit_pl_mass_ls: list[float] = input_data.mission.habit_pl_mass_ls
+        self.sample_mass_ls: float | list[float] = input_data.mission.sample_mass
+        """Sample collected from lunar surface, kg. Can be a list of
+            float if value is different for each mission"""
+        self.habit_pl_mass_ls: float | list[float] = input_data.mission.habit_pl_mass
+        """Habitat and payload mass to lunar surface, kg. Can be a list
+            of float if value is different for each mission"""
         self.use_increased_pl: bool = input_data.mission.use_increased_pl
+        """True if increased demand is used. Defaults to False."""
         self.use_isru: bool = input_data.isru.use_isru
+        """True if ISRU is used"""
         self.n_isru_design: int = input_data.isru.n_isru_design
+        """Number of ISRU design"""
         self.n_isru_vars: int = input_data.isru.n_isru_vars
+        """Number of variables per ISRU design. Defaults to 1"""
         self.com_dict: bidict[str, int] = input_data.com_dict
+        """Bidrectional dictionary corresponding to commodity names and indicies."""
         self.int_com_dict: bidict[str, int] = input_data.int_com_dict
+        """Bidrectional dictionary corresponding to integer commodity names and indicies."""
         self.cnt_com_dict: bidict[str, int] = input_data.cnt_com_dict
+        """Bidrectional dictionary corresponding to continuous commodity names and indicies."""
         self.node_dict: bidict[str, int] = input_data.node_dict
+        """Bidrectional dictionary corresponding to node names and indicies."""
         self.flow_dict: bidict[str, int] = input_data.flow_dict
+        """Bidrectional dictionary corresponding to flow names and indicies."""
         self.sc_var_dict: bidict[str, int] = input_data.sc_var_dict
+        """Bidrectional dictionary corresponding to spacecraft variable names and indicies."""
         self.n_com: int = input_data.comdty.n_com
+        """Total number of commodities."""
         self.n_int_com: int = input_data.comdty.n_int_com
+        """Total number of integer commodities."""
         self.n_cnt_com: int = input_data.comdty.n_cnt_com
+        """Total number of continuous commodities."""
         self.int_com_names: list[str] = input_data.comdty.int_com_names
+        """List of integer commodities' names."""
         self.int_com_costs: list[float] = input_data.comdty.int_com_costs
+        """List of integer commodities' cost coefficients."""
         self.cnt_com_names: list[str] = input_data.comdty.cnt_com_names
+        """List of continuous commodities' names."""
         self.cnt_com_costs: list[float] = input_data.comdty.cnt_com_costs
+        """List of continuous commodities' cost coefficients."""
         self.prop_com_names: list[str] = input_data.comdty.prop_com_names
+        """List of propellant commodities' names."""
         self.n_sc_vars: int = input_data.sc.n_sc_vars
+        """Total number of spacecraft dimensions."""
         self.n_nodes: int = input_data.node.n_nodes
+        """Total number of location nodes."""
         self.dc: DimensionConverter = DimensionConverter(
             dependency_matrix=get_dependency_matrix(self),
             dim_all_var=self.n_sc_vars * self.n_sc_design,  # lf.n_isru_design,
         )
+        """Instance of DimensionConverter class."""
         self.is_stochastic: bool = input_data.is_stochastic
+        """Attribute controlling whether the scenarios are stochastic."""
         self.n_scenarios: int = input_data.n_scenarios
+        """Number of scenarios."""
         if hasattr(self, "scnr"):
             self.sample_mass_2nd: list[float] = self.scnr.sample_mass_2nd
+            """Sample mass collected from LS for each scenario of 2nd mission"""
             self.habit_pl_mass_2nd: list[float] = self.scnr.habit_pl_mass_2nd
+            """Habitat and payload mass for each scenario of 2nd mission"""
             self.scenario_prob: list[float] = self.scnr.scenario_prob
+            """List of scenario probabilities. Defaults to equal
+                probability."""
