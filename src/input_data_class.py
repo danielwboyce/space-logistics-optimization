@@ -20,7 +20,7 @@ class MissionParameters:
         n_sc_design: Number of SC design
         n_sc_per_design: Number of SC per design
         t_mis_tot: Total single mission duration, days
-        t_mis: Lunar surface mission duration, days
+        t_surf_mis: Lunar surface mission duration, days
         n_crew: Number of crew needed on lunar surface
         sample_mass: Sample collected from lunar surface, kg
             can be a list of float if value is different for each mission
@@ -30,8 +30,12 @@ class MissionParameters:
             Defaults to 8.655 (food=1.105, water=6.37, oxygen=1.14)
         maintenance_cost: Maintenance cost per flight
             Defualts to 0.01 (1% mass per flight)
+        time_interval: Time interval between missions, days. Defaults
+            to 365.
         use_increased_pl (optional): True if increased demand is used.
-            Defaults to False
+            Defaults to False.
+        increased_pl_factor (optional): If use_increased_pl is True,
+            factor by which pl increases. Defaults to 1.5
     """
 
     n_mis: int
@@ -116,8 +120,9 @@ class SCParameters:
         isp: specific impulse
         oxi_fuel_ratio: SC propellant oxidizer to fuel ratio
         prop_density: SC propellant density, kg/m^3
-        misc_mass_factor: SC misc. mass fraction; higher = conservative
+        misc_mass_fraction: SC misc. mass fraction; higher = conservative
         var_names (optional): list of spacecraft attribute/variable names
+        var_lb (optional): list of spacecraft attribute/variable lower bounds
         var_ub (optional): list of spacecraft attribute/variable upper bounds
         aggressive_SC_design (optional): True if aggressive sizing model is used
         g0 (optional): standard gravitational acceleration, m/s^2
@@ -186,6 +191,8 @@ class ISRUParameters:
         production_rate: ISRU production rate, production[kg] per year and per ISRU mass[kg]
         decay_rate: ISRU productivity decay rate per year
         maintenance_cost: ISRU maintenance cost, cost[kg] per year and per ISRU mass[kg]
+        n_isru_vars (optional): Number of variables per ISRU design.
+            Defaults to 1
     """
 
     use_isru: bool
@@ -207,7 +214,7 @@ class ISRUParameters:
             Number of ISRU design and variable per design must be positive.
             Received value:
                 Number of ISRU design: {}
-                Number of varaibles per design: {}
+                Number of variables per design: {}
             """.format(self.n_isru_design, self.n_isru_vars)
 
         assert self.production_rate > 0, """
@@ -251,7 +258,15 @@ class ALCParameters:
         weight_update_fraction: ALC parameter
         tol_outer: ALC outer loop tolerance
         tol_inner: ALC inner loop tolerance
-        parallel_mode (optional): True if subproblems solved in parallel. Defaults to False.
+        prioritized_var_name (optional): Name of variable that may be
+            prioritized in ALC subproblem. Defaults to None.
+        use_admm (optional): If set True, uses ADMM as part of ALC
+            subproblem; if False it doesn't. Defaults to False.
+        parallel_mode (optional): True if subproblems solved in
+            parallel. Defaults to False.
+        update_initial_weight (optional): indicator to update initial
+            weight based on the first inner loop iteration. Defaults to
+            False.
     """
 
     initial_weight: float
@@ -294,10 +309,10 @@ class CommodityDetails:
         int_com_costs: List of integer commodity costs per unit
         cnt_com_names: List of continuous commodity names
         prop_com_names (optional): List of propellant commodity names
-        com_names_w_unlim_earth_supply (optional): List of commodity names
-            with unlimited supply from Earth node.
-            Do NOT include any commodity that needs to return to Earth
-            at the end of each mission (e.g., sample, crew).
+        com_names_w_unlim_earth_supply (optional): List of commodity
+            names with unlimited supply from Earth node. Do NOT include
+            any commodity that needs to return to Earth at the end of
+            each mission (e.g., sample, crew).
     """
 
     int_com_names: list[str]
@@ -352,7 +367,7 @@ class NodeDetails:
 
     Args:
         node_names: List of node names
-        is_path_garph (optional): True if the defined graph is a path graph
+        is_path_graph (optional): True if the defined graph is a path graph
             (a graph with only one path like o-o-o-o). Defaults to True.
         outbound_path (optional): Sequence of nodes from source node
             to desitnation, in terms of node names.
@@ -360,6 +375,10 @@ class NodeDetails:
         holdover_nodes (optional): Set of nodes where holdover arcs are allowed
         inbound_path (optional): Sequence of nodes from destination to source,
             in terms of node names. If not specified, reverse of outboud is assumed.
+        source_node (optional): Name of source node. Defaults to
+            outbound_path[0].
+        destination_node (optional): Name of destination node. Defaults
+            to outbound_path[-1].
     """
 
     node_names: list[str]
