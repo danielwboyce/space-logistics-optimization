@@ -14,6 +14,7 @@ by M. Isaji, Y. Takubo, and K. Ho
 doi: https://doi.org/10.2514/1.A35284
 """
 
+import numpy as np
 from space_logistics import SpaceLogistics
 from input_data_class import (
     InputData,
@@ -130,7 +131,22 @@ def main():
     )
     sl_cls = SpaceLogistics(input_data)
     # sl_cls.optimizer.admm.run_alc_loop()
-    sl_cls.optimizer.pwl.solve_w_pwl_approx(pwl_increment=2500)
+    # sl_cls.optimizer.pwl.solve_w_pwl_approx(pwl_increment=2500)
+    fixed_sc_designs = np.array(
+        [
+            [
+                2167.593079653862,
+                14871.284878373288,
+                7131.5847792317145,
+            ],
+            [
+                500.0,
+                57325.31844683161,
+                14236.423242779982
+            ]
+        ]
+    )
+    sl_cls.optimizer.fixed_sc.solve_network_flow_MILP(fixed_sc_designs)
 
 
 if __name__ == "__main__":
