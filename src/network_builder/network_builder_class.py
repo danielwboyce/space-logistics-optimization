@@ -22,12 +22,23 @@ class NetworkBuilder(InitMixin):
         """
         super().__init__(input_data)
 
+        self.real_arc_time: np.ndarray = np.zeros([self.n_nodes, self.n_nodes])
+        self._set_actual_arc_time()
+
         self.time_steps: list = []
         for mis in range(self.n_mis):
-            self.time_steps.extend(
-                [mis * self.mis.time_interval, mis * self.mis.time_interval + 1]
-            )
+            self.time_steps.extend([mis * self.mis.time_interval])
+            # outbound paths
+            for n in range(self.n_nodes-1):
+                self.time_steps.extend([self.time_steps[-1] + int(self.real_arc_time[n][n+1])])
+            # surface mission
+            if self.t_surf_mis > 0:
+                self.time_steps.extend([self.time_steps[-1] + int(self.t_surf_mis)])
+            # inbound paths
+            for n in range(self.n_nodes-1, 0, -1):
+                self.time_steps.extend([self.time_steps[-1] + int(self.real_arc_time[n][n-1])])
         self._dim_time_steps = len(self.time_steps)
+        self._dim_time_steps_per_mis = int(self._dim_time_steps/self.n_mis)
 
         # place holders
         self.int_com_demand: np.ndarray = np.zeros(
@@ -39,7 +50,6 @@ class NetworkBuilder(InitMixin):
         self.fin_ini_mass_frac: np.ndarray = np.zeros(
             [self.n_nodes, self.n_nodes, self._dim_time_steps]
         )
-        self.real_arc_time: np.ndarray = np.zeros([self.n_nodes, self.n_nodes])
         self.delta_t: np.ndarray = np.zeros(
             [self.n_nodes, self.n_nodes, self._dim_time_steps]
         )
@@ -52,22 +62,30 @@ class NetworkBuilder(InitMixin):
         self._post_init()
 
     def _post_init(self) -> None:
-        self.mis_start_dates = [n * self.mis.time_interval for n in range(self.n_mis)]
-        self.mis_end_dates = [date + 1 for date in self.mis_start_dates]
-        self.first_mis_time_steps: list[int] = [0, 1]
-        self.second_mis_time_steps: list[int] = [
-            self.mis.time_interval,
-            self.mis.time_interval + 1,
-        ]
-        self.second_mis_start_dates: list[int] = [
-            date for date in self.mis_start_dates if date in self.second_mis_time_steps
-        ]
-        self.second_mis_end_dates: list[int] = [
-            date for date in self.mis_end_dates if date in self.second_mis_time_steps
-        ]
         self.mis_time_steps: list[list[int]] = [
-            self.time_steps[mis * 2 : (mis + 1) * 2] for mis in range(self.n_mis)
+            self.time_steps[mis * self._dim_time_steps_per_mis : (mis + 1) * self._dim_time_steps_per_mis] for mis in range(self.n_mis)
         ]
+
+        self.mis_start_dates: list = [
+            mis_time_steps[0] for mis_time_steps in self.mis_time_steps
+        ]
+
+        self.mis_end_dates: list = [
+            mis_time_steps[int(self._dim_time_steps_per_mis/2)]
+            for mis_time_steps in self.mis_time_steps
+        ]
+
+        self.first_mis_time_steps: list[int] = self.mis_time_steps[0]
+        if self.n_mis > 1:
+            self.second_mis_time_steps: list[int] = self.mis_time_steps[1]
+
+            self.second_mis_start_dates: list[int] = [
+                date for date in self.mis_start_dates if date in self.second_mis_time_steps
+            ]
+            self.second_mis_end_dates: list[int] = [
+                date for date in self.mis_end_dates if date in self.second_mis_time_steps
+            ]
+
         if self.use_increased_pl:
             self.sample_mass_ls = [
                 mass * self.mis.increased_pl_factor for mass in self.sample_mass_ls
@@ -75,6 +93,7 @@ class NetworkBuilder(InitMixin):
             self.habit_pl_mass_ls = [
                 mass * self.mis.increased_pl_factor for mass in self.habit_pl_mass_ls
             ]
+
         if self.node.is_path_graph:
             self.n_dates_until_return_mis: float = (
                 sum(
@@ -90,12 +109,13 @@ class NetworkBuilder(InitMixin):
             self.n_dates_until_return_mis: float = (
                 self.t_mis_tot - self.t_surf_mis
             ) / 2 + self.t_surf_mis
+
         self._define_date_to_time_idx_dict()
+        self._set_allowed_time_window()
         self._set_demand()
         self._set_final_to_initial_mass_frac_for_arcs()
-        self._set_actual_arc_time()
+        # self._set_actual_arc_time()
         self._set_delta_t()
-        self._set_allowed_time_window()
         self._set_ISRU_work_time()
 
     def _get_time_of_flight(self, dep_node_name: str, arr_node_name: str) -> float:
@@ -184,6 +204,22 @@ class NetworkBuilder(InitMixin):
             bool: True if arc is a transportation arc, False otherwise
         """
         return dep_node_id != arr_node_id
+    
+    def is_in_launch_window(self, dep_node_id: int, arr_node_id: int, time_id: int) -> bool:
+        """Checks whether the arc is in an acceptable launch window or
+        not.
+
+        Args:
+            dep_node_id (int): departure node id
+            arr_node_id (int): arrival node id
+            time_id (int): time node id at departure
+
+        Returns:
+            bool: True if arc is in the launch window, False otherwise.
+        """
+
+        time = self.date_to_time_idx_dict.inverse[time_id]
+        return time in self.allowed_time_window[dep_node_id][arr_node_id]
 
     def is_feasible_arc(self, dep_node_id: int, arr_node_id: int) -> bool:
         """check if arc is feasible
@@ -337,13 +373,17 @@ class NetworkBuilder(InitMixin):
         for i, j, date in product(
             range(self.n_nodes), range(self.n_nodes), self.time_steps
         ):
+            if (not self.is_feasible_arc(i, j) or
+                not self.is_transportation_arc(i, j) or
+                not date in self.allowed_time_window[i][j]):
+                continue
+
             i_name, j_name = self.node_dict.inverse[i], self.node_dict.inverse[j]
             date_id = self.date_to_time_idx_dict[date]
-            if self.is_feasible_arc(i, j) and self.is_transportation_arc(i, j):
-                delta_v_m_s = self._get_delta_v_km_s(i_name, j_name) * 1000
-                self.fin_ini_mass_frac[i][j][date_id] = 1 - np.exp(
-                    -delta_v_m_s / (self.sc.isp * self.sc.g0)
-                )
+            delta_v_m_s = self._get_delta_v_km_s(i_name, j_name) * 1000
+            self.fin_ini_mass_frac[i][j][date_id] = 1 - np.exp(
+                -delta_v_m_s / (self.sc.isp * self.sc.g0)
+            )
 
     def _set_actual_arc_time(self) -> None:
         """actual time of flight for oxygen, food, water"""
@@ -367,40 +407,46 @@ class NetworkBuilder(InitMixin):
         Arc from {} to {} is not feasible""".format(dep_node, arr_node)
 
         if is_outbound:
-            return sum(
+            return int(sum(
                 self.real_arc_time[node_id][node_id + 1]
                 for node_id in range(arr_node_id)
-            )
+            ))
         else:
-            return sum(
+            return self.mis_end_dates[0] + int(sum(
                 self.real_arc_time[node_id][node_id + 1]
                 for node_id in range(arr_node_id, self.n_nodes - 1)
-            )
+            ))
 
     def _set_delta_t(self) -> None:
         """Calculate Δt for mass balance constraints
 
-        Δt is non-zero only for holdover arcs at LLO and LS nodes
-        This is because mission is done instataneously (in 1 day)
-        in optimization problem for computational purposes.
-        t - Δt should refer to the previous time step.
-        so, Δt = 1 if t is at mission end date (assuming mission is 1 day)
-        and if t is at mission start date, Δt = mission time interval -1
-        so that t - Δt is previous mission end date.
+        Δt is non-zero for both holdover arcs (in LEO, LLO, and LS),
+        and for transportation arcs. Δt specifically refers to the
+        number of days elapsed along each arc, not the time indices.
+        This is because we are no longer assuming the mission will be
+        done instantaneously (in 1 day) in the optimization problem.
+        So, the holdover arc at LL0 at time index 2/day 2 (i.e., 
+        self.delta_t[2][2][2]) should be 5 because it will be held
+        over for 5 days/3 time indices.
         """
         for i, j, date in product(
             range(self.n_nodes), range(self.n_nodes), self.time_steps
         ):
-            node_name = self.node_dict.inverse[i]
-            if not self.is_holdover_arc(i, j):
-                continue
-            if node_name not in self.node.holdover_nodes:
-                continue
             date_id = self.date_to_time_idx_dict[date]
-            if date in self.mis_end_dates:
-                self.delta_t[i][j][date_id] = 1
-            if date in self.mis_start_dates:
-                self.delta_t[i][j][date_id] = self.mis.time_interval - 1
+
+            if not self.is_feasible_arc(i, j):
+                continue
+            if not date in self.allowed_time_window[i][j]:
+                continue
+
+            if self.is_transportation_arc(i, j):
+                self.delta_t[i][j][date_id] = self._get_time_of_flight(
+                    self.node_dict.inverse[i],
+                    self.node_dict.inverse[j]
+                )
+            elif self.is_holdover_arc(i, j):
+                self.delta_t[i][j][date_id] = self._get_holdover_time(
+                    self.node_dict.inverse[i])
 
     def _set_allowed_time_window(self) -> None:
         """Specifies allowed time windows.
@@ -418,11 +464,33 @@ class NetworkBuilder(InitMixin):
                 continue
             if self.is_transportation_arc(i, j):
                 self.allowed_time_window[i][j].append(
-                    self.is_inbound_arc(i, j) * 1 + n * self.mis.time_interval
+                    # j first so that we get departure date, not arrival
+                    self.mis_start_dates[n]
+                    + self.get_real_date_from_mis_start(
+                        self.node_dict.inverse[j],
+                        self.node_dict.inverse[i],
+                        is_outbound=self.is_outbound_arc(i, j)
+                    )
                 )
             if self.is_holdover_arc(i, j):
-                self.allowed_time_window[i][j].extend(
-                    [n * self.mis.time_interval, n * self.mis.time_interval + 1]
+                # can always holdover during mission
+                self.allowed_time_window[i][j].append(
+                    self.mis_start_dates[n]
+                    + self.get_real_date_from_mis_start(
+                        self.node_dict.inverse[i],
+                        self.node_dict.inverse[j],
+                        is_outbound=True
+                    )
+                )
+                # can also holdover at the end of a mission because we might
+                # leave some things behind
+                self.allowed_time_window[i][j].append(
+                    self.mis_start_dates[n]
+                    + self.get_real_date_from_mis_start(
+                        self.node_dict.inverse[i],
+                        self.node_dict.inverse[j],
+                        is_outbound=False
+                    )
                 )
 
     def _set_ISRU_work_time(self) -> None:
