@@ -23,7 +23,7 @@ except (ModuleNotFoundError, ImportError):
 class ADMMLoop(InitMixin):
     def __init__(self, optimizer: Optimizer) -> None:
         self.optimizer = optimizer
-        self.initialize_attributes(self.optimizer._input_data)
+        super().__init__(self.optimizer._input_data)
         self._set_subproblem_dict()
         self._set_prioritized_var_tuple()
 

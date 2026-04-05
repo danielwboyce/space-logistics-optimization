@@ -17,7 +17,7 @@ except (ModuleNotFoundError, ImportError):
 class FixedSCDesign(InitMixin):
     def __init__(self, optimizer: Optimizer) -> None:
         self.optimizer = optimizer
-        self.initialize_attributes(self.optimizer._input_data)
+        super().__init__(self.optimizer._input_data)
 
     def solve_network_flow_MILP(self, fixed_sc_vars: np.ndarray) -> float:
         """solves network flow opt. with fixed SC design as MILP

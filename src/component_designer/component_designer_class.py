@@ -17,7 +17,7 @@ class ComponentDesigner(InitMixin):
         Args:
             input_data: InputData dataclass containing data input from user
         """
-        self.initialize_attributes(input_data)
+        super().__init__(input_data)
         self._input_data = input_data
         self.sc_sizing = SCSizing(self)
         self.isru_des = ISRUDesign(self)

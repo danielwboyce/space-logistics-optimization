@@ -11,7 +11,7 @@ except (ModuleNotFoundError, ImportError):
 class ISRUDesign(InitMixin):
     def __init__(self, comp_designer) -> None:
         self.comp = comp_designer
-        self.initialize_attributes(self.comp._input_data)
+        super().__init__(self.comp._input_data)
 
     def get_isru_O2_rate(self, isru_mass: float) -> float:
         if isru_mass >= 400:
