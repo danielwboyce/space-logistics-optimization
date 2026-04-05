@@ -42,7 +42,7 @@ class Optimizer(InitMixin):
             network_builder_cls: NetworkBuilder class itself (not an instance)
             model_builder_cls: OptModelBuilder class itself (not an instance)
         """
-        self.initialize_attributes(input_data)
+        super().__init__(input_data)
         self._input_data = input_data
         self._comp_design = comp_design
         self._network_def = NetworkBuilder(input_data)

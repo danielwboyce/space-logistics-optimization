@@ -30,7 +30,7 @@ class OutputManager(InitMixin):
 
     def __init__(self, optimizer: Optimizer) -> None:
         self.optimizer = optimizer
-        self.initialize_attributes(self.optimizer._input_data)
+        super().__init__(self.optimizer._input_data)
         self._network = deepcopy(self.optimizer._network_def)
 
     def get_sc_vars(self, model: block) -> np.ndarray:
