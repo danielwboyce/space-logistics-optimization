@@ -71,7 +71,7 @@ class OutputManager(InitMixin):
         ] + self.optimizer._model_builder.idx_name_dict["all"]
         df = pd.DataFrame(self._extract_var_data(model), columns=df_col)
         df = self.convert_idx_to_name(df)
-        df = self._apply_real_dates_to_df(df)
+        # df = self._apply_real_dates_to_df(df)
         df = df.drop(df[abs(df["Value"]) < 1e-4].index)
         df["Variable Name"] = pd.Categorical(
             df["Variable Name"], categories=df["Variable Name"].unique(), ordered=True
