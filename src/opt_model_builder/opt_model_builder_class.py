@@ -33,7 +33,7 @@ class OptModelBuilder(InitMixin):
             input_data: InputData dataclass containing data input from user
             comp_design: ComponentDesigner instance
         """
-        self.initialize_attributes(input_data)
+        super().__init__(input_data)
         self.input_data = input_data
         self.scenario_prob: list[float] = input_data.scenario_prob
         self._comp_design = comp_design

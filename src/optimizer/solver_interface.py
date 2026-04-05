@@ -22,7 +22,7 @@ class SolverInterface(InitMixin):
 
     def __init__(self, optimizer: Optimizer) -> None:
         self.optimizer = optimizer
-        self.initialize_attributes(self.optimizer._input_data)
+        super().__init__(self.optimizer._input_data)
 
     def solve_model(
         self,

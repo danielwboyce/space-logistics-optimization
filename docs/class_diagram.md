@@ -14,7 +14,7 @@ InitMixin --|> ComponentDesigner
 InitMixin --|> NetworkBuilder
 InitMixin --|> OptModelBuilder
 InitMixin --|> Optimizer
-InitMixin : +initialize_attributes()
+InitMixin : +__init__()
 InputData --o ComponentDesigner
 InputData --o NetworkBuilder
 InputData --o OptModelBuilder
@@ -62,7 +62,7 @@ InitMixin --|> ComponentDesigner
 InitMixin --|> NetworkBuilder
 InitMixin --|> OptModelBuilder
 InitMixin --|> Optimizer
-InitMixin : +initialize_attributes()
+InitMixin : +__init__()
 InputData --o ComponentDesigner
 InputData --o NetworkBuilder
 InputData --o OptModelBuilder

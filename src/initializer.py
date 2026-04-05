@@ -26,7 +26,7 @@ except (ModuleNotFoundError, ImportError):
 class InitMixin:
     """Mixin class to initialize attributes for different class instances."""
 
-    def initialize_attributes(self, input_data: InputData):
+    def __init__(self, input_data: InputData):
         """
         Args:
             input_data: InputData dataclass containing data input from user

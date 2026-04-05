@@ -20,7 +20,7 @@ class NetworkBuilder(InitMixin):
         Args:
             input_data: InputData dataclass containing data input from user
         """
-        self.initialize_attributes(input_data)
+        super().__init__(input_data)
 
         self.time_steps: list = []
         for mis in range(self.n_mis):
