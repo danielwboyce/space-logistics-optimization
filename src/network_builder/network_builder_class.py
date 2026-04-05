@@ -375,7 +375,7 @@ class NetworkBuilder(InitMixin):
         ):
             if (not self.is_feasible_arc(i, j) or
                 not self.is_transportation_arc(i, j) or
-                not date in self.allowed_time_window[i][j]):
+                date not in self.allowed_time_window[i][j]):
                 continue
 
             i_name, j_name = self.node_dict.inverse[i], self.node_dict.inverse[j]
@@ -436,7 +436,7 @@ class NetworkBuilder(InitMixin):
 
             if not self.is_feasible_arc(i, j):
                 continue
-            if not date in self.allowed_time_window[i][j]:
+            if date not in self.allowed_time_window[i][j]:
                 continue
 
             if self.is_transportation_arc(i, j):
