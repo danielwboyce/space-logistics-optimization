@@ -29,7 +29,7 @@ except (ModuleNotFoundError, ImportError):
 class SCSizing(InitMixin):
     def __init__(self, comp_designer) -> None:
         self.comp = comp_designer
-        self.initialize_attributes(self.comp._input_data)
+        super().__init__(self.comp._input_data)
 
     def get_drymass_violation(
         self,

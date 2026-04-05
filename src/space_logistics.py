@@ -18,7 +18,7 @@ class SpaceLogistics(InitMixin):
         Args:
             input_data: InputData dataclass containing data input from user
         """
-        self.initialize_attributes(input_data)
+        super().__init__(input_data)
         self.comp_design = ComponentDesigner(input_data)
         self.network_def = NetworkBuilder(input_data)
         self.model_builder = OptModelBuilder(input_data, self.comp_design)
