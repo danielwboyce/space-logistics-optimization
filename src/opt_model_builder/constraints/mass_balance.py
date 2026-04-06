@@ -4,8 +4,8 @@ from itertools import product
 from pyomo.kernel import (
     constraint,
     constraint_dict,
-    block,
 )
+from pyomo.core.base.PyomoModel import ConcreteModel
 
 if TYPE_CHECKING:
     from ..opt_model_builder_class import OptModelBuilder
@@ -23,13 +23,13 @@ class MassBalance:
     def __init__(self, builder: OptModelBuilder) -> None:
         self.builder = builder
 
-    def set_mass_balance_constraints(self, m: block) -> block:
+    def set_mass_balance_constraints(self, m: ConcreteModel) -> ConcreteModel:
         m = self._set_int_com_mass_balance_constraints(m)
         m = self._set_cnt_com_mass_balance_constraints(m)
         m = self._set_sc_balance_constraints(m)
         return m
 
-    def _set_int_com_mass_balance_constraints(self, m: block) -> block:
+    def _set_int_com_mass_balance_constraints(self, m: ConcreteModel) -> ConcreteModel:
         """Enforce mass balance for each integer commodity"""
         m.int_com_mass_balance_const = constraint_dict()
         for i, j, int_com_id, t, scnr in product(
@@ -71,13 +71,13 @@ class MassBalance:
                     for sc_cp in m.sc_copy_idx
                     for j in m.arr_node_idx
                     if self.builder.is_feasible_arc(i, j)
-                    if t - self.builder.delta_t[i][j][t_id] in m.time_idx
+                    if t - self.builder._network_def.real_arc_time[j][i] in m.time_idx
                 )
                 <= self.builder._network_def.int_com_demand[i][int_com_id][t_id][scnr]
             )
         return m
 
-    def _set_cnt_com_mass_balance_constraints(self, m: block) -> block:
+    def _set_cnt_com_mass_balance_constraints(self, m: ConcreteModel) -> ConcreteModel:
         """Enforce mass balance for each continuous commodity"""
         m.cnt_com_mass_balance_const = constraint_dict()
         for i, j, cnt_com_id, t, scnr in product(
@@ -118,13 +118,13 @@ class MassBalance:
                     for sc_cp in m.sc_copy_idx
                     for j in m.arr_node_idx
                     if self.builder.is_feasible_arc(i, j)
-                    if t - self.builder.delta_t[i][j][t_id] in m.time_idx
+                    if t - self.builder._network_def.real_arc_time[j][i] in m.time_idx
                 )
                 <= self.builder._network_def.cnt_com_demand[i][cnt_com_id][t_id][scnr]
             )
         return m
 
-    def _set_sc_balance_constraints(self, m: block) -> block:
+    def _set_sc_balance_constraints(self, m: ConcreteModel) -> ConcreteModel:
         """
         Enforce mass balance for each spacecraft and each copy.
         Unless at the Earth node, the inflow must be greater than the outflow.
@@ -160,7 +160,7 @@ class MassBalance:
                     ]
                     for j in m.arr_node_idx
                     if self.builder.is_feasible_arc(i, j)
-                    if t - self.builder.delta_t[i][j][t_id] in m.time_idx
+                    if t - self.builder._network_def.real_arc_time[j][i] in m.time_idx
                 )
                 <= (1 if i == self.builder.node_dict["Earth"] else 0)
             )

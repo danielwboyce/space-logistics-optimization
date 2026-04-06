@@ -1,11 +1,11 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from pyomo.kernel import (
-    block,
-    block_dict,
     piecewise_nd,
     piecewise,
+    block_dict,
 )
+from pyomo.core.base.PyomoModel import ConcreteModel
 import numpy as np
 from scipy.optimize import root
 from scipy.spatial import Delaunay
@@ -23,7 +23,7 @@ class PiecewiseLinearConstraints:
     def __init__(self, builder: OptModelBuilder) -> None:
         self.builder = builder
 
-    def set_piecewise_linear_constraints(self, m: block, pwl_increment: float) -> block:
+    def set_piecewise_linear_constraints(self, m: ConcreteModel, pwl_increment: float) -> ConcreteModel:
         """
         Defines piecewise linear (PWL) constraints for the pyomo model.
         To express a function in n dimension with PWL, triangulation of
