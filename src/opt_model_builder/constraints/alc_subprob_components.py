@@ -9,6 +9,7 @@ from pyomo.kernel import (
     parameter_dict,
     constraint,
     constraint_dict,
+    block,
     Reals,
     NonNegativeReals,
 )

@@ -26,8 +26,8 @@ class SolverInterface(InitMixin):
 
     def solve_model(
         self,
-        model: ConcreteModel,
-    ) -> ConcreteModel:
+        model: block,
+    ) -> block:
         """solve the model and return the solved model and write results
 
         Args:
@@ -35,10 +35,10 @@ class SolverInterface(InitMixin):
         Returns:
             block: solved pyomo kernel model
         """
-        # if isinstance(model, ConcreteModel):
-        #     NotImplementedError(
-        #         "Pyomo environ ConcreteModel is not supported. Use pyomo kernel block instead."
-        #     )
+        if isinstance(model, ConcreteModel):
+            NotImplementedError(
+                "Pyomo environ ConcreteModel is not supported. Use pyomo kernel block instead."
+            )
         opt = self._set_solver_options()
         solved_model: SolverResults = opt.solve(
             model,
@@ -59,7 +59,7 @@ class SolverInterface(InitMixin):
             print("Optimal solution not found.")
             return model
         if self.runtime.store_results_to_csv:
-            self.optimizer.output.write_results(model.parent_block())
+            self.optimizer.output.write_results(model)
         return model
 
     def _set_solver_options(self) -> OptSolver:
