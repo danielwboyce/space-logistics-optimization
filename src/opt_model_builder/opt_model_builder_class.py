@@ -3,7 +3,8 @@ from .variables import Variables
 from .objective import Objective
 from .constraints_cls import Constraints
 
-from pyomo.kernel import block, variable, util
+from pyomo.core.base.PyomoModel import ConcreteModel
+from pyomo.kernel import variable, util
 import numpy as np
 import sys
 
@@ -133,9 +134,9 @@ class OptModelBuilder(InitMixin):
             )
         self._fixed_sc_vars = fixed_sc_vars
 
-    def build_model(self, pwl_increment: float = 2500) -> block:
+    def build_model(self, pwl_increment: float = 2500) -> ConcreteModel:
         """build the optimization model based on input data"""
-        m: block = block()
+        m: ConcreteModel = ConcreteModel()
         m = Indices(self).set_indices(m)
         m = Variables(self).set_variables(m)
         self._test_index_variable_mapping(m)
@@ -144,7 +145,7 @@ class OptModelBuilder(InitMixin):
         # util.pprint(m)
         return m
 
-    def _test_index_variable_mapping(self, model: block) -> None:
+    def _test_index_variable_mapping(self, model: ConcreteModel) -> None:
         """Check all variables in the model have a corresponding index mapping
 
         This function checks two things:
@@ -152,7 +153,7 @@ class OptModelBuilder(InitMixin):
         2. Each index name for each variable is recognized in the master index name list
 
         Args:
-            model: constructed pyomo.kernel block model
+            model: constructed pyomo.core.base.PyomoModel ConcreteModel model
         """
         for var in model.component_objects(
             ctype=variable, active=True, descend_into=True

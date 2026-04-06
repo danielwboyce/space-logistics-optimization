@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
-from pyomo.kernel import block
+from pyomo.core.base.PyomoModel import ConcreteModel
 from .constraints.mass_balance import MassBalance
 from .constraints.sc_capacity import SCCapacity
 from .constraints.time_window import TimeWindow
@@ -21,11 +21,11 @@ class Constraints:
     def __init__(self, builder: OptModelBuilder) -> None:
         self.builder = builder
 
-    def set_constraints(self, m: block, pwl_increment) -> block:
+    def set_constraints(self, m: ConcreteModel, pwl_increment) -> ConcreteModel:
         MassBalance(self.builder).set_mass_balance_constraints(m)
         SCCapacity(self.builder).set_sc_cap_constraints(m)
         SCBigM(self.builder).set_sc_big_M_constraints(m)
-        TimeWindow(self.builder).set_time_window_constraints(m)
+        # TimeWindow(self.builder).set_time_window_constraints(m)
         IntComConservation(self.builder).set_integer_com_conserv_constraints(m)
         CntComConservation(
             self.builder
