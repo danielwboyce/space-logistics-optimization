@@ -4,8 +4,8 @@ from itertools import product
 from pyomo.kernel import (
     constraint,
     constraint_dict,
+    block,
 )
-from pyomo.core.base.PyomoModel import ConcreteModel
 
 if TYPE_CHECKING:
     from ..opt_model_builder_class import OptModelBuilder
@@ -19,7 +19,7 @@ class NonAnticipativity:
     def __init__(self, builder: OptModelBuilder) -> None:
         self.builder = builder
 
-    def set_nonanticipativity_constraints(self, m: ConcreteModel) -> ConcreteModel:
+    def set_nonanticipativity_constraints(self, m: block) -> block:
         """
         First stage variables must be equal for all scenarios,
         even if the second stage has uncertainty.

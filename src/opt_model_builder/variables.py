@@ -3,12 +3,12 @@ from typing import TYPE_CHECKING
 from pyomo.kernel import (
     variable,
     variable_dict,
+    block,
     NonNegativeIntegers,
     NonNegativeReals,
     Reals,
     Binary,
 )
-from pyomo.core.base.PyomoModel import ConcreteModel
 from itertools import product
 
 if TYPE_CHECKING:
@@ -19,7 +19,7 @@ class Variables:
     def __init__(self, builder: OptModelBuilder) -> None:
         self.builder = builder
 
-    def set_variables(self, m: ConcreteModel) -> ConcreteModel:
+    def set_variables(self, m: block) -> block:
         self._set_commodity_vars(m)
         self._set_sc_design_vars(m)
         if self.builder.use_isru:
@@ -30,7 +30,7 @@ class Variables:
 
         return m
 
-    def _set_commodity_vars(self, m: ConcreteModel):
+    def _set_commodity_vars(self, m: block):
         """Define commodity variables
 
         - int_com: number of integer commodities, such as number of crew,
@@ -116,7 +116,7 @@ class Variables:
         ]
         return m
 
-    def _set_sc_design_vars(self, m: ConcreteModel):
+    def _set_sc_design_vars(self, m: block):
         """Define variables related to spacecraft design
 
         In current model, spacecraft design is characterized by
@@ -146,7 +146,7 @@ class Variables:
         self.builder.idx_name_dict["dry_mass"] = ["sc_des"]
         return m
 
-    def _set_isru_vars(self, m: ConcreteModel):
+    def _set_isru_vars(self, m: block):
         """Define variables related to ISRU size and performance"""
         m.isru_mass = variable_dict()
         m.isru_O2rate = variable_dict()

@@ -4,8 +4,8 @@ from itertools import product
 from pyomo.kernel import (
     constraint,
     constraint_dict,
+    block,
 )
-from pyomo.core.base.PyomoModel import ConcreteModel
 
 if TYPE_CHECKING:
     from ..opt_model_builder_class import OptModelBuilder
@@ -19,7 +19,7 @@ class FixSCDesign:
     def __init__(self, builder: OptModelBuilder) -> None:
         self.builder = builder
 
-    def fix_sc_design(self, m) -> ConcreteModel:
+    def fix_sc_design(self, m) -> block:
         m.fixed_pl_cap_def = constraint_dict()
         m.fixed_prop_cap_def = constraint_dict()
         m.fixed_dry_mass_def = constraint_dict()

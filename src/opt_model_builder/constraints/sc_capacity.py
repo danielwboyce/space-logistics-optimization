@@ -4,8 +4,8 @@ from itertools import product
 from pyomo.kernel import (
     constraint,
     constraint_dict,
+    block,
 )
-from pyomo.core.base.PyomoModel import ConcreteModel
 
 if TYPE_CHECKING:
     from ..opt_model_builder_class import OptModelBuilder
@@ -22,7 +22,7 @@ class SCCapacity:
     def __init__(self, builder: OptModelBuilder) -> None:
         self.builder = builder
 
-    def set_sc_cap_constraints(self, m: ConcreteModel) -> ConcreteModel:
+    def set_sc_cap_constraints(self, m: block) -> block:
         m.pl_cap_const = constraint_dict()
         m.oxy_cap_const = constraint_dict()
         m.fuel_cap_const = constraint_dict()
@@ -47,8 +47,8 @@ class SCCapacity:
         return m
 
     def _set_payload_cap_constraints(
-        self, m: ConcreteModel, sc_des, sc_cp, i, j, t, scnr
-    ) -> ConcreteModel:
+        self, m: block, sc_des, sc_cp, i, j, t, scnr
+    ) -> block:
         """Sum of non-propellant commodities cannot exceed SC payload capacity"""
         m.pl_cap_const[sc_des, sc_cp, i, j, t, scnr] = constraint(
             sum(
@@ -93,7 +93,7 @@ class SCCapacity:
         )
         return m
 
-    def _set_oxy_cap_constraints(self, m: ConcreteModel, sc_des, sc_cp, i, j, t, scnr) -> ConcreteModel:
+    def _set_oxy_cap_constraints(self, m: block, sc_des, sc_cp, i, j, t, scnr) -> block:
         """Oxygen mass cannot exceed SC oxygen capacity"""
         m.oxy_cap_const[sc_des, sc_cp, i, j, t, scnr] = constraint(
             m.cnt_com[
@@ -121,8 +121,8 @@ class SCCapacity:
         return m
 
     def _set_fuel_cap_constraints(
-        self, m: ConcreteModel, sc_des, sc_cp, i, j, t, scnr
-    ) -> ConcreteModel:
+        self, m: block, sc_des, sc_cp, i, j, t, scnr
+    ) -> block:
         """
         Hydrogen mass cannot exceed SC fuel capacity.
         We assume that the fuel is hydrogen and the oxidizer is oxygen.
