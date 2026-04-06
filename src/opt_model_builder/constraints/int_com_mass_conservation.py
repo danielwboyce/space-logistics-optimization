@@ -4,8 +4,8 @@ from itertools import product
 from pyomo.kernel import (
     constraint,
     constraint_dict,
-    block,
 )
+from pyomo.core.base.PyomoModel import ConcreteModel
 
 if TYPE_CHECKING:
     from ..opt_model_builder_class import OptModelBuilder
@@ -17,12 +17,12 @@ class IntComConservation:
     def __init__(self, builder: OptModelBuilder) -> None:
         self.builder = builder
 
-    def set_integer_com_conserv_constraints(self, m: block) -> block:
+    def set_integer_com_conserv_constraints(self, m: ConcreteModel) -> ConcreteModel:
         self._set_crew_conservation_constraints(m)
         self._set_sc_conservation_constraints(m)
         return m
 
-    def _set_crew_conservation_constraints(self, m: block) -> block:
+    def _set_crew_conservation_constraints(self, m: ConcreteModel) -> ConcreteModel:
         """crew outflow must be equal to crew inflow"""
         m.int_com_mass_cnsv = constraint_dict()
         for i, j, t, scnr in product(
@@ -67,7 +67,7 @@ class IntComConservation:
             )
         return m
 
-    def _set_sc_conservation_constraints(self, m: block) -> block:
+    def _set_sc_conservation_constraints(self, m: ConcreteModel) -> ConcreteModel:
         """spacecraft outflow must be equal to spacecraft inflow"""
         m.sc_cnsv = constraint_dict()
         for sc_des, sc_cp, i, j, t, scnr in product(

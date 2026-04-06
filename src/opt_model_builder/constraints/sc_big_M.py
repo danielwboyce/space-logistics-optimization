@@ -4,8 +4,8 @@ from itertools import product
 from pyomo.kernel import (
     constraint,
     constraint_dict,
-    block,
 )
+from pyomo.core.base.PyomoModel import ConcreteModel
 
 if TYPE_CHECKING:
     from ..opt_model_builder_class import OptModelBuilder
@@ -29,7 +29,7 @@ class SCBigM:
     def __init__(self, builder: OptModelBuilder) -> None:
         self.builder = builder
 
-    def set_sc_big_M_constraints(self, m: block) -> block:
+    def set_sc_big_M_constraints(self, m: ConcreteModel) -> ConcreteModel:
         """Set big-M constraints for the spacecraft flight variables."""
         big_M_val: float = max(self.builder.sc.var_ub)
         m.sc_bigM_const_1 = constraint_dict()

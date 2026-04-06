@@ -11,12 +11,12 @@ from scipy.optimize import root
 import pyomo.kernel as pmo
 from pyomo.kernel import (
     variable,
-    block,
     Reals,
     objective,
     constraint,
     minimize,
 )
+from pyomo.core.base.PyomoModel import ConcreteModel
 from pyomo.environ import SolverFactory
 
 try:
@@ -122,7 +122,7 @@ class SCSizing(InitMixin):
         initial_guess=None,
         args=None,
     ) -> None:
-        m: block = block()
+        m: ConcreteModel = ConcreteModel()
         m.pl_cap = variable(
             domain=Reals,
             lb=self.sc.var_lb[self.sc_var_dict["payload"]],
