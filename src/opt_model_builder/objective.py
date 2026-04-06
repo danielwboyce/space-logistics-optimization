@@ -4,8 +4,8 @@ from pyomo.kernel import (
     objective,
     constraint,
     minimize,
+    block,
 )
-from pyomo.core.base.PyomoModel import ConcreteModel
 from pyomo.core.expr.numeric_expr import SumExpression
 
 if TYPE_CHECKING:
@@ -16,7 +16,7 @@ class Objective:
     def __init__(self, builder: OptModelBuilder) -> None:
         self.builder = builder
 
-    def set_objective(self, m: ConcreteModel) -> ConcreteModel:
+    def set_objective(self, m: block) -> block:
         """
         Define the objective function of the model.
         Add augmented Lagrandian terms if the model is an ADMM subproblem.
@@ -69,7 +69,7 @@ class Objective:
             )
         return m
 
-    def _get_obj_term(self, m: ConcreteModel, scnr: int, time_list: list[int]) -> SumExpression:
+    def _get_obj_term(self, m: block, scnr: int, time_list: list[int]) -> SumExpression:
         """Returns sum of commodities and sc mass launched from Earth to LEO
         for a specific scenario over given time interval.
 

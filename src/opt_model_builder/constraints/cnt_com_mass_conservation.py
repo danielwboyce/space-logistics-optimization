@@ -4,8 +4,8 @@ from itertools import product
 from pyomo.kernel import (
     constraint,
     constraint_dict,
+    block,
 )
-from pyomo.core.base.PyomoModel import ConcreteModel
 
 if TYPE_CHECKING:
     from ..opt_model_builder_class import OptModelBuilder
@@ -24,7 +24,7 @@ class CntComConservation:
     def __init__(self, builder: OptModelBuilder) -> None:
         self.builder = builder
 
-    def set_non_prop_continuous_com_conserv_constraints(self, m: ConcreteModel) -> ConcreteModel:
+    def set_non_prop_continuous_com_conserv_constraints(self, m: block) -> block:
         if self.builder.use_isru:
             m = self._set_isru_plant_mass_defition(m)
         m.cnt_com_cnsv = constraint_dict()
@@ -197,7 +197,7 @@ class CntComConservation:
         )
         return m
 
-    def _set_isru_plant_decay_constraint(self, m, i, j, pc, t, scnr) -> ConcreteModel:
+    def _set_isru_plant_decay_constraint(self, m, i, j, pc, t, scnr) -> block:
         """
         ISRU plants decay proportionally to their work time
         This decay is expressed as decrease in plant mass
@@ -229,7 +229,7 @@ class CntComConservation:
         )
         return m
 
-    def _set_isru_plant_mass_defition(self, m) -> ConcreteModel:
+    def _set_isru_plant_mass_defition(self, m) -> block:
         """Define total ISRU plant mass as constraints"""
         m.isru_plant_cnsv = constraint_dict()
         for t, scnr in product(m.time_idx, m.scnr_idx):

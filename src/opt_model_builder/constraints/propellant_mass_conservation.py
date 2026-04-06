@@ -4,8 +4,8 @@ from itertools import product
 from pyomo.kernel import (
     constraint,
     constraint_dict,
+    block,
 )
-from pyomo.core.base.PyomoModel import ConcreteModel
 
 if TYPE_CHECKING:
     from ..opt_model_builder_class import OptModelBuilder
@@ -29,7 +29,7 @@ class PropellantConservation:
     def __init__(self, builder: OptModelBuilder) -> None:
         self.builder = builder
 
-    def set_propellant_conservation_constraints(self, m: ConcreteModel) -> ConcreteModel:
+    def set_propellant_conservation_constraints(self, m: block) -> block:
         m.prop_mass_cnsv = constraint_dict()
 
         for i, j, t, scnr, prop_name in product(

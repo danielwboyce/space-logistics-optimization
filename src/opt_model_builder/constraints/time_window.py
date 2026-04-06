@@ -4,8 +4,8 @@ from itertools import product
 from pyomo.kernel import (
     constraint,
     constraint_dict,
+    block,
 )
-from pyomo.core.base.PyomoModel import ConcreteModel
 
 if TYPE_CHECKING:
     from ..opt_model_builder_class import OptModelBuilder
@@ -19,7 +19,7 @@ class TimeWindow:
     def __init__(self, builder: OptModelBuilder) -> None:
         self.builder = builder
 
-    def set_time_window_constraints(self, m: ConcreteModel) -> ConcreteModel:
+    def set_time_window_constraints(self, m: block) -> block:
         """
         Set commodities and spacecraft flow to 0
         if outside of the time window.
