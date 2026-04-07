@@ -62,6 +62,9 @@ class Variables:
         ):
             if not self.builder.is_feasible_arc(i, j):
                 continue
+            if (t not in self.builder._network_def.allowed_time_window[i][j] and
+                t not in self.builder._network_def.allowed_time_window[j][i]):
+                continue
             for pl_i in m.int_com_idx:
                 m.int_com[sc_des, sc_cp, i, j, pl_i, io, t, scnr] = variable(
                     domain=NonNegativeIntegers
