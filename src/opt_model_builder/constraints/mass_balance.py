@@ -32,13 +32,13 @@ class MassBalance:
     def _set_int_com_mass_balance_constraints(self, m: block) -> block:
         """Enforce mass balance for each integer commodity"""
         m.int_com_mass_balance_const = constraint_dict()
-        for i, int_com_id, t, scnr in product(
-            m.dep_node_idx, m.int_com_idx, m.time_idx, m.scnr_idx
+        for i, j, int_com_id, t, scnr in product(
+            m.dep_node_idx, m.arr_node_idx, m.int_com_idx, m.time_idx, m.scnr_idx
         ):
             if not self.builder.is_feasible_arc(i, j):
                 continue
             t_id = self.builder._network_def.date_to_time_idx_dict[t]
-            m.int_com_mass_balance_const[i, int_com_id, t, scnr] = constraint(
+            m.int_com_mass_balance_const[i, j, int_com_id, t, scnr] = constraint(
                 sum(
                     m.int_com[
                         sc_des,
@@ -54,8 +54,6 @@ class MassBalance:
                     for sc_cp in m.sc_copy_idx
                     for j in m.arr_node_idx
                     if self.builder.is_feasible_arc(i, j)
-                    if (t in self.builder._network_def.allowed_time_window[i][j] or
-                        t in self.builder._network_def.allowed_time_window[j][i])
                 )
                 - sum(
                     m.int_com[
@@ -65,16 +63,14 @@ class MassBalance:
                         i,
                         int_com_id,
                         self.builder.flow_dict["in"],
-                        t - self.builder._network_def.real_arc_time[i][j],
+                        t - self.builder.delta_t[i][j][t_id],
                         scnr,
                     ]
                     for sc_des in m.sc_des_idx
                     for sc_cp in m.sc_copy_idx
                     for j in m.arr_node_idx
                     if self.builder.is_feasible_arc(i, j)
-                    if t - self.builder._network_def.real_arc_time[i][j] in m.time_idx
-                    if (t - self.builder._network_def.real_arc_time[i][j] in self.builder._network_def.allowed_time_window[i][j] or
-                        t - self.builder._network_def.real_arc_time[i][j] in self.builder._network_def.allowed_time_window[j][i])
+                    if t - self.builder.delta_t[i][j][t_id] in m.time_idx
                 )
                 <= self.builder._network_def.int_com_demand[i][int_com_id][t_id][scnr]
             )
