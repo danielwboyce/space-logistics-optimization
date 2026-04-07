@@ -35,10 +35,10 @@ class SolverInterface(InitMixin):
         Returns:
             block: solved pyomo kernel model
         """
-        # if isinstance(model, ConcreteModel):
-        #     NotImplementedError(
-        #         "Pyomo environ ConcreteModel is not supported. Use pyomo kernel block instead."
-        #     )
+        if isinstance(model, ConcreteModel):
+            NotImplementedError(
+                "Pyomo environ ConcreteModel is not supported. Use pyomo kernel block instead."
+            )
         opt = self._set_solver_options()
         solved_model: SolverResults = opt.solve(
             model,
