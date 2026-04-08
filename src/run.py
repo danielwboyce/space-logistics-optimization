@@ -34,8 +34,8 @@ def main():
         n_mis=2,  # number of missions
         n_sc_design=2,  # number of SC design
         n_sc_per_design=3,  # number of SC per design
-        t_mis_tot=13,  # total single mission duration, days
-        t_surf_mis=3,  # lunar surface mission duration, days
+        t_mis_tot=11,  # total single mission duration, days
+        t_surf_mis=1,  # lunar surface mission duration, days
         n_crew=4,  # number of crew needed on lunar surface
         sample_mass=[1000, 1100],  # sample collected from lunar surface, kg
         habit_pl_mass=[2000, 3000],  # habitat and payload mass, kg
