@@ -110,6 +110,7 @@ def main():
         solver_verbose=True,
         max_time=3600 * 3,  # maximum time allowed for optimization in seconds
         max_time_wo_imprv=3600 * 3,
+        keep_files=True,
     )
 
     scenario_dist = ScenarioDistribution(
