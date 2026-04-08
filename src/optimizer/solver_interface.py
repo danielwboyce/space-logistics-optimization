@@ -44,7 +44,7 @@ class SolverInterface(InitMixin):
             model,
             tee=self.runtime.solver_verbose,
             keepfiles=self.runtime.keep_files,
-            # logfile="solver_logfile.log",
+            logfile="solver_logfile.log",
         )
         print("Termination Condition: ", solved_model.solver.termination_condition)
         if solved_model.solver.termination_condition not in {
