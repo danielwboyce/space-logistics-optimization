@@ -7,6 +7,9 @@ import os
 import sys
 from pyomo.opt import SolverFactory, OptSolver, TerminationCondition, SolverStatus
 from pyomo.opt.results.results_ import SolverResults
+from pyomo.util.infeasible import log_infeasible_constraints, log_infeasible_bounds
+from pyomo.contrib.iis.mis import compute_infeasibility_explanation
+from pyomo.common.log import logging
 from pyomo.environ import ConcreteModel
 from pyomo.kernel import block
 
@@ -47,6 +50,22 @@ class SolverInterface(InitMixin):
             logfile="solver_logfile.log",
         )
         print("Termination Condition: ", solved_model.solver.termination_condition)
+        if (solved_model.solver.termination_condition == TerminationCondition.infeasible):
+            logger = logging.getLogger('pyomo.util.infeasible')
+            logger.setLevel(logging.INFO)
+            # handler = logging.FileHandler('infeasible_constraints.log')
+            handler = logging.FileHandler('infeasible_bounds.log')
+            handler.setFormatter(logging.Formatter('%(message)s'))
+            logger.addHandler(handler)
+            # log_infeasible_constraints(model, logger=logger)
+            log_infeasible_bounds(model, logger=logger)
+
+            # logger = logging.getLogger('pyomo.contrib.iis')
+            # logger.setLevel(logging.INFO)
+            # handler = logging.FileHandler('iis.log')
+            # handler.setFormatter(logging.Formatter('%(message)s'))
+            # logger.addHandler(handler)
+            # compute_infeasibility_explanation(solved_model, solver=solved_model.solver, logger=logger)
         if solved_model.solver.termination_condition not in {
             TerminationCondition.optimal,
             TerminationCondition.locallyOptimal,
