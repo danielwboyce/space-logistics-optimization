@@ -39,9 +39,7 @@ class CntComConservation:
                 continue
             elif self.builder.cnt_com_dict.inverse[pc] in self.builder.prop_com_names:
                 continue
-            if self.builder.cnt_com_dict.inv[pc] not in self.builder.comdty.cnt_com_names:
-                continue
-            if "plant" in self.builder.cnt_com_names and pc == self.builder.cnt_com_dict["plant"]:
+            if pc == self.builder.cnt_com_dict["plant"]:
                 if self.builder.can_operate_ISRU(i, j):
                     self._set_isru_plant_decay_constraint(m, i, j, pc, t, scnr)
                 else:
