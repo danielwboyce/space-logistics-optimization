@@ -266,24 +266,28 @@ class NetworkBuilder(InitMixin):
             self.int_com_demand[self.node_dict["Earth"]][self.int_com_dict["crew #"]][
                 mis_start_date_id
             ][scnr] = self.n_crew
-            self.int_com_demand[self.node_dict["LS"]][self.int_com_dict["crew #"]][
-                mis_start_date_id
-            ][scnr] = -self.n_crew
-            self.cnt_com_demand[self.node_dict["LS"]][self.cnt_com_dict["habitat"]][
-                mis_start_date_id
-            ][scnr] = -self.habit_pl_mass_ls[mis_id]
-            self.int_com_demand[self.node_dict["Earth"]][self.int_com_dict["crew #"]][
-                mis_end_date_id
-            ][scnr] = -self.n_crew
-            self.int_com_demand[self.node_dict["LS"]][self.int_com_dict["crew #"]][
-                mis_end_date_id
-            ][scnr] = self.n_crew
-            self.cnt_com_demand[self.node_dict["LS"]][self.cnt_com_dict["consumption"]][
-                mis_end_date_id
-            ][scnr] = -self.n_crew * self.t_surf_mis * self.mis.consumption_cost
-            self.cnt_com_demand[self.node_dict["Earth"]][self.cnt_com_dict["sample"]][
-                mis_end_date_id
-            ][scnr] = -self.sample_mass_ls[mis_id]
+            if "crew" in self.comdty.com_names:
+                self.int_com_demand[self.node_dict["LS"]][self.int_com_dict["crew #"]][
+                    mis_start_date_id
+                ][scnr] = -self.n_crew
+                self.int_com_demand[self.node_dict["Earth"]][self.int_com_dict["crew #"]][
+                    mis_end_date_id
+                ][scnr] = -self.n_crew
+                self.int_com_demand[self.node_dict["LS"]][self.int_com_dict["crew #"]][
+                    mis_end_date_id
+                ][scnr] = self.n_crew
+            if "habitat" in self.comdty.com_names:
+                self.cnt_com_demand[self.node_dict["LS"]][self.cnt_com_dict["habitat"]][
+                    mis_start_date_id
+                ][scnr] = -self.habit_pl_mass_ls[mis_id]
+            if "consumption" in self.comdty.com_names:
+                self.cnt_com_demand[self.node_dict["LS"]][self.cnt_com_dict["consumption"]][
+                    mis_end_date_id
+                ][scnr] = -self.n_crew * self.t_surf_mis * self.mis.consumption_cost
+            if "sample" in self.comdty.com_names:
+                self.cnt_com_demand[self.node_dict["Earth"]][self.cnt_com_dict["sample"]][
+                    mis_end_date_id
+                ][scnr] = -self.sample_mass_ls[mis_id]
         if self.is_stochastic:
             self._set_stochastic_demand()
 
@@ -309,11 +313,12 @@ class NetworkBuilder(InitMixin):
                     self.cnt_com_dict[pl_name]
                 ][self.date_to_time_idx_dict[mis_start_date]][scnr] = float("inf")
 
-        for mis_end_date, scnr in product(
-            self.mis_end_dates,
-            range(self.n_scenarios),
-        ):
-            mis_end_date_id = self.date_to_time_idx_dict[mis_end_date]
+        if "sample" in self.comdty.com_names:
+            for mis_end_date, scnr in product(
+                self.mis_end_dates,
+                range(self.n_scenarios),
+            ):
+                mis_end_date_id = self.date_to_time_idx_dict[mis_end_date]
             self.cnt_com_demand[self.node_dict["LS"]][self.cnt_com_dict["sample"]][
                 mis_end_date_id
             ][scnr] = float("inf")
