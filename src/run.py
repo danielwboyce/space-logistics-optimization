@@ -32,7 +32,7 @@ from input_data_class import (
 def main():
     mission_parameters = MissionParameters(
         n_mis=2,  # number of missions
-        n_sc_design=2,  # number of SC design
+        n_sc_design=1,  # number of SC design
         n_sc_per_design=3,  # number of SC per design
         t_mis_tot=11,  # total single mission duration, days
         t_surf_mis=1,  # lunar surface mission duration, days
@@ -133,18 +133,37 @@ def main():
     sl_cls = SpaceLogistics(input_data)
     # sl_cls.optimizer.admm.run_alc_loop()
     # sl_cls.optimizer.pwl.solve_w_pwl_approx(pwl_increment=2500)
+
+    # Calculate some spacecraft params (for a spacecraft that does an
+    # out-and-back delivery of a payload)
+    sc_payload = 20.0e3
+    sc_dry_mass = 16.0e3
+    total_dv1 = (sl_cls.network_def._get_delta_v_km_s("LS", "LLO")
+                 + sl_cls.network_def._get_delta_v_km_s("LLO", "LEO"))
+    total_dv2 = total_dv1
+    z1 = np.exp(total_dv1 * 1.0e3 / (sc_parameters.isp * sc_parameters.g0))
+    z2 = z1
+    sc_prop2 = (z2 - 1) * sc_dry_mass
+    sc_prop1 = (z1 - 1) * (sc_dry_mass + sc_prop2 + sc_payload)
+    sc_prop = sc_prop1 + sc_prop2
+
     fixed_sc_designs = np.array(
         [
+            # [
+            #     2167.593079653862,
+            #     14871.284878373288,
+            #     7131.5847792317145,
+            # ],
+            # [
+            #     500.0,
+            #     57325.31844683161,
+            #     14236.423242779982
+            # ],
             [
-                2167.593079653862,
-                14871.284878373288,
-                7131.5847792317145,
+                sc_payload,  # payload (max)
+                sc_prop,     # propellant (max)
+                sc_dry_mass, # dry mass
             ],
-            [
-                500.0,
-                57325.31844683161,
-                14236.423242779982
-            ]
         ]
     )
     sl_cls.optimizer.fixed_sc.solve_network_flow_MILP(fixed_sc_designs)
