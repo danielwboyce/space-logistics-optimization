@@ -19,12 +19,12 @@ class PWLApproximation:
             pwl_increment: increment used for PWL approximation of spacecraft design
         Returns:
             dict containing:
-                IMLEO (float): optimal objective function (IMLEO) value
+                FMLEO (float): optimal objective function (FMLEO) value
                 sc_vars (np.array): SC design variables, subject to PWL approx.
         """
         self.optimizer._model_builder.mode = "Piecewise Linear Approx"
         model = self.optimizer._model_builder.build_model(pwl_increment)
         model = self.optimizer.solver.solve_model(model)
-        IMLEO = model.imleo.value
+        FMLEO = model.fmleo.value
         sc_vars = self.optimizer.output.get_sc_vars(model)
-        return {"obj": IMLEO, "design vars": sc_vars}
+        return {"obj": FMLEO, "design vars": sc_vars}

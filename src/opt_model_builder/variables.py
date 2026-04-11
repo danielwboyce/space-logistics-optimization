@@ -24,9 +24,9 @@ class Variables:
         self._set_sc_design_vars(m)
         if self.builder.use_isru:
             self._set_isru_vars(m)
-        # IMLEO result storage, not really a design variable
-        m.imleo = variable(domain=NonNegativeReals)
-        self.builder.idx_name_dict["imleo"] = []
+        # FMLEO result storage, not really a design variable
+        m.fmleo = variable(domain=NonNegativeReals)
+        self.builder.idx_name_dict["fmleo"] = []
 
         return m
 
