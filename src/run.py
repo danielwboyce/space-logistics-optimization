@@ -32,23 +32,23 @@ from input_data_class import (
 def main():
     mission_parameters = MissionParameters(
         n_mis=2,  # number of missions
-        n_sc_design=1,  # number of SC design
+        n_sc_design=2,  # number of SC design
         n_sc_per_design=3,  # number of SC per design
         t_mis_tot=11,  # total single mission duration, days
         t_surf_mis=1,  # lunar surface mission duration, days
-        n_crew=4,  # number of crew needed on lunar surface
-        sample_mass=[1000, 1100],  # sample collected from lunar surface, kg
-        habit_pl_mass=[2000, 3000],  # habitat and payload mass, kg
+        n_crew=0,  # number of crew needed on lunar surface
+        sample_mass=[10, 10],  # sample collected from lunar surface, kg
+        habit_pl_mass=[0, 0],  # habitat and payload mass, kg
         # consumption cost (food+water+oxygen), kg/(day*person)
         consumption_cost=8.655,
         # maintenance cost, fraction/flight (0.01 means 1% per flight)
         maintenance_cost=0.01,
-        time_interval=365,  # time interval between missions, days
+        time_interval=11,  # time interval between missions, days
         use_increased_pl=False,  # true if increased demand is used
     )
 
     sc_parameters = SCParameters(
-        isp=420,  # specific impulse, s
+        isp=460,  # specific impulse, s
         oxi_fuel_ratio=5.5,  # oxidizer to fuel ratio
         prop_density=360,  # propellant density, kg/m^3
         misc_mass_fraction=0.05,  # misc mass factor
@@ -149,21 +149,21 @@ def main():
 
     fixed_sc_designs = np.array(
         [
-            # [
-            #     2167.593079653862,
-            #     14871.284878373288,
-            #     7131.5847792317145,
-            # ],
-            # [
-            #     500.0,
-            #     57325.31844683161,
-            #     14236.423242779982
-            # ],
             [
-                sc_payload,  # payload (max)
-                sc_prop,     # propellant (max)
-                sc_dry_mass, # dry mass
+                2167.593079653862,
+                14871.284878373288,
+                7131.5847792317145,
             ],
+            [
+                500.0,
+                57325.31844683161,
+                14236.423242779982
+            ],
+            # [
+            #     sc_payload,  # payload (max)
+            #     sc_prop,     # propellant (max)
+            #     sc_dry_mass, # dry mass
+            # ],
         ]
     )
     sl_cls.optimizer.fixed_sc.solve_network_flow_MILP(fixed_sc_designs)
