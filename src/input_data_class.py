@@ -187,45 +187,6 @@ class SCParameters:
         self.fuel_prop_ratio: float = 1 - self.oxi_prop_ratio
         self.n_sc_vars: int = len(self.var_names)
 
-@dataclass
-class DepotParameters:
-    """Data class containing depo data. It is assumed that the depot is
-    prestaged.
-
-    
-    Args:
-        capacity: Total capacity (payload and propellant), kg.
-        depot_node: Name of the node where the depot is located.
-        _use_depot: True if the depot is used, False otherwise.
-    """
-
-    capacity: float = 0.0
-    depot_node: str | None = "Earth"
-
-    _use_depot : bool = False
-
-    def __post_init__(self):
-        """Sanity check for input values"""
-
-        assert self.capacity >= 0.0, """Error:
-        The depot capacity must be positive or zero. Received value:
-            Depot capacity: {}
-            """.format(self.capacity)
-        
-        if self.capacity > 0.0:
-            self._use_depot = True
-        else:
-            self._use_depot = False
-
-        if self._use_depot:
-            assert self.depot_node is not None, """Error:
-            If the depot capacity is nonzero, the depot node must not be none. Received values:
-                Depot capacity: {}
-                Depot node: {]}
-                """.format(
-                    self.capacity,
-                    self.depot_node)
-
 
 @dataclass(frozen=True)
 class ISRUParameters:
@@ -590,7 +551,6 @@ class InputData:
     mission: MissionParameters
     alc: ALCParameters
     sc: SCParameters
-    depot: DepotParameters
     isru: ISRUParameters
     comdty: CommodityDetails
     node: NodeDetails
@@ -602,19 +562,6 @@ class InputData:
         if self.alc.prioritized_var_name:
             assert self.alc.prioritized_var_name in self.sc.var_names, """
             prioritized variable name is not valid"""
-
-        if self.depot._use_depot > 0:
-            assert self.depot.depot_node in self.node.node_names, """
-            Error:
-                If depot capacity is greater than 0.0, then the depot node
-                should be a real node. Received values:
-                    DepotParameters.capacity: {},
-                    DepotParameters.depot_node: {},
-                    NodeDetails.node_names: {}
-            """.format(
-                self.depot.capacity,
-                self.depot.depot_node,
-                self.node.node_names)
 
         self.n_scenarios: int = 1
         self.is_stochastic: bool = False
