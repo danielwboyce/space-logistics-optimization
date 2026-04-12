@@ -53,6 +53,7 @@ def main():
         prop_density=360,  # propellant density, kg/m^3
         misc_mass_fraction=0.05,  # misc mass factor
         aggressive_SC_design=False,  # true if aggressive sizng model is used
+        # var_lb=[500, 0, 4000],
     )
 
     isru_parameters = ISRUParameters(
@@ -133,41 +134,53 @@ def main():
     )
     sl_cls = SpaceLogistics(input_data)
     # sl_cls.optimizer.admm.run_alc_loop()
-    # sl_cls.optimizer.pwl.solve_w_pwl_approx(pwl_increment=2500)
+    sl_cls.optimizer.pwl.solve_w_pwl_approx(pwl_increment=2500)
 
-    # Calculate some spacecraft params (for a spacecraft that does an
-    # out-and-back delivery of a payload)
-    sc_payload = 20.0e3
-    sc_dry_mass = 16.0e3
-    total_dv1 = (sl_cls.network_def._get_delta_v_km_s("LS", "LLO")
-                 + sl_cls.network_def._get_delta_v_km_s("LLO", "LEO"))
-    total_dv2 = total_dv1
-    z1 = np.exp(total_dv1 * 1.0e3 / (sc_parameters.isp * sc_parameters.g0))
-    z2 = z1
-    sc_prop2 = (z2 - 1) * sc_dry_mass
-    sc_prop1 = (z1 - 1) * (sc_dry_mass + sc_prop2 + sc_payload)
-    sc_prop = sc_prop1 + sc_prop2
+    # # Calculate some spacecraft params (for a spacecraft that does an
+    # # out-and-back delivery of a payload)
+    # sc_payload = 20.0e3
+    # sc_dry_mass = 16.0e3
+    # total_dv1 = (sl_cls.network_def._get_delta_v_km_s("LS", "LLO")
+    #              + sl_cls.network_def._get_delta_v_km_s("LLO", "LEO"))
+    # total_dv2 = total_dv1
+    # z1 = np.exp(total_dv1 * 1.0e3 / (sc_parameters.isp * sc_parameters.g0))
+    # z2 = z1
+    # sc_prop2 = (z2 - 1) * sc_dry_mass
+    # sc_prop1 = (z1 - 1) * (sc_dry_mass + sc_prop2 + sc_payload)
+    # sc_prop = sc_prop1 + sc_prop2
 
-    fixed_sc_designs = np.array(
-        [
-            [
-                2167.593079653862,
-                14871.284878373288,
-                7131.5847792317145,
-            ],
-            [
-                500.0,
-                57325.31844683161,
-                14236.423242779982
-            ],
-            # [
-            #     sc_payload,  # payload (max)
-            #     sc_prop,     # propellant (max)
-            #     sc_dry_mass, # dry mass
-            # ],
-        ]
-    )
-    sl_cls.optimizer.fixed_sc.solve_network_flow_MILP(fixed_sc_designs)
+    # # # depot parameters
+    # # depot_payload = 100.0e3
+    # # depot_dry_mass = depot_payload * 0.20
+    # # total_dv_depot = sl_cls.network_def._get_delta_v_km_s("Earth", "LEO")
+    # # z_depot = np.exp(total_dv_depot * 1.0e3 / (sc_parameters.isp * sc_parameters.g0))
+    # # depot_prop = (z_depot - 1) * depot_dry_mass * 1.05
+
+    # fixed_sc_designs = np.array(
+    #     [
+    #         [
+    #             2167.593079653862,
+    #             14871.284878373288,
+    #             7131.5847792317145,
+    #         ],
+    #         [
+    #             500.0,
+    #             57325.31844683161,
+    #             14236.423242779982
+    #         ],
+    #         # [
+    #         #     depot_payload,
+    #         #     0.0,
+    #         #     depot_dry_mass
+    #         # ],
+    #         # [
+    #         #     sc_payload,  # payload (max)
+    #         #     sc_prop,     # propellant (max)
+    #         #     sc_dry_mass, # dry mass
+    #         # ],
+    #     ]
+    # )
+    # sl_cls.optimizer.fixed_sc.solve_network_flow_MILP(fixed_sc_designs)
 
 
 if __name__ == "__main__":
