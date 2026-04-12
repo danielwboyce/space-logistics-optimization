@@ -31,14 +31,14 @@ from input_data_class import (
 
 def main():
     mission_parameters = MissionParameters(
-        n_mis=2,  # number of missions
-        n_sc_design=2,  # number of SC design
+        n_mis=10,  # number of missions
+        n_sc_design=3,  # number of SC design
         n_sc_per_design=3,  # number of SC per design
         t_mis_tot=11,  # total single mission duration, days
         t_surf_mis=1,  # lunar surface mission duration, days
         n_crew=0,  # number of crew needed on lunar surface
-        sample_mass=[0, 0],  # sample collected from lunar surface, kg
-        habit_pl_mass=[0, 0],  # habitat and payload mass, kg
+        sample_mass=np.zeros(10).tolist(), #[0, 0],  # sample collected from lunar surface, kg
+        habit_pl_mass=np.zeros(10).tolist(), #[0, 0],  # habitat and payload mass, kg
         # consumption cost (food+water+oxygen), kg/(day*person)
         consumption_cost=8.655,
         # maintenance cost, fraction/flight (0.01 means 1% per flight)
@@ -130,7 +130,7 @@ def main():
         comdty=comdty_details,
         node=node_details,
         runtime=runtime_settings,
-        scenario=scenario_dist,
+        scenario=None, #scenario_dist,
     )
     sl_cls = SpaceLogistics(input_data)
     # sl_cls.optimizer.admm.run_alc_loop()
