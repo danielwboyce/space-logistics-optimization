@@ -2,6 +2,7 @@ from input_data_class import (
     InputData,
     MissionParameters,
     SCParameters,
+    DepotParameters,
     ISRUParameters,
     ALCParameters,
     CommodityDetails,
@@ -35,6 +36,7 @@ class InitMixin:
         self.input_data: InputData = input_data
         self.mis: MissionParameters = input_data.mission
         self.sc: SCParameters = input_data.sc
+        self.depot: DepotParameters = input_data.depot
         self.isru: ISRUParameters = input_data.isru
         self.alc: ALCParameters = input_data.alc
         self.comdty: CommodityDetails = input_data.comdty
@@ -66,6 +68,12 @@ class InitMixin:
             of float if value is different for each mission"""
         self.use_increased_pl: bool = input_data.mission.use_increased_pl
         """True if increased demand is used. Defaults to False."""
+        self.use_depot: bool = self.depot._use_depot
+        """True if a depot is used, False otherwise."""
+        self.depot_capacity = self.depot.capacity
+        """Total depot capacity (payload and propellant), kg."""
+        self.depot_node = self.depot.depot_node
+        """Name of the node where the depot is located."""
         self.use_isru: bool = input_data.isru.use_isru
         """True if ISRU is used"""
         self.n_isru_design: int = input_data.isru.n_isru_design

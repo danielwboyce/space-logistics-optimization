@@ -20,6 +20,7 @@ from input_data_class import (
     InputData,
     MissionParameters,
     SCParameters,
+    DepotParameters,
     ISRUParameters,
     ALCParameters,
     CommodityDetails,
@@ -53,6 +54,11 @@ def main():
         prop_density=360,  # propellant density, kg/m^3
         misc_mass_fraction=0.05,  # misc mass factor
         aggressive_SC_design=False,  # true if aggressive sizng model is used
+    )
+
+    depot_parameters = DepotParameters(
+        capacity=100.0e3, # Total capacity of the depot (payload and propellant), kg.
+        depot_node="LEO" # Depot is in LEO
     )
 
     isru_parameters = ISRUParameters(
@@ -124,6 +130,7 @@ def main():
     input_data = InputData(
         mission=mission_parameters,
         sc=sc_parameters,
+        depot=depot_parameters,
         isru=isru_parameters,
         alc=alc_parameters,
         comdty=comdty_details,
