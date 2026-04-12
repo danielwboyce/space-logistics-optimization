@@ -81,29 +81,56 @@ class Objective:
         Returns:
             SumExpression: sum of commodities and sc mass launched to LEO
         """
-        cnt_com = self.builder.cnt_com_dict["oxygen"]
-        i = self.builder.node_dict["LEO"]
-        t = time_list[-1]
-        t_id = len(time_list) - 1
-        io = self.builder.flow_dict["in"]
         term = (
-            self.builder.cnt_com_costs[cnt_com]
+            self.builder.cnt_com_costs[self.builder.cnt_com_dict["payload_oxygen"]]
             * sum(
                 m.cnt_com[
                     sc_des,
                     sc_cp,
                     j,
-                    i,
-                    cnt_com,
-                    io,
-                    t - self.builder.delta_t[i][j][t_id],
+                    self.builder.node_dict["LEO"],
+                    self.builder.cnt_com_dict["payload_oxygen"],
+                    self.builder.flow_dict["in"],
+                    time_list[-1] - self.builder.delta_t[j][self.builder.node_dict["LEO"]][len(time_list) - 1],
                     scnr,
                 ]
                 for sc_des in m.sc_des_idx
                 for sc_cp in m.sc_copy_idx
                 for j in m.arr_node_idx
-                if self.builder.is_feasible_arc(i, j)
-                if t - self.builder.delta_t[i][j][t_id] in m.time_idx
+                if self.builder.is_feasible_arc(self.builder.node_dict["LEO"], j)
+                if time_list[-1] - self.builder.delta_t[j][self.builder.node_dict["LEO"]][len(time_list) - 1] in m.time_idx
+            )
+            - self.builder.cnt_com_costs[self.builder.cnt_com_dict["payload_oxygen"]]
+            * sum(
+                m.cnt_com[
+                    sc_des,
+                    sc_cp,
+                    self.builder.node_dict["Earth"],
+                    self.builder.node_dict["LEO"],
+                    self.builder.cnt_com_dict["payload_oxygen"],
+                    self.builder.flow_dict["out"],
+                    t,
+                    scnr,
+                ]
+                for sc_des in m.sc_des_idx
+                for sc_cp in m.sc_copy_idx
+                for t in time_list
+            )
+            - self.builder.cnt_com_costs[self.builder.cnt_com_dict["oxygen"]]
+            * sum(
+                m.cnt_com[
+                    sc_des,
+                    sc_cp,
+                    self.builder.node_dict["Earth"],
+                    self.builder.node_dict["LEO"],
+                    self.builder.cnt_com_dict["oxygen"],
+                    self.builder.flow_dict["out"],
+                    t,
+                    scnr,
+                ]
+                for sc_des in m.sc_des_idx
+                for sc_cp in m.sc_copy_idx
+                for t in time_list
             )
         )
         return term
