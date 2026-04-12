@@ -37,7 +37,7 @@ def main():
         t_mis_tot=11,  # total single mission duration, days
         t_surf_mis=1,  # lunar surface mission duration, days
         n_crew=0,  # number of crew needed on lunar surface
-        sample_mass=[10, 10],  # sample collected from lunar surface, kg
+        sample_mass=[0, 0],  # sample collected from lunar surface, kg
         habit_pl_mass=[0, 0],  # habitat and payload mass, kg
         # consumption cost (food+water+oxygen), kg/(day*person)
         consumption_cost=8.655,
@@ -90,6 +90,7 @@ def main():
             "sample",
             "oxygen",
             "hydrogen",
+            "payload_oxygen",
         ],
         # list of propellant commodity names
         prop_com_names=["oxygen", "hydrogen"],
