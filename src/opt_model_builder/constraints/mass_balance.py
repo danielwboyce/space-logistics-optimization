@@ -35,8 +35,7 @@ class MassBalance:
         for i, j, int_com_id, t, scnr in product(
             m.dep_node_idx, m.arr_node_idx, m.int_com_idx, m.time_idx, m.scnr_idx
         ):
-            if (not self.builder.is_feasible_arc(i, j) or
-                t not in self.builder._network_def.allowed_time_window[i][j]):
+            if not self.builder.is_feasible_arc(i, j):
                 continue
             t_id = self.builder._network_def.date_to_time_idx_dict[t]
             m.int_com_mass_balance_const[i, j, int_com_id, t, scnr] = constraint(
