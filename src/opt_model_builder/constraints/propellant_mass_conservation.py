@@ -70,80 +70,185 @@ class PropellantConservation:
         consumed prop mass * fuel(oxydizer)-propellant ratio
         """
         prop_id = self.builder.cnt_com_dict[prop_name]
+        if prop_name + "_storage" in self.builder.cnt_com_names:
+            prop_storage_id = self.builder.cnt_com_dict[prop_name + "_storage"]
+        else:
+            prop_storage_id = None
         t_id = self.builder._network_def.date_to_time_idx_dict[t]
-        m.prop_mass_cnsv[i, j, prop_id, t, scnr] = constraint(
-            sum(
-                m.cnt_com[
-                    sc_des,
-                    sc_cp,
-                    i,
-                    j,
-                    prop_id,
-                    self.builder.flow_dict["in"],
-                    t,
-                    scnr,
-                ]
-                for sc_des in m.sc_des_idx
-                for sc_cp in m.sc_copy_idx
-            )
-            <= sum(
-                m.cnt_com[
-                    sc_des,
-                    sc_cp,
-                    i,
-                    j,
-                    prop_id,
-                    self.builder.flow_dict["out"],
-                    t,
-                    scnr,
-                ]
-                for sc_des in m.sc_des_idx
-                for sc_cp in m.sc_copy_idx
-            )
-            - self.prop_ratio
-            * self.builder.fin_ini_mass_frac[i][j][t_id]
-            * sum(
+        if prop_storage_id is not None:
+            m.prop_mass_cnsv[i, j, prop_id, t, scnr] = constraint(
                 sum(
-                    self.builder.int_com_costs[self.builder.int_com_dict[pl_name]]
-                    * m.int_com[
+                    (
+                        m.cnt_com[
+                            sc_des,
+                            sc_cp,
+                            i,
+                            j,
+                            prop_id,
+                            self.builder.flow_dict["in"],
+                            t,
+                            scnr,
+                        ]
+                        + m.cnt_com[
+                            sc_des,
+                            sc_cp,
+                            i,
+                            j,
+                            prop_storage_id,
+                            self.builder.flow_dict["in"],
+                            t,
+                            scnr,
+                        ]
+                    )
+                    for sc_des in m.sc_des_idx
+                    for sc_cp in m.sc_copy_idx
+                )
+                == sum(
+                    (
+                        m.cnt_com[
+                            sc_des,
+                            sc_cp,
+                            i,
+                            j,
+                            prop_id,
+                            self.builder.flow_dict["out"],
+                            t,
+                            scnr,
+                        ]
+                        + m.cnt_com[
+                            sc_des,
+                            sc_cp,
+                            i,
+                            j,
+                            prop_storage_id,
+                            self.builder.flow_dict["out"],
+                            t,
+                            scnr,
+                        ]
+                    )
+                    for sc_des in m.sc_des_idx
+                    for sc_cp in m.sc_copy_idx
+                )
+                - self.prop_ratio
+                * self.builder.fin_ini_mass_frac[i][j][t_id]
+                * sum(
+                    sum(
+                        self.builder.int_com_costs[self.builder.int_com_dict[pl_name]]
+                        * m.int_com[
+                            sc_des,
+                            sc_cp,
+                            i,
+                            j,
+                            self.builder.int_com_dict[pl_name],
+                            self.builder.flow_dict["out"],
+                            t,
+                            scnr,
+                        ]
+                        for pl_name in self.builder.int_com_names
+                    )
+                    + sum(
+                        m.cnt_com[
+                            sc_des,
+                            sc_cp,
+                            i,
+                            j,
+                            self.builder.cnt_com_dict[pl_name],
+                            self.builder.flow_dict["out"],
+                            t,
+                            scnr,
+                        ]
+                        for pl_name in self.builder.cnt_com_names
+                        # if pl_name.replace("_storage", "") not in self.builder.prop_com_names
+                    )
+                    + m.sc_fly_var[
                         sc_des,
                         sc_cp,
+                        self.builder.sc_var_dict["dry mass"],
                         i,
                         j,
-                        self.builder.int_com_dict[pl_name],
                         self.builder.flow_dict["out"],
                         t,
                         scnr,
                     ]
-                    for pl_name in self.builder.int_com_names
+                    for sc_cp in m.sc_copy_idx
+                    for sc_des in m.sc_des_idx
                 )
-                + sum(
+            )
+
+        else:
+            m.prop_mass_cnsv[i, j, prop_id, t, scnr] = constraint(
+                sum(
                     m.cnt_com[
                         sc_des,
                         sc_cp,
                         i,
                         j,
-                        self.builder.cnt_com_dict[pl_name],
+                        prop_id,
+                        self.builder.flow_dict["in"],
+                        t,
+                        scnr,
+                    ]
+                    for sc_des in m.sc_des_idx
+                    for sc_cp in m.sc_copy_idx
+                )
+                <= sum(
+                    m.cnt_com[
+                        sc_des,
+                        sc_cp,
+                        i,
+                        j,
+                        prop_id,
                         self.builder.flow_dict["out"],
                         t,
                         scnr,
                     ]
-                    for pl_name in self.builder.cnt_com_names
+                    for sc_des in m.sc_des_idx
+                    for sc_cp in m.sc_copy_idx
                 )
-                + m.sc_fly_var[
-                    sc_des,
-                    sc_cp,
-                    self.builder.sc_var_dict["dry mass"],
-                    i,
-                    j,
-                    self.builder.flow_dict["out"],
-                    t,
-                    scnr,
-                ]
-                for sc_cp in m.sc_copy_idx
-                for sc_des in m.sc_des_idx
+                - self.prop_ratio
+                * self.builder.fin_ini_mass_frac[i][j][t_id]
+                * sum(
+                    sum(
+                        self.builder.int_com_costs[self.builder.int_com_dict[pl_name]]
+                        * m.int_com[
+                            sc_des,
+                            sc_cp,
+                            i,
+                            j,
+                            self.builder.int_com_dict[pl_name],
+                            self.builder.flow_dict["out"],
+                            t,
+                            scnr,
+                        ]
+                        for pl_name in self.builder.int_com_names
+                    )
+                    + sum(
+                        m.cnt_com[
+                            sc_des,
+                            sc_cp,
+                            i,
+                            j,
+                            self.builder.cnt_com_dict[pl_name],
+                            self.builder.flow_dict["out"],
+                            t,
+                            scnr,
+                        ]
+                        for pl_name in self.builder.cnt_com_names
+                    )
+                    + m.sc_fly_var[
+                        sc_des,
+                        sc_cp,
+                        self.builder.sc_var_dict["dry mass"],
+                        i,
+                        j,
+                        self.builder.flow_dict["out"],
+                        t,
+                        scnr,
+                    ]
+                    for sc_cp in m.sc_copy_idx
+                    for sc_des in m.sc_des_idx
+                )
             )
-        )
 
     def _set_isru_prop_generation_constraints(self, m, i, j, t, scnr, prop_name):
         """

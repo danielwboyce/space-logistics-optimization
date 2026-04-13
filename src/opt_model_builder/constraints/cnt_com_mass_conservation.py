@@ -53,9 +53,9 @@ class CntComConservation:
                     self._equalize_outflow_inflow(m, i, j, pc, t, scnr)
             elif pc == self.builder.cnt_com_dict["consumption"]:
                 self._set_consumable_constaraints(m, i, j, pc, t, scnr)
-            elif ((pc == self.builder.cnt_com_dict["payload_oxygen"]) or
-                  (pc == self.builder.cnt_com_dict["oxygen"])):
-                self._set_payload_oxygen_constraints(m, i, j, pc, t, scnr)
+            # elif ((pc == self.builder.cnt_com_dict["oxygen_storage"]) or
+            #       (pc == self.builder.cnt_com_dict["oxygen"])):
+            #     self._set_oxygen_storage_constraints(m, i, j, pc, t, scnr)
             else:
                 self._equalize_outflow_inflow(m, i, j, pc, t, scnr)
         return m
@@ -255,37 +255,37 @@ class CntComConservation:
             )
         return m
 
-    def _set_payload_oxygen_constraints(self, m, i, j, pc, t, scnr) -> block:
-        """Payload oxygen may be "consumed" to form regular oxygen and
-        vice-versa. (This is a modeling trick that lets us carry excess oxygen
-        as payload."""
-        if pc == self.builder.cnt_com_dict["payload_oxygen"]:
-            other_pc = self.builder.cnt_com_dict["oxygen"]
-        else:
-            other_pc = self.builder.cnt_com_dict["payload_oxygen"]
-        m.cnt_com_cnsv[i, j, pc, t, scnr] = constraint(
-            sum(
-                m.cnt_com[
-                    sc_des, sc_cp, i, j, pc, self.builder.flow_dict["in"], t, scnr
-                ]
-                +
-                m.cnt_com[
-                    sc_des, sc_cp, i, j, other_pc, self.builder.flow_dict["in"], t, scnr
-                ]
-                for sc_des in m.sc_des_idx
-                for sc_cp in m.sc_copy_idx
-            )
-            == sum(
-                m.cnt_com[
-                    sc_des, sc_cp, i, j, pc, self.builder.flow_dict["out"], t, scnr
-                ]
-                +
-                m.cnt_com[
-                    sc_des, sc_cp, i, j, other_pc, self.builder.flow_dict["out"], t, scnr
-                ]
-                for sc_des in m.sc_des_idx
-                for sc_cp in m.sc_copy_idx
-            )
-        )
-        return m
+    # def _set_oxygen_storage_constraints(self, m, i, j, pc, t, scnr) -> block:
+    #     """Payload oxygen may be "consumed" to form regular oxygen and
+    #     vice-versa. (This is a modeling trick that lets us carry excess oxygen
+    #     as payload."""
+    #     if pc == self.builder.cnt_com_dict["oxygen_storage"]:
+    #         other_pc = self.builder.cnt_com_dict["oxygen"]
+    #     else:
+    #         other_pc = self.builder.cnt_com_dict["oxygen_storage"]
+    #     m.cnt_com_cnsv[i, j, pc, t, scnr] = constraint(
+    #         sum(
+    #             m.cnt_com[
+    #                 sc_des, sc_cp, i, j, pc, self.builder.flow_dict["in"], t, scnr
+    #             ]
+    #             +
+    #             m.cnt_com[
+    #                 sc_des, sc_cp, i, j, other_pc, self.builder.flow_dict["in"], t, scnr
+    #             ]
+    #             for sc_des in m.sc_des_idx
+    #             for sc_cp in m.sc_copy_idx
+    #         )
+    #         == sum(
+    #             m.cnt_com[
+    #                 sc_des, sc_cp, i, j, pc, self.builder.flow_dict["out"], t, scnr
+    #             ]
+    #             +
+    #             m.cnt_com[
+    #                 sc_des, sc_cp, i, j, other_pc, self.builder.flow_dict["out"], t, scnr
+    #             ]
+    #             for sc_des in m.sc_des_idx
+    #             for sc_cp in m.sc_copy_idx
+    #         )
+    #     )
+    #     return m
 

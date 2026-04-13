@@ -325,7 +325,7 @@ class NetworkBuilder(InitMixin):
             self.cnt_com_demand[self.node_dict["LS"]][self.cnt_com_dict["oxygen"]][
                 mis_end_date_id
             ][scnr] = float("inf")
-            self.cnt_com_demand[self.node_dict["LS"]][self.cnt_com_dict["payload_oxygen"]][
+            self.cnt_com_demand[self.node_dict["LS"]][self.cnt_com_dict["oxygen_storage"]][
                 mis_end_date_id
             ][scnr] = float("inf")
 

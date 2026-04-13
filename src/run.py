@@ -30,15 +30,16 @@ from input_data_class import (
 
 
 def main():
+    n_mis = 2
     mission_parameters = MissionParameters(
-        n_mis=10,  # number of missions
-        n_sc_design=3,  # number of SC design
+        n_mis=n_mis,  # number of missions
+        n_sc_design=2,  # number of SC design
         n_sc_per_design=3,  # number of SC per design
         t_mis_tot=11,  # total single mission duration, days
         t_surf_mis=1,  # lunar surface mission duration, days
         n_crew=0,  # number of crew needed on lunar surface
-        sample_mass=np.zeros(10).tolist(), #[0, 0],  # sample collected from lunar surface, kg
-        habit_pl_mass=np.zeros(10).tolist(), #[0, 0],  # habitat and payload mass, kg
+        sample_mass=np.zeros(n_mis).tolist(), #[0, 0],  # sample collected from lunar surface, kg
+        habit_pl_mass=np.zeros(n_mis).tolist(), #[0, 0],  # habitat and payload mass, kg
         # consumption cost (food+water+oxygen), kg/(day*person)
         consumption_cost=8.655,
         # maintenance cost, fraction/flight (0.01 means 1% per flight)
@@ -91,7 +92,7 @@ def main():
             "sample",
             "oxygen",
             "hydrogen",
-            "payload_oxygen",
+            "oxygen_storage",
         ],
         # list of propellant commodity names
         prop_com_names=["oxygen", "hydrogen"],
@@ -134,22 +135,7 @@ def main():
     )
     sl_cls = SpaceLogistics(input_data)
     # sl_cls.optimizer.admm.run_alc_loop()
-    # sl_cls.optimizer.pwl.solve_w_pwl_approx(pwl_increment=2500)
-    fixed_sc_designs = np.array(
-        [
-            [
-                2167.593079653862,
-                14871.284878373288,
-                7131.5847792317145,
-            ],
-            [
-                500.0,
-                57325.31844683161,
-                14236.423242779982
-            ]
-        ]
-    )
-    sl_cls.optimizer.fixed_sc.solve_network_flow_MILP(fixed_sc_designs)
+    sl_cls.optimizer.pwl.solve_w_pwl_approx(pwl_increment=2500)
 
     # # Calculate some spacecraft params (for a spacecraft that does an
     # # out-and-back delivery of a payload)
@@ -173,6 +159,11 @@ def main():
 
     # fixed_sc_designs = np.array(
     #     [
+    #         # [
+    #         #     10.0e3,  # payload (max)
+    #         #     52.5e3,     # propellant (max)
+    #         #     21.1e3, # dry mass
+    #         # ],
     #         [
     #             2167.593079653862,
     #             14871.284878373288,

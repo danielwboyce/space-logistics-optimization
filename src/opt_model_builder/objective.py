@@ -82,14 +82,14 @@ class Objective:
             SumExpression: sum of commodities and sc mass launched to LEO
         """
         term = (
-            self.builder.cnt_com_costs[self.builder.cnt_com_dict["payload_oxygen"]]
+            self.builder.cnt_com_costs[self.builder.cnt_com_dict["oxygen_storage"]]
             * sum(
                 m.cnt_com[
                     sc_des,
                     sc_cp,
                     j,
                     self.builder.node_dict["LEO"],
-                    self.builder.cnt_com_dict["payload_oxygen"],
+                    self.builder.cnt_com_dict["oxygen_storage"],
                     self.builder.flow_dict["in"],
                     time_list[-1] - self.builder.delta_t[j][self.builder.node_dict["LEO"]][len(time_list) - 1],
                     scnr,
@@ -100,14 +100,14 @@ class Objective:
                 if self.builder.is_feasible_arc(self.builder.node_dict["LEO"], j)
                 if time_list[-1] - self.builder.delta_t[j][self.builder.node_dict["LEO"]][len(time_list) - 1] in m.time_idx
             )
-            - self.builder.cnt_com_costs[self.builder.cnt_com_dict["payload_oxygen"]]
+            - self.builder.cnt_com_costs[self.builder.cnt_com_dict["oxygen_storage"]]
             * sum(
                 m.cnt_com[
                     sc_des,
                     sc_cp,
                     self.builder.node_dict["Earth"],
                     self.builder.node_dict["LEO"],
-                    self.builder.cnt_com_dict["payload_oxygen"],
+                    self.builder.cnt_com_dict["oxygen_storage"],
                     self.builder.flow_dict["out"],
                     t,
                     scnr,
