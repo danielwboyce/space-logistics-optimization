@@ -31,28 +31,29 @@ from input_data_class import (
 
 def main():
     mission_parameters = MissionParameters(
-        n_mis=2,  # number of missions
-        n_sc_design=2,  # number of SC design
+        n_mis=10,  # number of missions
+        n_sc_design=3,  # number of SC design
         n_sc_per_design=3,  # number of SC per design
-        t_mis_tot=13,  # total single mission duration, days
-        t_surf_mis=3,  # lunar surface mission duration, days
-        n_crew=4,  # number of crew needed on lunar surface
-        sample_mass=[1000, 1100],  # sample collected from lunar surface, kg
-        habit_pl_mass=[2000, 3000],  # habitat and payload mass, kg
+        t_mis_tot=11,  # total single mission duration, days
+        t_surf_mis=1,  # lunar surface mission duration, days
+        n_crew=0,  # number of crew needed on lunar surface
+        sample_mass=np.zeros(10).tolist(), #[0, 0],  # sample collected from lunar surface, kg
+        habit_pl_mass=np.zeros(10).tolist(), #[0, 0],  # habitat and payload mass, kg
         # consumption cost (food+water+oxygen), kg/(day*person)
         consumption_cost=8.655,
         # maintenance cost, fraction/flight (0.01 means 1% per flight)
         maintenance_cost=0.01,
-        time_interval=365,  # time interval between missions, days
+        time_interval=11,  # time interval between missions, days
         use_increased_pl=False,  # true if increased demand is used
     )
 
     sc_parameters = SCParameters(
-        isp=420,  # specific impulse, s
+        isp=460,  # specific impulse, s
         oxi_fuel_ratio=5.5,  # oxidizer to fuel ratio
         prop_density=360,  # propellant density, kg/m^3
         misc_mass_fraction=0.05,  # misc mass factor
         aggressive_SC_design=False,  # true if aggressive sizng model is used
+        # var_lb=[500, 0, 4000],
     )
 
     isru_parameters = ISRUParameters(
@@ -90,6 +91,7 @@ def main():
             "sample",
             "oxygen",
             "hydrogen",
+            "payload_oxygen",
         ],
         # list of propellant commodity names
         prop_com_names=["oxygen", "hydrogen"],
@@ -110,6 +112,7 @@ def main():
         solver_verbose=True,
         max_time=3600 * 3,  # maximum time allowed for optimization in seconds
         max_time_wo_imprv=3600 * 3,
+        keep_files=True,
     )
 
     scenario_dist = ScenarioDistribution(
@@ -127,7 +130,7 @@ def main():
         comdty=comdty_details,
         node=node_details,
         runtime=runtime_settings,
-        scenario=scenario_dist,
+        scenario=None, #scenario_dist,
     )
     sl_cls = SpaceLogistics(input_data)
     # sl_cls.optimizer.admm.run_alc_loop()
@@ -147,6 +150,52 @@ def main():
         ]
     )
     sl_cls.optimizer.fixed_sc.solve_network_flow_MILP(fixed_sc_designs)
+
+    # # Calculate some spacecraft params (for a spacecraft that does an
+    # # out-and-back delivery of a payload)
+    # sc_payload = 20.0e3
+    # sc_dry_mass = 16.0e3
+    # total_dv1 = (sl_cls.network_def._get_delta_v_km_s("LS", "LLO")
+    #              + sl_cls.network_def._get_delta_v_km_s("LLO", "LEO"))
+    # total_dv2 = total_dv1
+    # z1 = np.exp(total_dv1 * 1.0e3 / (sc_parameters.isp * sc_parameters.g0))
+    # z2 = z1
+    # sc_prop2 = (z2 - 1) * sc_dry_mass
+    # sc_prop1 = (z1 - 1) * (sc_dry_mass + sc_prop2 + sc_payload)
+    # sc_prop = sc_prop1 + sc_prop2
+
+    # # # depot parameters
+    # # depot_payload = 100.0e3
+    # # depot_dry_mass = depot_payload * 0.20
+    # # total_dv_depot = sl_cls.network_def._get_delta_v_km_s("Earth", "LEO")
+    # # z_depot = np.exp(total_dv_depot * 1.0e3 / (sc_parameters.isp * sc_parameters.g0))
+    # # depot_prop = (z_depot - 1) * depot_dry_mass * 1.05
+
+    # fixed_sc_designs = np.array(
+    #     [
+    #         [
+    #             2167.593079653862,
+    #             14871.284878373288,
+    #             7131.5847792317145,
+    #         ],
+    #         [
+    #             500.0,
+    #             57325.31844683161,
+    #             14236.423242779982
+    #         ],
+    #         # [
+    #         #     depot_payload,
+    #         #     0.0,
+    #         #     depot_dry_mass
+    #         # ],
+    #         # [
+    #         #     sc_payload,  # payload (max)
+    #         #     sc_prop,     # propellant (max)
+    #         #     sc_dry_mass, # dry mass
+    #         # ],
+    #     ]
+    # )
+    # sl_cls.optimizer.fixed_sc.solve_network_flow_MILP(fixed_sc_designs)
 
 
 if __name__ == "__main__":

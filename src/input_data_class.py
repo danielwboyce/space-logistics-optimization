@@ -63,7 +63,6 @@ class MissionParameters:
                 self.n_sc_per_design,
                 self.t_mis_tot,
                 self.t_surf_mis,
-                self.n_crew,
                 self.consumption_cost,
                 self.maintenance_cost,
                 self.time_interval,
@@ -77,7 +76,6 @@ class MissionParameters:
             Number of SC per design: {}
             Total single mission duration: {}
             Lunar surface mission duration: {}
-            Number of crew: {}
             consumption cost: {}
             Maintenance cost: {}
             Mission time interval: {}
@@ -87,10 +85,22 @@ class MissionParameters:
             self.n_sc_per_design,
             self.t_mis_tot,
             self.t_surf_mis,
-            self.n_crew,
             self.consumption_cost,
             self.maintenance_cost,
             self.time_interval,
+        )
+        assert all(
+            value >= 0
+            for value in [
+                self.n_crew,
+            ]
+        ), """
+        Error:
+        This must be greater than or equal to zero.
+        Received values:
+            Number of crew: {}
+        """.format(
+            self.n_crew,
         )
 
         if isinstance(self.sample_mass, list):

@@ -83,7 +83,7 @@ class ADMMLoop(InitMixin):
                 self.n_sc_design, self.n_sc_vars
             )
             print("### Optimization Results ###")
-            print("IMLEO:\t", results["objectives"][0])
+            print("FMLEO:\t", results["objectives"][0])
             print("Design variables: ", results["design vars"])
             print("Run time: ", time.time() - t0)
             # WARNING: only works for single PWL increment
@@ -108,7 +108,7 @@ class ADMMLoop(InitMixin):
 
         Args:
         Returns (list):
-            IMLEO (float): optimal objective function (IMLEO) value
+            FMLEO (float): optimal objective function (FMLEO) value
             sc_vars (np.array): SC design variables
         """
         self.optimizer._model_builder.mode = "ALCsubproblem"
@@ -117,11 +117,11 @@ class ADMMLoop(InitMixin):
         self.optimizer._model_builder.penelty_weight = penalty_weight
         model = self.optimizer._model_builder.build_model()
         model = self.optimizer.solver.solve_model(model)
-        imleo = model.imleo.value
+        fmleo = model.fmleo.value
         sc_vars = self.optimizer.output.get_sc_vars(model)
 
         subp_res: SubproblemResult = {
-            "objective": imleo,
+            "objective": fmleo,
             "design var": np.ravel(sc_vars),
         }
         return subp_res
@@ -186,7 +186,7 @@ class ADMMLoop(InitMixin):
         initial_guess = self.optimizer._comp_design.sc_sizing.reeval_drymass(
             results["design vars"]
         )
-        imleo_initial = self.optimizer.fixed_sc.solve_network_flow_MILP(
+        fmleo_initial = self.optimizer.fixed_sc.solve_network_flow_MILP(
             fixed_sc_vars=initial_guess
         )
         t_initial_guess = time.time() - t0
@@ -196,8 +196,8 @@ class ADMMLoop(InitMixin):
         print("SC Variety:\t", self.n_sc_design)
         print("# of SC/Variety:", self.n_sc_per_design)
         print("total # of SC: \t", self.n_sc_design * self.n_sc_per_design)
-        print("IMLEO:\t\t", imleo_initial)
-        print("PWL IMLEO:\t", results["obj"])
+        print("FMLEO:\t\t", fmleo_initial)
+        print("PWL FMLEO:\t", results["obj"])
         for sc_id in range(self.n_sc_design):
             print("SC Type", sc_id + 1)
             print(

@@ -7,6 +7,7 @@ __pycache__/
 *.so
 
 data/opt_results/*.csv
+data/opt_results/.~lock*.csv#
 Old_Code_by_Hao/
 
 # Distribution / packaging
@@ -162,5 +163,5 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
 
-# VS Code
+# VS code
 .vscode/

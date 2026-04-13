@@ -22,9 +22,6 @@ class NetworkBuilder(InitMixin):
         """
         super().__init__(input_data)
 
-        self.real_arc_time: np.ndarray = np.zeros([self.n_nodes, self.n_nodes])
-        self._set_actual_arc_time()
-
         self.time_steps: list = []
         for mis in range(self.n_mis):
             self.time_steps.extend([mis * self.mis.time_interval])
@@ -326,14 +323,16 @@ class NetworkBuilder(InitMixin):
     def _set_inf_supply(self) -> None:
         """Set infinite supplies for certain commodities.
 
-        Some have unlimited supply at Earth node
-        in the begging of the mission.
-        Return sample also have unlimited supply at lunar surface node
-        in return missions.
+        Some have unlimited supply at Earth node in the beginning of the first
+        mission.
+        Return sample also has unlimited supply at lunar surface node in
+        return missions. For the purposes of the toy problem, hydrogen and
+        oxygen also have unlimited supply at the lunar surface node in all
+        return missions.
         """
         for pl_name, mis_start_date, scnr in product(
             self.comdty.com_names_w_unlim_earth_supply,
-            self.mis_start_dates,
+            [self.mis_start_dates[0]],
             range(self.n_scenarios),
         ):
             if pl_name in self.int_com_names:
@@ -351,6 +350,15 @@ class NetworkBuilder(InitMixin):
         ):
             mis_end_date_id = self.date_to_time_idx_dict[mis_end_date]
             self.cnt_com_demand[self.node_dict["LS"]][self.cnt_com_dict["sample"]][
+                mis_end_date_id
+            ][scnr] = float("inf")
+            self.cnt_com_demand[self.node_dict["LS"]][self.cnt_com_dict["hydrogen"]][
+                mis_end_date_id
+            ][scnr] = float("inf")
+            self.cnt_com_demand[self.node_dict["LS"]][self.cnt_com_dict["oxygen"]][
+                mis_end_date_id
+            ][scnr] = float("inf")
+            self.cnt_com_demand[self.node_dict["LS"]][self.cnt_com_dict["payload_oxygen"]][
                 mis_end_date_id
             ][scnr] = float("inf")
 
