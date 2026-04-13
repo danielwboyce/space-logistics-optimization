@@ -191,7 +191,7 @@ class PropellantConservation:
                     for sc_des in m.sc_des_idx
                     for sc_cp in m.sc_copy_idx
                 )
-                <= sum(
+                == sum(
                     m.cnt_com[
                         sc_des,
                         sc_cp,
