@@ -74,6 +74,8 @@ class InitMixin:
         """List of names where the depots are located."""
         self.n_depots : int = self.depot.get_n_depots()
         """Number of depots."""
+        self.depot_sc_des_idx : int = -1
+        """The index for the sc designation that corresponds to depots."""
         self.use_isru: bool = input_data.isru.use_isru
         """True if ISRU is used"""
         self.n_isru_design: int = input_data.isru.n_isru_design

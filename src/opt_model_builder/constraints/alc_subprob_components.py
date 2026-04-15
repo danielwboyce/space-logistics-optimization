@@ -41,13 +41,13 @@ class ADMMSubprobComponents:
         - global_shared_vars: shared variables from the master problem
         """
         lag_mult = np.array_split(
-            self.builder.lagrange_mult_est, self.builder.n_sc_design
+            self.builder.lagrange_mult_est, self.builder.n_sc_design + (1 if self.builder.use_depots else 0)
         )
         penalty_weight = np.array_split(
-            self.builder.penelty_weight, self.builder.n_sc_design
+            self.builder.penelty_weight, self.builder.n_sc_design + (1 if self.builder.use_depots else 0)
         )
         global_shared_vars = np.array_split(
-            self.builder.global_shared_vars, self.builder.n_sc_design
+            self.builder.global_shared_vars, self.builder.n_sc_design + (1 if self.builder.use_depots else 0)
         )
         m.lag_mult = parameter_dict()
         m.penalty_weight = parameter_dict()

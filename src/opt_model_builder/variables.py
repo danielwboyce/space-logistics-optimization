@@ -126,21 +126,38 @@ class Variables:
         m.prop_cap = variable_dict()
         m.dry_mass = variable_dict()
         for sc_des in m.sc_des_idx:
-            m.pl_cap[sc_des] = variable(
-                domain=Reals,
-                lb=self.builder.sc.var_lb[self.builder.sc_var_dict["payload"]],
-                ub=self.builder.sc.var_ub[self.builder.sc_var_dict["payload"]],
-            )
-            m.prop_cap[sc_des] = variable(
-                domain=Reals,
-                lb=self.builder.sc.var_lb[self.builder.sc_var_dict["propellant"]],
-                ub=self.builder.sc.var_ub[self.builder.sc_var_dict["propellant"]],
-            )
-            m.dry_mass[sc_des] = variable(
-                domain=Reals,
-                lb=self.builder.sc.var_lb[self.builder.sc_var_dict["dry mass"]],
-                ub=self.builder.sc.var_ub[self.builder.sc_var_dict["dry mass"]],
-            )
+            if sc_des == self.builder.depot_sc_des_idx:
+                m.pl_cap[sc_des] = variable(
+                    domain=Reals,
+                    lb=0.0,
+                    ub=float("inf"),
+                )
+                m.prop_cap[sc_des] = variable(
+                    domain=Reals,
+                    lb=0.0,
+                    ub=0.0,
+                )
+                m.dry_mass[sc_des] = variable(
+                    domain=Reals,
+                    lb=0.0,
+                    ub=0.0,
+                )
+            else:
+                m.pl_cap[sc_des] = variable(
+                    domain=Reals,
+                    lb=self.builder.sc.var_lb[self.builder.sc_var_dict["payload"]],
+                    ub=self.builder.sc.var_ub[self.builder.sc_var_dict["payload"]],
+                )
+                m.prop_cap[sc_des] = variable(
+                    domain=Reals,
+                    lb=self.builder.sc.var_lb[self.builder.sc_var_dict["propellant"]],
+                    ub=self.builder.sc.var_ub[self.builder.sc_var_dict["propellant"]],
+                )
+                m.dry_mass[sc_des] = variable(
+                    domain=Reals,
+                    lb=self.builder.sc.var_lb[self.builder.sc_var_dict["dry mass"]],
+                    ub=self.builder.sc.var_ub[self.builder.sc_var_dict["dry mass"]],
+                )
         self.builder.idx_name_dict["pl_cap"] = ["sc_des"]
         self.builder.idx_name_dict["prop_cap"] = ["sc_des"]
         self.builder.idx_name_dict["dry_mass"] = ["sc_des"]

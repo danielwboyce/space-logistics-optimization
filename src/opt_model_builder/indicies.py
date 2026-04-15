@@ -33,7 +33,10 @@ class Indices:
             If deterministic, only one scenario is used.
         """
         m.sc_des_idx = range(self.builder.n_sc_design)
-        m.sc_copy_idx = range(self.builder.n_sc_per_design)
+        if self.builder.use_depots:
+            m.sc_des_idx = list(m.sc_des_idx)
+            m.sc_des_idx.append(self.builder.depot_sc_des_idx)
+        m.sc_copy_idx = range(max(self.builder.n_sc_per_design, self.builder.n_depots))
         m.sc_var_idx = range(self.builder.n_sc_vars)
         m.dep_node_idx = range(self.builder.n_nodes)
         m.arr_node_idx = range(self.builder.n_nodes)
