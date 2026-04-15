@@ -185,7 +185,7 @@ class NetworkBuilder(InitMixin):
                 False otherwise."""
         if self.use_depots and self.is_holdover_arc(dep_node_id, arr_node_id):
             dep_node_name = self.node_dict.inv[dep_node_id]
-            return dep_node_name in self.depot_node
+            return dep_node_name in self.depot_nodes
         else:
             return False
 
