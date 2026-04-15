@@ -175,6 +175,20 @@ class NetworkBuilder(InitMixin):
         """
         return dep_node_id == arr_node_id
 
+    def is_depot_arc(self, dep_node_id: int, arr_node_id: int) -> bool:
+        """check if arc is a depot arc
+        Args:
+            dep_node_id: departure node id
+            arr_node_id: arrival node id
+        Returns:
+            bool: True if depot is enabled and arc is a depot arc. Returns
+                False otherwise."""
+        if self.use_depots and self.is_holdover_arc(dep_node_id, arr_node_id):
+            dep_node_name = self.node_dict.inv[dep_node_id]
+            return dep_node_name in self.depot_node
+        else:
+            return False
+
     def is_transportation_arc(self, dep_node_id: int, arr_node_id: int) -> bool:
         """check if arc is a transportation arc
         Args:
@@ -203,7 +217,8 @@ class NetworkBuilder(InitMixin):
             return abs(dep_node_id - arr_node_id) == 1
         if self.is_holdover_arc(dep_node_id, arr_node_id):
             node_name = self.node_dict.inverse[dep_node_id]
-            return node_name in self.node.holdover_nodes
+            return ((node_name in self.node.holdover_nodes) or
+                    (node_name in self.depot_nodes))
         return False
 
     def is_outbound_arc(self, dep_node_id: int, arr_node_id: int) -> bool:

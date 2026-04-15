@@ -20,6 +20,7 @@ from input_data_class import (
     InputData,
     MissionParameters,
     SCParameters,
+    DepotParameters,
     ISRUParameters,
     ALCParameters,
     CommodityDetails,
@@ -55,6 +56,11 @@ def main():
         misc_mass_fraction=0.05,  # misc mass factor
         aggressive_SC_design=False,  # true if aggressive sizng model is used
         # var_lb=[500, 0, 4000],
+    )
+
+    depot_parameters = DepotParameters(
+        # depot_nodes=None,
+        depot_nodes=["LEO", "LS"],
     )
 
     isru_parameters = ISRUParameters(
@@ -126,6 +132,7 @@ def main():
     input_data = InputData(
         mission=mission_parameters,
         sc=sc_parameters,
+        depot=depot_parameters,
         isru=isru_parameters,
         alc=alc_parameters,
         comdty=comdty_details,
