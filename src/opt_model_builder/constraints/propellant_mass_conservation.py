@@ -102,6 +102,7 @@ class PropellantConservation:
                     )
                     for sc_des in m.sc_des_idx
                     for sc_cp in m.sc_copy_idx
+                    if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
                 )
                 <= sum(
                     (
@@ -128,6 +129,7 @@ class PropellantConservation:
                     )
                     for sc_des in m.sc_des_idx
                     for sc_cp in m.sc_copy_idx
+                    if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
                 )
                 - self.prop_ratio
                 * self.builder.fin_ini_mass_frac[i][j][t_id]
@@ -172,6 +174,7 @@ class PropellantConservation:
                     ]
                     for sc_cp in m.sc_copy_idx
                     for sc_des in m.sc_des_idx
+                    if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
                 )
             )
 
@@ -190,6 +193,7 @@ class PropellantConservation:
                     ]
                     for sc_des in m.sc_des_idx
                     for sc_cp in m.sc_copy_idx
+                    if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
                 )
                 <= sum(
                     m.cnt_com[
@@ -204,6 +208,7 @@ class PropellantConservation:
                     ]
                     for sc_des in m.sc_des_idx
                     for sc_cp in m.sc_copy_idx
+                    if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
                 )
                 - self.prop_ratio
                 * self.builder.fin_ini_mass_frac[i][j][t_id]
@@ -247,6 +252,7 @@ class PropellantConservation:
                     ]
                     for sc_cp in m.sc_copy_idx
                     for sc_des in m.sc_des_idx
+                    if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
                 )
             )
 
@@ -272,6 +278,7 @@ class PropellantConservation:
                 ]
                 for sc_des in m.sc_des_idx
                 for sc_cp in m.sc_copy_idx
+                if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
             )
             <= sum(
                 m.cnt_com[
@@ -286,6 +293,7 @@ class PropellantConservation:
                 ]
                 for sc_des in m.sc_des_idx
                 for sc_cp in m.sc_copy_idx
+                if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
             )
             + (self.builder.isru_work_time[i][t_id] / 365)
             * self.isru_ratio

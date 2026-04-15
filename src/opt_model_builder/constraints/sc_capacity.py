@@ -34,7 +34,7 @@ class SCCapacity:
             m.time_idx,
             m.scnr_idx,
         ):
-            if not self.builder.is_feasible_arc(i, j):
+            if not self.builder.is_feasible_arc(i, j, sc_des, sc_cp):
                 continue
             if (
                 self.builder.node_dict.inverse[i] == "Earth"

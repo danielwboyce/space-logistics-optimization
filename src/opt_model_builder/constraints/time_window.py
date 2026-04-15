@@ -40,7 +40,7 @@ class TimeWindow:
             m.time_idx,
             m.scnr_idx,
         ):
-            if not self.builder.is_feasible_arc(i, j):
+            if not self.builder.is_feasible_arc(i, j, sc_des, sc_cp):
                 continue
             if t in self.builder._network_def.allowed_time_window[i][j]:
                 continue

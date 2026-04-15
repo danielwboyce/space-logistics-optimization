@@ -53,7 +53,7 @@ class MassBalance:
                     for sc_des in m.sc_des_idx
                     for sc_cp in m.sc_copy_idx
                     for j in m.arr_node_idx
-                    if self.builder.is_feasible_arc(i, j)
+                    if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
                 )
                 - sum(
                     m.int_com[
@@ -69,7 +69,7 @@ class MassBalance:
                     for sc_des in m.sc_des_idx
                     for sc_cp in m.sc_copy_idx
                     for j in m.arr_node_idx
-                    if self.builder.is_feasible_arc(i, j)
+                    if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
                     if t - self.builder.delta_t[i][j][t_id] in m.time_idx
                 )
                 <= self.builder._network_def.int_com_demand[i][int_com_id][t_id][scnr]
@@ -100,7 +100,7 @@ class MassBalance:
                     for sc_des in m.sc_des_idx
                     for sc_cp in m.sc_copy_idx
                     for j in m.arr_node_idx
-                    if self.builder.is_feasible_arc(i, j)
+                    if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
                 )
                 - sum(
                     m.cnt_com[
@@ -116,7 +116,7 @@ class MassBalance:
                     for sc_des in m.sc_des_idx
                     for sc_cp in m.sc_copy_idx
                     for j in m.arr_node_idx
-                    if self.builder.is_feasible_arc(i, j)
+                    if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
                     if t - self.builder.delta_t[i][j][t_id] in m.time_idx
                 )
                 <= self.builder._network_def.cnt_com_demand[i][cnt_com_id][t_id][scnr]
@@ -145,7 +145,7 @@ class MassBalance:
                         sc_des, sc_cp, i, j, self.builder.flow_dict["out"], t, scnr
                     ]
                     for j in m.arr_node_idx
-                    if self.builder.is_feasible_arc(i, j)
+                    if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
                 )
                 - sum(
                     m.sc_fly_ind[
@@ -158,7 +158,7 @@ class MassBalance:
                         scnr,
                     ]
                     for j in m.arr_node_idx
-                    if self.builder.is_feasible_arc(i, j)
+                    if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
                     if t - self.builder.delta_t[i][j][t_id] in m.time_idx
                 )
                 <= (1 if i == self.builder.node_dict["Earth"] else 0)

@@ -45,7 +45,7 @@ class SCBigM:
             m.time_idx,
             m.scnr_idx,
         ):
-            if not self.builder.is_feasible_arc(i, j):
+            if not self.builder.is_feasible_arc(i, j, sc_des, sc_cp):
                 continue
 
             m.sc_bigM_const_1[sc_des, sc_cp, sc_var, i, j, io, t, scnr] = constraint(

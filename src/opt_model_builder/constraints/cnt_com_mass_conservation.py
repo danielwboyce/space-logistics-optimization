@@ -72,6 +72,7 @@ class CntComConservation:
                 ]
                 for sc_des in m.sc_des_idx
                 for sc_cp in m.sc_copy_idx
+                if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
             )
             == sum(
                 m.cnt_com[
@@ -79,6 +80,7 @@ class CntComConservation:
                 ]
                 for sc_des in m.sc_des_idx
                 for sc_cp in m.sc_copy_idx
+                if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
             )
             - self.builder.mis.consumption_cost
             * self.builder._network_def.real_arc_time[i][j]
@@ -95,6 +97,7 @@ class CntComConservation:
                 ]
                 for sc_des in m.sc_des_idx
                 for sc_cp in m.sc_copy_idx
+                if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
             )
         )
         return m
@@ -111,6 +114,7 @@ class CntComConservation:
                 ]
                 for sc_des in m.sc_des_idx
                 for sc_cp in m.sc_copy_idx
+                if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
             )
             == sum(
                 m.cnt_com[
@@ -118,6 +122,7 @@ class CntComConservation:
                 ]
                 for sc_des in m.sc_des_idx
                 for sc_cp in m.sc_copy_idx
+                if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
             )
             - self.builder.mis.maintenance_cost
             * sum(
@@ -133,6 +138,7 @@ class CntComConservation:
                 ]
                 for sc_des in m.sc_des_idx
                 for sc_cp in m.sc_copy_idx
+                if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
             )
         )
         return m
@@ -150,6 +156,7 @@ class CntComConservation:
                 ]
                 for sc_des in m.sc_des_idx
                 for sc_cp in m.sc_copy_idx
+                if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
             )
             == sum(
                 m.cnt_com[
@@ -157,6 +164,7 @@ class CntComConservation:
                 ]
                 for sc_des in m.sc_des_idx
                 for sc_cp in m.sc_copy_idx
+                if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
             )
             - (
                 self.builder.isru.maintenance_cost
@@ -176,6 +184,7 @@ class CntComConservation:
                 ]
                 for sc_des in m.sc_des_idx
                 for sc_cp in m.sc_copy_idx
+                if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
             )
         )
         return m
@@ -189,6 +198,7 @@ class CntComConservation:
                 ]
                 for sc_des in m.sc_des_idx
                 for sc_cp in m.sc_copy_idx
+                if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
             )
             == sum(
                 m.cnt_com[
@@ -196,6 +206,7 @@ class CntComConservation:
                 ]
                 for sc_des in m.sc_des_idx
                 for sc_cp in m.sc_copy_idx
+                if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
             )
         )
         return m
@@ -213,6 +224,7 @@ class CntComConservation:
                 ]
                 for sc_des in m.sc_des_idx
                 for sc_cp in m.sc_copy_idx
+                if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
             )
             == sum(
                 m.cnt_com[
@@ -220,6 +232,7 @@ class CntComConservation:
                 ]
                 for sc_des in m.sc_des_idx
                 for sc_cp in m.sc_copy_idx
+                if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
             )
             * (
                 1
@@ -251,6 +264,7 @@ class CntComConservation:
                     ]
                     for sc_des in m.sc_des_idx
                     for sc_cp in m.sc_copy_idx
+                    if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
                 )
             )
         return m
@@ -274,6 +288,7 @@ class CntComConservation:
     #             ]
     #             for sc_des in m.sc_des_idx
     #             for sc_cp in m.sc_copy_idx
+    #             if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
     #         )
     #         == sum(
     #             m.cnt_com[
@@ -285,6 +300,7 @@ class CntComConservation:
     #             ]
     #             for sc_des in m.sc_des_idx
     #             for sc_cp in m.sc_copy_idx
+    #             if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
     #         )
     #     )
     #     return m

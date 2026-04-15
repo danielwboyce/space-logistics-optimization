@@ -199,7 +199,13 @@ class NetworkBuilder(InitMixin):
         """
         return dep_node_id != arr_node_id
 
-    def is_feasible_arc(self, dep_node_id: int, arr_node_id: int) -> bool:
+    def is_feasible_arc(
+        self,
+        dep_node_id: int,
+        arr_node_id: int,
+        sc_des: int | None = None,
+        sc_cp: int | None = None
+    ) -> bool:
         """check if arc is feasible
 
         if arc is a transportation arc, it should be between adjacent nodes
@@ -208,9 +214,31 @@ class NetworkBuilder(InitMixin):
         Args:
             dep_node_id: departure node id
             arr_node_id: arrival node id
+            sc_des (optional): Spacecraft design index
+            sc_cp (optional): Spacecraft design copy.
         Returns:
             bool: True if arc is feasible, False otherwise
         """
+        if ((sc_des is not None) or (sc_cp is not None)):
+            assert ((sc_des is not None) and (sc_cp is not None)), """
+            Error:
+            If sc_des or sc_cp is not None, then both must not be none.
+            Received values:
+                sc_des: {}
+                sc_cp: {}""".format(
+                sc_des,
+                sc_cp
+            )
+
+            if (sc_des == self.depot_sc_des_idx):
+                if sc_cp >= self.n_depots:
+                    return False
+                else:
+                    return self.is_depot_arc(dep_node_id, arr_node_id)
+            else:
+                if sc_cp >= self.n_sc_design:
+                    return False
+
         if not self.node.is_path_graph:
             NotImplementedError("Feasibility not implemented for non-path graphs")
         if self.is_transportation_arc(dep_node_id, arr_node_id):

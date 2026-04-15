@@ -48,6 +48,7 @@ class IntComConservation:
                         ]
                         for sc_des in m.sc_des_idx
                         for sc_cp in m.sc_copy_idx
+                        if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
                     )
                     == sum(
                         m.int_com[
@@ -62,6 +63,7 @@ class IntComConservation:
                         ]
                         for sc_des in m.sc_des_idx
                         for sc_cp in m.sc_copy_idx
+                        if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
                     )
                 )
             )
@@ -78,7 +80,7 @@ class IntComConservation:
             m.time_idx,
             m.scnr_idx,
         ):
-            if not self.builder.is_feasible_arc(i, j):
+            if not self.builder.is_feasible_arc(i, j, sc_des, sc_cp):
                 continue
             m.sc_cnsv[sc_des, sc_cp, i, j, t, scnr] = constraint(
                 m.sc_fly_ind[sc_des, sc_cp, i, j, self.builder.flow_dict["in"], t, scnr]

@@ -60,7 +60,7 @@ class Variables:
             m.time_idx,
             m.scnr_idx,
         ):
-            if not self.builder.is_feasible_arc(i, j):
+            if not self.builder.is_feasible_arc(i, j, sc_des, sc_cp):
                 continue
             for pl_i in m.int_com_idx:
                 m.int_com[sc_des, sc_cp, i, j, pl_i, io, t, scnr] = variable(
