@@ -233,8 +233,10 @@ class NetworkBuilder(InitMixin):
             if (sc_des == self.depot_sc_des_idx):
                 if sc_cp >= self.n_depots:
                     return False
-                else:
-                    return self.is_depot_arc(dep_node_id, arr_node_id)
+                if not self.is_depot_arc(dep_node_id, arr_node_id):
+                    return False
+                if self.depot_dict.inv[sc_cp] != self.node_dict.inv[dep_node_id]:
+                    return False
             else:
                 if sc_cp >= self.n_sc_per_design:
                     return False
