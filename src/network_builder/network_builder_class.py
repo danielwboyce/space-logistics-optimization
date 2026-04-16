@@ -214,12 +214,12 @@ class NetworkBuilder(InitMixin):
         Args:
             dep_node_id: departure node id
             arr_node_id: arrival node id
-            sc_des (optional): Spacecraft design index
+            sc_des (optional): Spacecraft design index.
             sc_cp (optional): Spacecraft design copy.
         Returns:
             bool: True if arc is feasible, False otherwise
         """
-        if ((sc_des is not None) or (sc_cp is not None)):
+        if self.use_depots and ((sc_des is not None) or (sc_cp is not None)):
             assert ((sc_des is not None) and (sc_cp is not None)), """
             Error:
             If sc_des or sc_cp is not None, then both must not be none.
@@ -236,7 +236,7 @@ class NetworkBuilder(InitMixin):
                 else:
                     return self.is_depot_arc(dep_node_id, arr_node_id)
             else:
-                if sc_cp >= self.n_sc_design:
+                if sc_cp >= self.n_sc_per_design:
                     return False
 
         if not self.node.is_path_graph:
@@ -245,8 +245,7 @@ class NetworkBuilder(InitMixin):
             return abs(dep_node_id - arr_node_id) == 1
         if self.is_holdover_arc(dep_node_id, arr_node_id):
             node_name = self.node_dict.inverse[dep_node_id]
-            return ((node_name in self.node.holdover_nodes) or
-                    (node_name in self.depot_nodes))
+            return node_name in self.node.holdover_nodes
         return False
 
     def is_outbound_arc(self, dep_node_id: int, arr_node_id: int) -> bool:
