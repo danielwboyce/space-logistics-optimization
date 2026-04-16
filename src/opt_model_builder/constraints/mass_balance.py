@@ -123,6 +123,34 @@ class MassBalance:
             )
         return m
 
+    def _get_sc_balance_constraint_rhs(
+            self, i: int, sc_des: int, sc_cp: int, t: int) -> int:
+        """
+        Returns the right-hand side of the spacecraft balance constraint.
+
+        Generally, this will always be zero unless:
+        - i is the Earth node (for any time t).
+        - The spacecraft is a depot at its depot node, but only at t=0.
+
+        Args:
+            i: Node id of the departure node of interest.
+            sc_des: Spacecraft design index.
+            sc_cp: Spacecraft design copy.
+            t: Time.
+        Returns:
+            int: The right-hand side of the spacecraft balance constraint.
+        """
+        node_name = self.builder.node_dict.inv[i]
+        if node_name == "Earth":
+            return 1
+        if ((sc_des == self.builder.depot_sc_des_idx) and
+            (sc_cp < self.builder.n_depots) and
+            (node_name == self.builder.depot_dict.inv[sc_cp]) and
+            (t == 0)):
+            return 1
+        return 0
+
+
     def _set_sc_balance_constraints(self, m: block) -> block:
         """
         Enforce mass balance for each spacecraft and each copy.
@@ -138,6 +166,9 @@ class MassBalance:
             m.time_idx,
             m.scnr_idx,
         ):
+            if not self.builder._network_def.get_any_valid_arc_for_sc_at_node(
+                i,sc_des, sc_cp):
+                continue
             t_id = self.builder._network_def.date_to_time_idx_dict[t]
             m.sc_balance_const[sc_des, sc_cp, i, t, scnr] = constraint(
                 sum(
@@ -161,6 +192,6 @@ class MassBalance:
                     if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
                     if t - self.builder.delta_t[i][j][t_id] in m.time_idx
                 )
-                <= (1 if i == self.builder.node_dict["Earth"] else 0)
+                <= self._get_sc_balance_constraint_rhs(i, sc_des, sc_cp, t)
             )
         return m

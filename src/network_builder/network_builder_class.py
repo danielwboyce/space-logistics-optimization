@@ -501,3 +501,29 @@ class NetworkBuilder(InitMixin):
         for date in self.time_steps:
             date_to_time_idx_dict[date] = self.time_steps.index(date)
         self.date_to_time_idx_dict = bidict(date_to_time_idx_dict)
+
+    def get_any_valid_arc_for_sc_at_node(
+            self,
+            node_id: int,
+            sc_des: int,
+            sc_cp: int
+    ) -> bool:
+        """
+        Returns True if any arcs departing from the given node exist for
+        the given spacecraft.
+        
+        Args:
+            node_id: Node from which the spacecraft will be departing.
+            sc_des: Spacecraft design index.
+            sc_cp: Spacecraft design copy.
+
+        Returns:
+            any_valid_arc_for_sc_at_node: True if any arcs departing from the
+                node are valid, False otherwise.
+        """
+
+        for arr_node_name in self.node.node_names:
+            arr_node_id = self.node_dict[arr_node_name]
+            if self.is_feasible_arc(node_id, arr_node_id, sc_des, sc_cp):
+                return True
+        return False

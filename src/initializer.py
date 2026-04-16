@@ -76,6 +76,8 @@ class InitMixin:
         """Number of depots."""
         self.depot_sc_des_idx : int = -1
         """The index for the sc designation that corresponds to depots."""
+        self.depot_dict : bidict[str, int] = input_data.depot_dict
+        """Bidirectional dictionary corresponding to depot names and indices."""
         self.use_isru: bool = input_data.isru.use_isru
         """True if ISRU is used"""
         self.n_isru_design: int = input_data.isru.n_isru_design

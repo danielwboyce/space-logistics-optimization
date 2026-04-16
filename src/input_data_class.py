@@ -657,6 +657,7 @@ class InputData:
         com_dict: dict[str, int] = {}
         int_com_dict: dict[str, int] = {}
         cnt_com_dict: dict[str, int] = {}
+        depot_dict: dict[str, int] = {}
 
         for com_id in range(self.comdty.n_int_com):
             int_com_name = self.comdty.int_com_names[com_id]
@@ -673,6 +674,10 @@ class InputData:
             node_name = self.node.node_names[node_id]
             node_dict[node_name] = node_id
 
+        for depot_id in range(self.depot.get_n_depots()):
+            depot_name = self.depot.depot_nodes[depot_id]
+            depot_dict[depot_name] = depot_id
+
         flow_dict: dict[str, int] = {"out": 0, "in": 1}
 
         sc_var_dict: dict[str, int] = {}
@@ -685,5 +690,6 @@ class InputData:
         self.int_com_dict = bidict(int_com_dict)
         self.cnt_com_dict = bidict(cnt_com_dict)
         self.node_dict = bidict(node_dict)
+        self.depot_dict = bidict(depot_dict)
         self.flow_dict = bidict(flow_dict)
         self.sc_var_dict = bidict(sc_var_dict)
