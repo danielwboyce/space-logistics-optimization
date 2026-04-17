@@ -35,6 +35,8 @@ class PiecewiseLinearConstraints:
         m.pwl_drymass = block_dict()
         sc_pwl_bp: dict = self._generate_sc_pwl_breakpoints(pwl_increment)
         for sc_des in m.sc_des_idx:
+            if sc_des == self.builder.depot_sc_des_idx:
+                continue
             m.pwl_drymass[sc_des] = piecewise_nd(
                 tri=sc_pwl_bp["triangulation"],
                 values=sc_pwl_bp["function values"],

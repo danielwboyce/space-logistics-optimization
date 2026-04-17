@@ -39,6 +39,7 @@ class SCCapacity:
             if (
                 self.builder.node_dict.inverse[i] == "Earth"
                 and self.builder.node_dict.inverse[j] == "LEO"
+                and not self.builder.use_depots
             ):
                 continue
             m = self._set_payload_cap_constraints(m, sc_des, sc_cp, i, j, t, scnr)

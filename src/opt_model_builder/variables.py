@@ -135,12 +135,12 @@ class Variables:
                 m.prop_cap[sc_des] = variable(
                     domain=Reals,
                     lb=0.0,
-                    ub=0.0,
+                    ub=1.0,
                 )
                 m.dry_mass[sc_des] = variable(
                     domain=Reals,
                     lb=0.0,
-                    ub=0.0,
+                    ub=1.0,
                 )
             else:
                 m.pl_cap[sc_des] = variable(
