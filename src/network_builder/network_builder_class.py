@@ -341,37 +341,37 @@ class NetworkBuilder(InitMixin):
         oxygen also have unlimited supply at the lunar surface node in all
         return missions.
         """
-        for pl_name, mis_start_date, scnr in product(
-            self.comdty.com_names_w_unlim_earth_supply,
-            [self.mis_start_dates[0]],
-            range(self.n_scenarios),
-        ):
-            if pl_name in self.int_com_names:
-                self.int_com_demand[self.node_dict["Earth"]][
-                    self.int_com_dict[pl_name]
-                ][self.date_to_time_idx_dict[mis_start_date]][scnr] = float("inf")
-            elif pl_name in self.cnt_com_names:
-                self.cnt_com_demand[self.node_dict["Earth"]][
-                    self.cnt_com_dict[pl_name]
-                ][self.date_to_time_idx_dict[mis_start_date]][scnr] = float("inf")
+        for comdty_name in self.comdty.infinite_supply_dict.keys():
+            for comdty_data in self.comdty.infinite_supply_dict[comdty_name]:
+                node_name = comdty_data["node"]
+                node_id = self.node_dict[node_name]
+                mission = comdty_data["mission"]
+                io = comdty_data["io"]
+                
+                dates = []
+                if io == "all" or io == "start":
+                    if mission == "all":
+                        dates.extend(self.mis_start_dates)
+                    else: # if not all, mission will always be a valid integer
+                        dates.extend([self.mis_start_dates[int(mission)]])
+                if io == "all" or io == "end":
+                    if mission == "all":
+                        dates.extend(self.mis_end_dates)
+                    else: # if not all, mission will always be a valid integer
+                        dates.extend([self.mis_end_dates[int(mission)]])
 
-        for mis_end_date, scnr in product(
-            self.mis_end_dates,
-            range(self.n_scenarios),
-        ):
-            mis_end_date_id = self.date_to_time_idx_dict[mis_end_date]
-            self.cnt_com_demand[self.node_dict["LS"]][self.cnt_com_dict["sample"]][
-                mis_end_date_id
-            ][scnr] = float("inf")
-            self.cnt_com_demand[self.node_dict["LS"]][self.cnt_com_dict["hydrogen"]][
-                mis_end_date_id
-            ][scnr] = float("inf")
-            self.cnt_com_demand[self.node_dict["LS"]][self.cnt_com_dict["oxygen"]][
-                mis_end_date_id
-            ][scnr] = float("inf")
-            self.cnt_com_demand[self.node_dict["LS"]][self.cnt_com_dict["oxygen_storage"]][
-                mis_end_date_id
-            ][scnr] = float("inf")
+                for date, scnr in product(
+                    dates,
+                    range(self.n_scenarios)
+                ):
+                    if comdty_name in self.int_com_names:
+                        self.int_com_demand[node_id][self.int_com_dict[comdty_name]][
+                            self.date_to_time_idx_dict[date]
+                        ][scnr] = float("inf")
+                    elif comdty_name in self.cnt_com_names:
+                        self.cnt_com_demand[node_id][self.cnt_com_dict[comdty_name]][
+                            self.date_to_time_idx_dict[date]
+                        ][scnr] = float("inf")
 
     def _set_stochastic_demand(self) -> None:
         """Overwrite deterministic demand array for stochastic case."""
@@ -485,13 +485,15 @@ class NetworkBuilder(InitMixin):
 
         ISRU work time is time between the previous and current time step.
         """
-        holdover_win_on_LS: list = self.allowed_time_window[self.node_dict["LS"]][
-            self.node_dict["LS"]
-        ]
+        node_id = self.node_dict["LS"]
+        holdover_win_on_LS: list = self.allowed_time_window[node_id][node_id]
+        LS_holdover_time = self._get_holdover_time("LS")
+
         for date_id in range(len(holdover_win_on_LS) - 1):
-            self.isru_work_time[self.node_dict["LS"]][date_id] = (
-                holdover_win_on_LS[date_id + 1] - holdover_win_on_LS[date_id]
-            )
+            if (holdover_win_on_LS[date_id] % self.mis.time_interval) % 2 == 0:
+                self.isru_work_time[node_id][date_id] = LS_holdover_time
+            else:
+                self.isru_work_time[node_id][date_id] = self.mis.time_interval - LS_holdover_time
 
     def _define_date_to_time_idx_dict(self) -> None:
         """Defines dict to convert date to time index and vice versa.

@@ -66,7 +66,7 @@ class NonAnticipativity:
 
         if self.builder.use_isru:
             m.isru_mass_nonant = constraint_dict()
-            m.isru_O2rate_nonant = constraint_dict()
+            m.isru_rate_nonant = constraint_dict()
             for t, scnr in product(
                 self.builder.first_mis_time_steps,
                 range(self.builder.n_scenarios - 1),
@@ -74,8 +74,8 @@ class NonAnticipativity:
                 m.isru_mass_nonant[t, scnr] = constraint(
                     m.isru_mass[t, scnr] == m.isru_mass[t, scnr + 1]
                 )
-                m.isru_O2rate_nonant[t, scnr] = constraint(
-                    m.isru_O2rate[t, scnr] == m.isru_O2rate[t, scnr + 1]
+                m.isru_rate_nonant[t, scnr] = constraint(
+                    m.isru_rate[t, scnr] == m.isru_rate[t, scnr + 1]
                 )
 
         return m

@@ -4,7 +4,9 @@ from src.space_logistics import SpaceLogistics
 from src.input_data_class import (
     InputData,
     MissionParameters,
+    ObjectiveParameters,
     SCParameters,
+    DepotParameters,
     ISRUParameters,
     ALCParameters,
     CommodityDetails,
@@ -19,14 +21,18 @@ mission_parameters = MissionParameters(
     t_mis_tot=13,  # total single mission duration, days
     t_surf_mis=3,  # lunar surface mission duration, days
     n_crew=4,  # number of crew needed on lunar surface
-    sample_mass=1000,  # sample collected from lunar surface, kg
-    habit_pl_mass=2000,  # habitat and payload mass, kg
+    sample_mass=[1000, 1000],  # sample collected from lunar surface, kg
+    habit_pl_mass=[2000, 2000],  # habitat and payload mass, kg
     # consumption cost (food+water+oxygen), kg/(day*person)
     consumption_cost=8.655,
     # maintenance cost, fraction/flight (0.01 means 1% per flight)
     maintenance_cost=0.01,
     time_interval=365,  # time interval between missions, days
     use_increased_pl=False,  # true if increased demand is used
+)
+
+objective_parameters = ObjectiveParameters(
+    objective_type="imleo", # Objective, should be "imleo" or "fmleo"
 )
 
 sc_parameters = SCParameters(
@@ -37,14 +43,12 @@ sc_parameters = SCParameters(
     aggressive_SC_design=False,  # true if aggressive sizng model is used
 )
 
+depot_parameters = DepotParameters(
+    depot_nodes=None,
+)
+
 isru_parameters = ISRUParameters(
     use_isru=False,  # True if ISRU is used
-    n_isru_design=0,  # number of ISRU design
-    H2_H2O_ratio=1 / 9,  # H2 production per H2O
-    O2_H2O_ratio=1 - 1 / 9,  # O2 production per H2O
-    production_rate=5,  # production [kg] per year and per mass [kg]
-    decay_rate=0.1,  # productivity decay rate per year
-    maintenance_cost=0.05,  # cost[kg] per year and per ISRU mass [kg]
 )
 
 alc_parameters = ALCParameters(
@@ -64,7 +68,7 @@ comdty_details = CommodityDetails(
     int_com_costs=[100],  # list of integer commodity costs
     # list of continuous commodity names
     cnt_com_names=[
-        "plant",
+        "carbothermal_O2_plant",
         "maintenance",
         "consumption",
         "habitat",
@@ -88,7 +92,9 @@ runtime_settings = RuntimeSettings(
 
 input_data_1sc = InputData(
     mission=mission_parameters,
+    objective=objective_parameters,
     sc=sc_parameters,
+    depot=depot_parameters,
     isru=isru_parameters,
     alc=alc_parameters,
     comdty=comdty_details,
@@ -142,12 +148,14 @@ mission_parameters_2sc = MissionParameters(
     t_mis_tot=13,  # total single mission duration, days
     t_surf_mis=3,  # lunar surface mission duration, days
     n_crew=4,  # number of crew needed on lunar surface
-    sample_mass=1000,  # sample collected from lunar surface, kg
-    habit_pl_mass=2000,  # habitat and payload mass, kg
+    sample_mass=[1000, 1000],  # sample collected from lunar surface, kg
+    habit_pl_mass=[2000, 2000],  # habitat and payload mass, kg
 )
 input_data_2sc = InputData(
     mission=mission_parameters_2sc,
+    objective=objective_parameters,
     sc=sc_parameters,
+    depot=depot_parameters,
     isru=isru_parameters,
     alc=alc_parameters,
     comdty=comdty_details,

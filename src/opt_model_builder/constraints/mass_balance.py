@@ -141,6 +141,8 @@ class MassBalance:
             int: The right-hand side of the spacecraft balance constraint.
         """
         node_name = self.builder.node_dict.inv[i]
+        # Don't need to filter depots at Earth because we've already checked
+        # for a feasible arc
         if node_name == "Earth":
             return 1
         if ((sc_des == self.builder.depot_sc_des_idx) and

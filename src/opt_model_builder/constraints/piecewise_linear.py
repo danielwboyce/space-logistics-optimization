@@ -1,4 +1,5 @@
 from __future__ import annotations
+from itertools import product
 from typing import TYPE_CHECKING
 from pyomo.kernel import (
     block,
@@ -46,16 +47,17 @@ class PiecewiseLinearConstraints:
             )
 
         if self.builder.use_isru:
-            m.pwl_isru_O2rate = block_dict()
-            isru_pwl_bp: dict = self._generate_isru_pwl_breakpoints()
-            for isru in m.isru_des_idx:
-                m.pwl_isru_O2rate[isru] = piecewise(
-                    breakpoints=isru_pwl_bp["triangulation"],
-                    values=isru_pwl_bp["function values"],
-                    input=m.isru_mass[isru],
-                    output=m.isru_O2rate[isru],
-                    bound="eq",
-                )
+            m.pwl_isru_rate = block_dict()
+            for isru_des in m.isru_des_idx:
+                isru_pwl_bp: dict = self._generate_isru_pwl_breakpoints(isru_des)
+                for time, scnr in product(m.time_idx, m.scnr_idx):
+                    m.pwl_isru_rate[isru_des, time, scnr] = piecewise(
+                        breakpoints=isru_pwl_bp["triangulation"],
+                        values=isru_pwl_bp["function values"],
+                        input=m.isru_mass[isru_des, time, scnr],
+                        output=m.isru_rate[isru_des, time, scnr],
+                        bound="eq",
+                    )
         return m
 
     def _generate_sc_pwl_breakpoints(
@@ -155,15 +157,15 @@ class PiecewiseLinearConstraints:
             "function values": dry_mass_breakpoints,
         }
 
-    # FIXME: The ISRU mass breakpoints are hard-coded.
-    def _generate_isru_pwl_breakpoints(self) -> dict[str, list]:
-        isru_mass_breakpoints: list = [0, 400, 2000, 4000, 6000, 8000, 10000]
-        isru_O2rate_breakpoints: list = []
+    def _generate_isru_pwl_breakpoints(self, isru_des: int) -> dict[str, list]:
+        isru_design = self.builder.isru.isru_designs[isru_des]
+        isru_mass_breakpoints: list[float] = isru_design.pwl_breakpoints
+        isru_rate_breakpoints: list[float] = []
         for isru_mass in isru_mass_breakpoints:
-            isru_O2rate = self.builder._comp_design.isru_des.get_isru_O2_rate(
+            isru_rate = isru_design.production_rate(
                 isru_mass)
-            isru_O2rate_breakpoints.append(isru_O2rate)
+            isru_rate_breakpoints.append(isru_rate)
         return {
             "triangulation": isru_mass_breakpoints,
-            "function values": isru_O2rate_breakpoints,
+            "function values": isru_rate_breakpoints,
         }

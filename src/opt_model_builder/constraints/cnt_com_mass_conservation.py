@@ -27,6 +27,7 @@ class CntComConservation:
     def set_non_prop_continuous_com_conserv_constraints(self, m: block) -> block:
         if self.builder.use_isru:
             m = self._set_isru_plant_mass_defition(m)
+            # self._set_isru_minimum_mass_constraint(m)
         m.cnt_com_cnsv = constraint_dict()
         for i, j, pc, t, scnr in product(
             m.dep_node_idx,
@@ -39,7 +40,7 @@ class CntComConservation:
                 continue
             elif self.builder.cnt_com_dict.inverse[pc] in self.builder.prop_com_names:
                 continue
-            if pc == self.builder.cnt_com_dict["plant"]:
+            if self.builder.cnt_com_dict.inv[pc] in self.builder.isru_reactor_dict.keys():
                 if self.builder.can_operate_ISRU(i, j):
                     self._set_isru_plant_decay_constraint(m, i, j, pc, t, scnr)
                 else:
@@ -166,25 +167,31 @@ class CntComConservation:
                 for sc_cp in m.sc_copy_idx
                 if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
             )
-            - (
-                self.builder.isru.maintenance_cost
-                * self.builder.isru_work_time[i][t_id]
-                / 365
-            )
-            * sum(
-                m.cnt_com[
-                    sc_des,
-                    sc_cp,
-                    i,
-                    j,
-                    self.builder.cnt_com_dict["plant"],
-                    self.builder.flow_dict["out"],
-                    t,
-                    scnr,
-                ]
-                for sc_des in m.sc_des_idx
-                for sc_cp in m.sc_copy_idx
-                if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
+            - 
+            sum(
+                (
+                    self.builder.isru.isru_designs[isru_des].maintenance_cost
+                    * self.builder.isru_work_time[i][t_id]
+                    / 365
+                )
+                * sum(
+                    m.cnt_com[
+                        sc_des,
+                        sc_cp,
+                        i,
+                        j,
+                        self.builder.cnt_com_dict[
+                            self.builder.isru_reactor_dict.inv[isru_des]
+                        ],
+                        self.builder.flow_dict["out"],
+                        t,
+                        scnr,
+                    ]
+                    for sc_des in m.sc_des_idx
+                    for sc_cp in m.sc_copy_idx
+                    if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
+                )
+                for isru_des in m.isru_des_idx
             )
         )
         return m
@@ -217,6 +224,7 @@ class CntComConservation:
         This decay is expressed as decrease in plant mass
         """
         t_id = self.builder._network_def.date_to_time_idx_dict[t]
+        isru_id = self.builder.isru_reactor_dict[self.builder.cnt_com_dict.inv[pc]]
         m.cnt_com_cnsv[i, j, pc, t, scnr] = constraint(
             sum(
                 m.cnt_com[
@@ -237,7 +245,7 @@ class CntComConservation:
             * (
                 1
                 - (
-                    self.builder.isru.decay_rate
+                    self.builder.isru.isru_designs[isru_id].decay_rate
                     * self.builder.isru_work_time[i][t_id]
                     / 365
                 )
@@ -248,60 +256,32 @@ class CntComConservation:
     def _set_isru_plant_mass_defition(self, m) -> block:
         """Define total ISRU plant mass as constraints"""
         m.isru_plant_cnsv = constraint_dict()
-        for t, scnr in product(m.time_idx, m.scnr_idx):
-            m.isru_plant_cnsv[t, scnr] = constraint(
-                m.isru_mass[t, scnr]
+        for isru_des, t, scnr in product(m.isru_des_idx, m.time_idx, m.scnr_idx):
+            m.isru_plant_cnsv[isru_des, t, scnr] = constraint(
+                # ZZZ FIXME this will need fixing when we actually have different ISRU types
+                m.isru_mass[isru_des, t, scnr]
                 == sum(
                     m.cnt_com[
                         sc_des,
                         sc_cp,
                         self.builder.node_dict["LS"],
                         self.builder.node_dict["LS"],
-                        self.builder.cnt_com_dict["plant"],
+                        self.builder.cnt_com_dict[
+                            self.builder.isru_reactor_dict.inv[isru_des]
+                        ],
                         self.builder.flow_dict["out"],
                         t,
                         scnr,
                     ]
                     for sc_des in m.sc_des_idx
                     for sc_cp in m.sc_copy_idx
-                    if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
+                    if self.builder.is_feasible_arc(
+                        self.builder.node_dict["LS"],
+                        self.builder.node_dict["LS"],
+                        sc_des,
+                        sc_cp
+                    )
                 )
             )
         return m
-
-    # def _set_oxygen_storage_constraints(self, m, i, j, pc, t, scnr) -> block:
-    #     """Payload oxygen may be "consumed" to form regular oxygen and
-    #     vice-versa. (This is a modeling trick that lets us carry excess oxygen
-    #     as payload."""
-    #     if pc == self.builder.cnt_com_dict["oxygen_storage"]:
-    #         other_pc = self.builder.cnt_com_dict["oxygen"]
-    #     else:
-    #         other_pc = self.builder.cnt_com_dict["oxygen_storage"]
-    #     m.cnt_com_cnsv[i, j, pc, t, scnr] = constraint(
-    #         sum(
-    #             m.cnt_com[
-    #                 sc_des, sc_cp, i, j, pc, self.builder.flow_dict["in"], t, scnr
-    #             ]
-    #             +
-    #             m.cnt_com[
-    #                 sc_des, sc_cp, i, j, other_pc, self.builder.flow_dict["in"], t, scnr
-    #             ]
-    #             for sc_des in m.sc_des_idx
-    #             for sc_cp in m.sc_copy_idx
-    #             if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
-    #         )
-    #         == sum(
-    #             m.cnt_com[
-    #                 sc_des, sc_cp, i, j, pc, self.builder.flow_dict["out"], t, scnr
-    #             ]
-    #             +
-    #             m.cnt_com[
-    #                 sc_des, sc_cp, i, j, other_pc, self.builder.flow_dict["out"], t, scnr
-    #             ]
-    #             for sc_des in m.sc_des_idx
-    #             for sc_cp in m.sc_copy_idx
-    #             if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
-    #         )
-    #     )
-    #     return m
 

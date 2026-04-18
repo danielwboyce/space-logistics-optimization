@@ -42,17 +42,17 @@ class PropellantConservation:
             if not self.builder.is_feasible_arc(i, j):
                 continue
             if prop_name == "hydrogen":
-                self.isru_ratio = self.builder.isru.H2_H2O_ratio
                 self.prop_ratio = self.builder.sc.fuel_prop_ratio
             elif prop_name == "oxygen":
-                self.isru_ratio = self.builder.isru.O2_H2O_ratio
                 self.prop_ratio = self.builder.sc.oxi_prop_ratio
             else:
                 NotImplementedError(
                     "Currently only H2 and O2 are supported as propellant"
                 )
             if self.builder.can_operate_ISRU(i, j):
-                self._set_isru_prop_generation_constraints(m, i, j, t, scnr, prop_name)
+                for isru_des in m.isru_des_idx:
+                    if prop_name in self.builder.isru.isru_designs[isru_des].outputs.keys():
+                        self._set_isru_prop_generation_constraints(m, i, j, t, scnr, prop_name, isru_des)
             else:
                 self._set_flight_prop_consumption_constraint(
                     m, i, j, t, scnr, prop_name
@@ -256,7 +256,7 @@ class PropellantConservation:
                 )
             )
 
-    def _set_isru_prop_generation_constraints(self, m, i, j, t, scnr, prop_name):
+    def _set_isru_prop_generation_constraints(self, m, i, j, t, scnr, prop_name, isru_des):
         """
         ISRU plants can generate H2 and O2, where production rate is
         propotional to the mass and work time of the plants.
@@ -296,8 +296,8 @@ class PropellantConservation:
                 if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
             )
             + (self.builder.isru_work_time[i][t_id] / 365)
-            * self.isru_ratio
-            * m.isru_mass[t, scnr]
-            * self.builder.isru.production_rate
+            * self.builder.isru.isru_designs[isru_des].outputs[prop_name]
+            * m.isru_mass[isru_des, t, scnr]
+            * m.isru_rate[isru_des, t, scnr]
             # FIX: is the production rate fixed here??
         )

@@ -24,9 +24,14 @@ class Variables:
         self._set_sc_design_vars(m)
         if self.builder.use_isru:
             self._set_isru_vars(m)
-        # FMLEO result storage, not really a design variable
-        m.fmleo = variable(domain=NonNegativeReals)
-        self.builder.idx_name_dict["fmleo"] = []
+        if self.builder.objective_type == "imleo":
+            # IMLEO result storage, not really a design variable
+            m.imleo = variable(domain=NonNegativeReals)
+            self.builder.idx_name_dict["imleo"] = []
+        elif self.builder.objective_type == "fmleo":
+            # FMLEO result storage, not really a design variable
+            m.fmleo = variable(domain=NonNegativeReals)
+            self.builder.idx_name_dict["fmleo"] = []
 
         return m
 
@@ -166,11 +171,14 @@ class Variables:
     def _set_isru_vars(self, m: block):
         """Define variables related to ISRU size and performance"""
         m.isru_mass = variable_dict()
-        m.isru_O2rate = variable_dict()
-        for t, scnr in product(m.time_idx, m.scnr_idx):
+        m.isru_use_ind = variable_dict()
+        m.isru_rate = variable_dict()
+        for isru_des, t, scnr in product(m.isru_des_idx, m.time_idx, m.scnr_idx):
             # FIXME: Use big M to let it be 0 or above 400
-            m.isru_mass[t, scnr] = variable(domain=Reals, lb=0, ub=10000)
-            m.isru_O2rate[t, scnr] = variable(domain=NonNegativeReals)
-        self.builder.idx_name_dict["isru_mass"] = ["time", "scnr"]
-        self.builder.idx_name_dict["isru_O2rate"] = ["time", "scnr"]
+            m.isru_mass[isru_des, t, scnr] = variable(domain=Reals, lb=0, ub=10000)
+            m.isru_use_ind[isru_des, t, scnr] = variable(domain=Binary)
+            m.isru_rate[isru_des, t, scnr] = variable(domain=NonNegativeReals)
+        self.builder.idx_name_dict["isru_mass"] = ["isru_des", "time", "scnr"]
+        self.builder.idx_name_dict["isru_use_ind"] = ["isru_des", "time", "scnr"]
+        self.builder.idx_name_dict["isru_rate"] = ["isru_des", "time", "scnr"]
         return m
