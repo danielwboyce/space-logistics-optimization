@@ -4,7 +4,9 @@ from src.space_logistics import SpaceLogistics
 from src.input_data_class import (
     InputData,
     MissionParameters,
+    ObjectiveParameters,
     SCParameters,
+    DepotParameters,
     ISRUParameters,
     ALCParameters,
     CommodityDetails,
@@ -19,8 +21,8 @@ mission_parameters = MissionParameters(
     t_mis_tot=13,  # total single mission duration, days
     t_surf_mis=3,  # lunar surface mission duration, days
     n_crew=4,  # number of crew needed on lunar surface
-    sample_mass=1000,  # sample collected from lunar surface, kg
-    habit_pl_mass=2000,  # habitat and payload mass, kg
+    sample_mass=[1000, 1000],  # sample collected from lunar surface, kg
+    habit_pl_mass=[2000, 2000],  # habitat and payload mass, kg
     # consumption cost (food+water+oxygen), kg/(day*person)
     consumption_cost=8.655,
     # maintenance cost, fraction/flight (0.01 means 1% per flight)
@@ -29,12 +31,20 @@ mission_parameters = MissionParameters(
     use_increased_pl=False,  # true if increased demand is used
 )
 
+objective_parameters = ObjectiveParameters(
+    objective_type="imleo", # Objective, should be "imleo" or "fmleo"
+)
+
 sc_parameters = SCParameters(
     isp=420,  # specific impulse, s
     oxi_fuel_ratio=5.5,  # oxidizer to fuel ratio
     prop_density=360,  # propellant density, kg/m^3
     misc_mass_fraction=0.05,  # misc mass factor
     aggressive_SC_design=False,  # true if aggressive sizng model is used
+)
+
+depot_parameters = DepotParameters(
+    depot_nodes=None,
 )
 
 isru_parameters = ISRUParameters(
@@ -88,7 +98,9 @@ runtime_settings = RuntimeSettings(
 
 input_data_1sc = InputData(
     mission=mission_parameters,
+    objective=objective_parameters,
     sc=sc_parameters,
+    depot=depot_parameters,
     isru=isru_parameters,
     alc=alc_parameters,
     comdty=comdty_details,
@@ -142,12 +154,14 @@ mission_parameters_2sc = MissionParameters(
     t_mis_tot=13,  # total single mission duration, days
     t_surf_mis=3,  # lunar surface mission duration, days
     n_crew=4,  # number of crew needed on lunar surface
-    sample_mass=1000,  # sample collected from lunar surface, kg
-    habit_pl_mass=2000,  # habitat and payload mass, kg
+    sample_mass=[1000, 1000],  # sample collected from lunar surface, kg
+    habit_pl_mass=[2000, 2000],  # habitat and payload mass, kg
 )
 input_data_2sc = InputData(
     mission=mission_parameters_2sc,
+    objective=objective_parameters,
     sc=sc_parameters,
+    depot=depot_parameters,
     isru=isru_parameters,
     alc=alc_parameters,
     comdty=comdty_details,
