@@ -34,11 +34,12 @@ class SCCapacity:
             m.time_idx,
             m.scnr_idx,
         ):
-            if not self.builder.is_feasible_arc(i, j):
+            if not self.builder.is_feasible_arc(i, j, sc_des, sc_cp):
                 continue
             if (
                 self.builder.node_dict.inverse[i] == "Earth"
                 and self.builder.node_dict.inverse[j] == "LEO"
+                and not self.builder.use_depots
             ):
                 continue
             m = self._set_payload_cap_constraints(m, sc_des, sc_cp, i, j, t, scnr)

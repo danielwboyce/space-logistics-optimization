@@ -42,8 +42,8 @@ class OutputManager(InitMixin):
             sc_vars: extracted SC design variables,
                 shape is (# of sc type, # of sc design variables)
         """
-        sc_vars: np.ndarray = np.zeros((self.n_sc_design, self.n_sc_vars))
-        for sc_des in range(self.n_sc_design):
+        sc_vars: np.ndarray = np.zeros((self.n_sc_design + (1 if self.use_depots else 0), self.n_sc_vars))
+        for sc_des in model.sc_des_idx:
             sc_vars[sc_des, self.sc_var_dict["payload"]] = model.pl_cap[sc_des].value
             sc_vars[sc_des, self.sc_var_dict["propellant"]] = model.prop_cap[
                 sc_des

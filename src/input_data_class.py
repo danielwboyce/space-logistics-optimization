@@ -187,6 +187,51 @@ class SCParameters:
         self.fuel_prop_ratio: float = 1 - self.oxi_prop_ratio
         self.n_sc_vars: int = len(self.var_names)
 
+@dataclass
+class DepotParameters:
+    """Data class containing depo data. It is assumed:
+    - The depot is prestaged (i.e., before time_steps[0]).
+    - The depot may never be moved from the node where it is initially placed.
+    - The depot may store an arbitrarily large amount of non-propellant
+        commodities.
+    - The depot has zero structural mass.
+    - The depot spacecraft type should not be considered as part of the
+        spacecraft design subproblem.
+
+    
+    Args:
+        depot_nodes: List of names of the nodes where depots are located. For
+            now, at least, the depot_nodes should also all be holdover nodes.
+    """
+
+    depot_nodes: list[str] | None = None
+    # __use_depots : bool = False
+    # __n_depots: int = 0
+
+    # def __post_init__(self):
+    #     """Sanity check for input values"""
+
+    #     if ((self.depot_nodes is not None) and (len(self.depot_nodes) > 0)):
+    #         __use_depots = True
+    #         __n_depots = len(self.depot_nodes)
+
+    def get_n_depots(self):
+        """Returns the number of depots.
+        
+        Returns:
+            __n_depots: Number of depots."""
+        if self.depot_nodes is not None:
+            return len(self.depot_nodes)
+        else:
+            return 0
+
+    def get_use_depots(self):
+        """Returns whether depots are being used.
+        
+        Returns:
+            __use_depots: True if any depots are used, False otherwise."""
+        return self.get_n_depots() > 0
+
 
 @dataclass(frozen=True)
 class ISRUParameters:
@@ -551,6 +596,7 @@ class InputData:
     mission: MissionParameters
     alc: ALCParameters
     sc: SCParameters
+    depot: DepotParameters
     isru: ISRUParameters
     comdty: CommodityDetails
     node: NodeDetails
@@ -562,6 +608,22 @@ class InputData:
         if self.alc.prioritized_var_name:
             assert self.alc.prioritized_var_name in self.sc.var_names, """
             prioritized variable name is not valid"""
+
+        if self.depot.get_use_depots():
+            assert all(
+                depot in self.node.holdover_nodes
+                for depot in self.depot.depot_nodes
+            ), """
+            Error:
+            If depots are used, all of the depot nodes must be listed in the
+            list of holdover nodes (NodeParameters).
+            Received values:
+                DepotParameters depot_nodes: {}
+                NodeParameters holdover_nodes: {}
+            """.format(
+                self.depot.depot_nodes,
+                self.node.holdover_nodes,
+            )
 
         self.n_scenarios: int = 1
         self.is_stochastic: bool = False
@@ -595,6 +657,7 @@ class InputData:
         com_dict: dict[str, int] = {}
         int_com_dict: dict[str, int] = {}
         cnt_com_dict: dict[str, int] = {}
+        depot_dict: dict[str, int] = {}
 
         for com_id in range(self.comdty.n_int_com):
             int_com_name = self.comdty.int_com_names[com_id]
@@ -611,6 +674,10 @@ class InputData:
             node_name = self.node.node_names[node_id]
             node_dict[node_name] = node_id
 
+        for depot_id in range(self.depot.get_n_depots()):
+            depot_name = self.depot.depot_nodes[depot_id]
+            depot_dict[depot_name] = depot_id
+
         flow_dict: dict[str, int] = {"out": 0, "in": 1}
 
         sc_var_dict: dict[str, int] = {}
@@ -623,5 +690,6 @@ class InputData:
         self.int_com_dict = bidict(int_com_dict)
         self.cnt_com_dict = bidict(cnt_com_dict)
         self.node_dict = bidict(node_dict)
+        self.depot_dict = bidict(depot_dict)
         self.flow_dict = bidict(flow_dict)
         self.sc_var_dict = bidict(sc_var_dict)

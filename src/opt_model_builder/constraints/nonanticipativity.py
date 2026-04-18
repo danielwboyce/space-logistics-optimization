@@ -40,7 +40,7 @@ class NonAnticipativity:
             self.builder.first_mis_time_steps,
             range(self.builder.n_scenarios - 1),
         ):
-            if not self.builder.is_feasible_arc(i, j):
+            if not self.builder.is_feasible_arc(i, j, sc_des, sc_cp):
                 continue
             for pl_i in m.int_com_idx:
                 m.int_com_nonant[sc_des, sc_cp, i, j, pl_i, io, t, scnr] = constraint(

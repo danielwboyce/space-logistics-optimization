@@ -49,6 +49,7 @@ class OptModelBuilder(InitMixin):
         self.isru_work_time: np.ndarray = self._network_def.isru_work_time
         self.fin_ini_mass_frac: np.ndarray = self._network_def.fin_ini_mass_frac
         self.is_holdover_arc = self._network_def.is_holdover_arc
+        self.is_depot_arc = self._network_def.is_depot_arc
         self.is_transportation_arc = self._network_def.is_transportation_arc
 
         # placeholder
@@ -121,13 +122,16 @@ class OptModelBuilder(InitMixin):
     def fixed_sc_vars(self, fixed_sc_vars: np.ndarray) -> None:
         if not isinstance(fixed_sc_vars, np.ndarray):
             raise ValueError("Fixed SC variables is not a numpy array")
-        if fixed_sc_vars.shape != (self.n_sc_design, self.n_sc_vars):
+        if fixed_sc_vars.shape != (
+            self.n_sc_design + (1 if self.use_depots else 0),
+            self.n_sc_vars
+        ):
             raise ValueError(
                 """Fixed SC variables has invalid nupmy array shape.
                 Received: {}
                 Expected: ({},{})""".format(
                     fixed_sc_vars.shape,
-                    self.n_sc_design,
+                    self.n_sc_design + (1 if self.use_depots else 0),
                     self.n_sc_vars,
                 )
             )

@@ -76,14 +76,15 @@ class SCSizing(InitMixin):
         If the root solving fails, it assigns a very high dry mass.
 
         Args:
-            sc_vars: SC design variables, shape of (n_sc_design, 3)
+            sc_vars: SC design variables, shape of (n_sc_design + (1 if use_depots else 0),
+                n_sc_vars)
             tol: tolerance for root solving of equality constraint
         Returns:
             sc_vars (np.ndarray): SC design variables with newly calculated drymass
         """
-        assert sc_vars.shape == (self.mis.n_sc_design, self.n_sc_vars), """
-        SC design variables must be a np.ndarray with shape of (n_sc_design, 3)."""
-        # calculate drymass for each SC design type
+        assert sc_vars.shape == (self.mis.n_sc_design + (1 if self.use_depots else 0), self.n_sc_vars), """
+        SC design variables must be a np.ndarray with shape of (n_sc_design + (1 if self.use_depots else 0), n_sc_vars)."""
+        # calculate drymass for each SC design type. DON'T try and do this for depots, though!!
         for sc_des in range(self.mis.n_sc_design):
             payload_cap = sc_vars[sc_des][self.sc_var_dict["payload"]]
             prop_cap = sc_vars[sc_des][self.sc_var_dict["propellant"]]

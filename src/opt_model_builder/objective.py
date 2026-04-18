@@ -97,7 +97,7 @@ class Objective:
                 for sc_des in m.sc_des_idx
                 for sc_cp in m.sc_copy_idx
                 for j in m.arr_node_idx
-                if self.builder.is_feasible_arc(self.builder.node_dict["LEO"], j)
+                if self.builder.is_feasible_arc(self.builder.node_dict["LEO"], j, sc_des, sc_cp)
                 if time_list[-1] - self.builder.delta_t[j][self.builder.node_dict["LEO"]][len(time_list) - 1] in m.time_idx
             )
             - self.builder.cnt_com_costs[self.builder.cnt_com_dict["oxygen_storage"]]
@@ -115,6 +115,12 @@ class Objective:
                 for sc_des in m.sc_des_idx
                 for sc_cp in m.sc_copy_idx
                 for t in time_list
+                if self.builder.is_feasible_arc(
+                    self.builder.node_dict["Earth"],
+                    self.builder.node_dict["LEO"],
+                    sc_des,
+                    sc_cp
+                )
             )
             - self.builder.cnt_com_costs[self.builder.cnt_com_dict["oxygen"]]
             * sum(
@@ -131,6 +137,12 @@ class Objective:
                 for sc_des in m.sc_des_idx
                 for sc_cp in m.sc_copy_idx
                 for t in time_list
+                if self.builder.is_feasible_arc(
+                    self.builder.node_dict["Earth"],
+                    self.builder.node_dict["LEO"],
+                    sc_des,
+                    sc_cp
+                )
             )
         )
         return term

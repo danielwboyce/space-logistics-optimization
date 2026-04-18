@@ -12,6 +12,7 @@ from pyomo.opt.results.results_ import SolverResults
 # from pyomo.common.log import logging
 from pyomo.environ import ConcreteModel
 from pyomo.kernel import block
+# from pyomo.repn.plugins.lp_writer import LPWriter
 
 try:
     from initializer import InitMixin
@@ -42,6 +43,8 @@ class SolverInterface(InitMixin):
             NotImplementedError(
                 "Pyomo environ ConcreteModel is not supported. Use pyomo kernel block instead."
             )
+        # lp_writer = LPWriter()
+        # lp_writer.write(model, open('mymodel.new.lp', 'w'), symbolic_solver_labels=True)
         opt = self._set_solver_options()
         solved_model: SolverResults = opt.solve(
             model,
@@ -50,22 +53,25 @@ class SolverInterface(InitMixin):
             logfile="solver_logfile.log",
         )
         print("Termination Condition: ", solved_model.solver.termination_condition)
-        # if (solved_model.solver.termination_condition == TerminationCondition.infeasible):
+        # if solved_model.solver.termination_condition in {
+        #     TerminationCondition.infeasible,
+        #     TerminationCondition.infeasibleOrUnbounded
+        # }:
         #     logger = logging.getLogger('pyomo.util.infeasible')
         #     logger.setLevel(logging.INFO)
-        #     # handler = logging.FileHandler('infeasible_constraints.log')
-        #     handler = logging.FileHandler('infeasible_bounds.log')
+        #     handler = logging.FileHandler('infeasible_constraints.log')
+        #     # handler = logging.FileHandler('infeasible_bounds.log')
         #     handler.setFormatter(logging.Formatter('%(message)s'))
         #     logger.addHandler(handler)
-        #     # log_infeasible_constraints(model, logger=logger)
-        #     log_infeasible_bounds(model, logger=logger)
+        #     log_infeasible_constraints(model, logger=logger)
+        #     # log_infeasible_bounds(model, logger=logger)
 
-        #     # logger = logging.getLogger('pyomo.contrib.iis')
-        #     # logger.setLevel(logging.INFO)
-        #     # handler = logging.FileHandler('iis.log')
-        #     # handler.setFormatter(logging.Formatter('%(message)s'))
-        #     # logger.addHandler(handler)
-        #     # compute_infeasibility_explanation(solved_model, solver=solved_model.solver, logger=logger)
+        # #     # logger = logging.getLogger('pyomo.contrib.iis')
+        # #     # logger.setLevel(logging.INFO)
+        # #     # handler = logging.FileHandler('iis.log')
+        # #     # handler.setFormatter(logging.Formatter('%(message)s'))
+        # #     # logger.addHandler(handler)
+        # #     # compute_infeasibility_explanation(solved_model, solver=solved_model.solver, logger=logger)
         if solved_model.solver.termination_condition not in {
             TerminationCondition.optimal,
             TerminationCondition.locallyOptimal,

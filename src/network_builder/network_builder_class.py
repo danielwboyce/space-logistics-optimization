@@ -175,6 +175,20 @@ class NetworkBuilder(InitMixin):
         """
         return dep_node_id == arr_node_id
 
+    def is_depot_arc(self, dep_node_id: int, arr_node_id: int) -> bool:
+        """check if arc is a depot arc
+        Args:
+            dep_node_id: departure node id
+            arr_node_id: arrival node id
+        Returns:
+            bool: True if depot is enabled and arc is a depot arc. Returns
+                False otherwise."""
+        if self.use_depots and self.is_holdover_arc(dep_node_id, arr_node_id):
+            dep_node_name = self.node_dict.inv[dep_node_id]
+            return dep_node_name in self.depot_nodes
+        else:
+            return False
+
     def is_transportation_arc(self, dep_node_id: int, arr_node_id: int) -> bool:
         """check if arc is a transportation arc
         Args:
@@ -185,7 +199,13 @@ class NetworkBuilder(InitMixin):
         """
         return dep_node_id != arr_node_id
 
-    def is_feasible_arc(self, dep_node_id: int, arr_node_id: int) -> bool:
+    def is_feasible_arc(
+        self,
+        dep_node_id: int,
+        arr_node_id: int,
+        sc_des: int | None = None,
+        sc_cp: int | None = None
+    ) -> bool:
         """check if arc is feasible
 
         if arc is a transportation arc, it should be between adjacent nodes
@@ -194,9 +214,33 @@ class NetworkBuilder(InitMixin):
         Args:
             dep_node_id: departure node id
             arr_node_id: arrival node id
+            sc_des (optional): Spacecraft design index.
+            sc_cp (optional): Spacecraft design copy.
         Returns:
             bool: True if arc is feasible, False otherwise
         """
+        if self.use_depots and ((sc_des is not None) or (sc_cp is not None)):
+            assert ((sc_des is not None) and (sc_cp is not None)), """
+            Error:
+            If sc_des or sc_cp is not None, then both must not be none.
+            Received values:
+                sc_des: {}
+                sc_cp: {}""".format(
+                sc_des,
+                sc_cp
+            )
+
+            if (sc_des == self.depot_sc_des_idx):
+                if sc_cp >= self.n_depots:
+                    return False
+                if not self.is_depot_arc(dep_node_id, arr_node_id):
+                    return False
+                if self.depot_dict.inv[sc_cp] != self.node_dict.inv[dep_node_id]:
+                    return False
+            else:
+                if sc_cp >= self.n_sc_per_design:
+                    return False
+
         if not self.node.is_path_graph:
             NotImplementedError("Feasibility not implemented for non-path graphs")
         if self.is_transportation_arc(dep_node_id, arr_node_id):
@@ -459,3 +503,29 @@ class NetworkBuilder(InitMixin):
         for date in self.time_steps:
             date_to_time_idx_dict[date] = self.time_steps.index(date)
         self.date_to_time_idx_dict = bidict(date_to_time_idx_dict)
+
+    def get_any_valid_arc_for_sc_at_node(
+            self,
+            node_id: int,
+            sc_des: int,
+            sc_cp: int
+    ) -> bool:
+        """
+        Returns True if any arcs departing from the given node exist for
+        the given spacecraft.
+        
+        Args:
+            node_id: Node from which the spacecraft will be departing.
+            sc_des: Spacecraft design index.
+            sc_cp: Spacecraft design copy.
+
+        Returns:
+            any_valid_arc_for_sc_at_node: True if any arcs departing from the
+                node are valid, False otherwise.
+        """
+
+        for arr_node_name in self.node.node_names:
+            arr_node_id = self.node_dict[arr_node_name]
+            if self.is_feasible_arc(node_id, arr_node_id, sc_des, sc_cp):
+                return True
+        return False
