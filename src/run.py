@@ -59,8 +59,8 @@ def main():
     )
 
     depot_parameters = DepotParameters(
-        # depot_nodes=None,
-        depot_nodes=["LEO", "LS"],
+        depot_nodes=None,
+        # depot_nodes=["LEO", "LS"],
     )
 
     isru_parameters = ISRUParameters(
@@ -157,45 +157,40 @@ def main():
     # sc_prop1 = (z1 - 1) * (sc_dry_mass + sc_prop2 + sc_payload)
     # sc_prop = sc_prop1 + sc_prop2
 
-    # # # depot parameters
-    # # depot_payload = 100.0e3
-    # # depot_dry_mass = depot_payload * 0.20
-    # # total_dv_depot = sl_cls.network_def._get_delta_v_km_s("Earth", "LEO")
-    # # z_depot = np.exp(total_dv_depot * 1.0e3 / (sc_parameters.isp * sc_parameters.g0))
-    # # depot_prop = (z_depot - 1) * depot_dry_mass * 1.05
+    # # depot parameters
+    # depot_payload = 100.0e3
+    # depot_dry_mass = depot_payload * 0.20
+    # total_dv_depot = sl_cls.network_def._get_delta_v_km_s("Earth", "LEO")
+    # z_depot = np.exp(total_dv_depot * 1.0e3 / (sc_parameters.isp * sc_parameters.g0))
+    # depot_prop = (z_depot - 1) * depot_dry_mass * 1.05
 
     fixed_sc_designs = np.array(
         [
-            # [
-            #     10.0e3,  # payload (max)
-            #     52.5e3,     # propellant (max)
-            #     21.1e3, # dry mass
-            # ],
-            # [
-            #     2167.593079653862,
-            #     14871.284878373288,
-            #     7131.5847792317145,
-            # ],
-            # [
-            #     500.0,
-            #     57325.31844683161,
-            #     14236.423242779982
-            # ],
             [
-                10000,
-                36332.3613593395,
-                15052.7143185748
+                10000,  # payload (max)
+                23157.3159202894,     # propellant (max)
+                12104.3364467333, # dry mass
             ],
             [
-                500,
-                53768.0653044512,
-                12162.7074715113
+                2596.27723636357,
+                48813.8307342091,
+                12653.80774804,
             ],
-            [
-                300000,
-                0.0,
-                0.0
-            ],
+            # [
+            #     10000,
+            #     36332.3613593395,
+            #     15052.7143185748
+            # ],
+            # [
+            #     500,
+            #     53768.0653044512,
+            #     12162.7074715113
+            # ],
+            # [
+            #     300000,
+            #     0.0,
+            #     0.0
+            # ],
             # [
             #     depot_payload,
             #     0.0,
