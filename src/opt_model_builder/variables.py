@@ -24,9 +24,14 @@ class Variables:
         self._set_sc_design_vars(m)
         if self.builder.use_isru:
             self._set_isru_vars(m)
-        # FMLEO result storage, not really a design variable
-        m.fmleo = variable(domain=NonNegativeReals)
-        self.builder.idx_name_dict["fmleo"] = []
+        if self.builder.objective_type == "imleo":
+            # IMLEO result storage, not really a design variable
+            m.imleo = variable(domain=NonNegativeReals)
+            self.builder.idx_name_dict["fmleo"] = []
+        elif self.builder.objective_type == "fmleo":
+            # FMLEO result storage, not really a design variable
+            m.fmleo = variable(domain=NonNegativeReals)
+            self.builder.idx_name_dict["fmleo"] = []
 
         return m
 

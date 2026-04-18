@@ -19,6 +19,7 @@ from space_logistics import SpaceLogistics
 from input_data_class import (
     InputData,
     MissionParameters,
+    ObjectiveParameters,
     SCParameters,
     DepotParameters,
     ISRUParameters,
@@ -47,6 +48,10 @@ def main():
         maintenance_cost=0.01,
         time_interval=11,  # time interval between missions, days
         use_increased_pl=False,  # true if increased demand is used
+    )
+
+    objective_parameters = ObjectiveParameters(
+        objective_type="fmleo", # Objective, should be "imleo" or "fmleo"
     )
 
     sc_parameters = SCParameters(
@@ -141,6 +146,7 @@ def main():
 
     input_data = InputData(
         mission=mission_parameters,
+        objective=objective_parameters,
         sc=sc_parameters,
         depot=depot_parameters,
         isru=isru_parameters,

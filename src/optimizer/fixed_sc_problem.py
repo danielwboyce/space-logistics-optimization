@@ -26,13 +26,16 @@ class FixedSCDesign(InitMixin):
             fixed_sc_vars: fixed SC design variables,
                 provided by user or calculated automatically
         Returns:
-            FMLEO: optimal FMLEO value with the given SC design
+            objective_value: optimal IMLEO or FMLEO value with the given SC design
         """
         self.optimizer._model_builder.mode = "fixedSCdesign"
         self.optimizer._model_builder.fixed_sc_vars = fixed_sc_vars
         model = self.optimizer._model_builder.build_model()
         model = self.optimizer.solver.solve_model(model)
-        FMLEO = model.fmleo.value
-        if FMLEO is None:
-            FMLEO = float("inf")
-        return FMLEO
+        if self.optimizer._model_builder.objective_type == "imleo":
+            objective_value = model.imleo.value
+        elif self.optimizer._model_builder.objective_type == "fmleo":
+            objective_value = model.fmleo.value
+        if objective_value is None:
+            objective_value = float("inf")
+        return objective_value

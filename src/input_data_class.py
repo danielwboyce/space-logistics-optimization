@@ -124,6 +124,34 @@ class MissionParameters:
 
 
 @dataclass
+class ObjectiveParameters:
+    """
+    Data class containing objective data.
+
+    This allows the user to select either
+    - IMLEO: minimizing the initial mass to low Earth orbit.
+    - FMLEO: maximizing the net final mass delivered to low Earth orbit
+      (calculated by using mass delivered from nodes other than the Earth,
+      e.g. the lunar surface, and subtracting out mass launched from Earth).
+
+    Args:
+        objective_type: A string denoting the objective being used. This
+            should be "imleo" or "fmleo".
+    """
+
+    objective_type: str = "imleo"
+
+    def __post_init__(self):
+        """Sanity check for input values"""
+
+        assert ((self.objective_type == "imleo") or
+                (self.objective_type == "fmleo")),"""
+        Error:
+        The objective_type string should be "imleo" or "fmleo".
+            Received value: {}""".format(self.objective_type)
+
+
+@dataclass
 class SCParameters:
     """Data class containing SC data
 
@@ -621,6 +649,7 @@ class InputData:
     """Parent data class containing all input parameters"""
 
     mission: MissionParameters
+    objective: ObjectiveParameters
     alc: ALCParameters
     sc: SCParameters
     depot: DepotParameters

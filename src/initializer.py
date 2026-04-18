@@ -1,6 +1,7 @@
 from input_data_class import (
     InputData,
     MissionParameters,
+    ObjectiveParameters,
     SCParameters,
     DepotParameters,
     ISRUParameters,
@@ -35,6 +36,7 @@ class InitMixin:
         # dataclass arguments
         self.input_data: InputData = input_data
         self.mis: MissionParameters = input_data.mission
+        self.objective: ObjectiveParameters = input_data.objective
         self.sc: SCParameters = input_data.sc
         self.depot: DepotParameters = input_data.depot
         self.isru: ISRUParameters = input_data.isru
@@ -68,6 +70,9 @@ class InitMixin:
             of float if value is different for each mission"""
         self.use_increased_pl: bool = input_data.mission.use_increased_pl
         """True if increased demand is used. Defaults to False."""
+        self.objective_type: str = self.objective.objective_type
+        """A string denoting the objective being used. This should be "imleo"
+            or "fmleo"."""
         self.use_depots: bool = self.depot.get_use_depots()
         """True if depots are used. Defaults to False."""
         self.depot_nodes : list[str] | None = self.depot.depot_nodes
