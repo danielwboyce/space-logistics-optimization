@@ -142,7 +142,7 @@ def main():
     )
     sl_cls = SpaceLogistics(input_data)
     # sl_cls.optimizer.admm.run_alc_loop()
-    sl_cls.optimizer.pwl.solve_w_pwl_approx(pwl_increment=2500)
+    # sl_cls.optimizer.pwl.solve_w_pwl_approx(pwl_increment=2500)
 
     # # Calculate some spacecraft params (for a spacecraft that does an
     # # out-and-back delivery of a payload)
@@ -164,51 +164,51 @@ def main():
     # # z_depot = np.exp(total_dv_depot * 1.0e3 / (sc_parameters.isp * sc_parameters.g0))
     # # depot_prop = (z_depot - 1) * depot_dry_mass * 1.05
 
-    # fixed_sc_designs = np.array(
-    #     [
-    #         # [
-    #         #     10.0e3,  # payload (max)
-    #         #     52.5e3,     # propellant (max)
-    #         #     21.1e3, # dry mass
-    #         # ],
-    #         # [
-    #         #     2167.593079653862,
-    #         #     14871.284878373288,
-    #         #     7131.5847792317145,
-    #         # ],
-    #         # [
-    #         #     500.0,
-    #         #     57325.31844683161,
-    #         #     14236.423242779982
-    #         # ],
-    #         [
-    #             10000,
-    #             23157.3159202894,
-    #             12104.3364467333
-    #         ],
-    #         [
-    #             2596.27723636357,
-    #             48813.8307342091,
-    #             12653.80774804
-    #         ],
-    #         [
-    #             1.0e3,
-    #             1.0,
-    #             1.0
-    #         ],
-    #         # [
-    #         #     depot_payload,
-    #         #     0.0,
-    #         #     depot_dry_mass
-    #         # ],
-    #         # [
-    #         #     sc_payload,  # payload (max)
-    #         #     sc_prop,     # propellant (max)
-    #         #     sc_dry_mass, # dry mass
-    #         # ],
-    #     ]
-    # )
-    # sl_cls.optimizer.fixed_sc.solve_network_flow_MILP(fixed_sc_designs)
+    fixed_sc_designs = np.array(
+        [
+            # [
+            #     10.0e3,  # payload (max)
+            #     52.5e3,     # propellant (max)
+            #     21.1e3, # dry mass
+            # ],
+            # [
+            #     2167.593079653862,
+            #     14871.284878373288,
+            #     7131.5847792317145,
+            # ],
+            # [
+            #     500.0,
+            #     57325.31844683161,
+            #     14236.423242779982
+            # ],
+            [
+                10000,
+                36332.3613593395,
+                15052.7143185748
+            ],
+            [
+                500,
+                53768.0653044512,
+                12162.7074715113
+            ],
+            [
+                300000,
+                0.0,
+                0.0
+            ],
+            # [
+            #     depot_payload,
+            #     0.0,
+            #     depot_dry_mass
+            # ],
+            # [
+            #     sc_payload,  # payload (max)
+            #     sc_prop,     # propellant (max)
+            #     sc_dry_mass, # dry mass
+            # ],
+        ]
+    )
+    sl_cls.optimizer.fixed_sc.solve_network_flow_MILP(fixed_sc_designs)
 
 
 if __name__ == "__main__":
