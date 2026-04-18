@@ -37,7 +37,7 @@ class ADMMLoop(InitMixin):
             """Initial guess must be a numpy array."""
         )
         if initial_guess.shape != (
-            self.n_sc_design + (1 if self.builder.use_depots else 0),
+            self.n_sc_design + (1 if self.optimizer._model_builder.use_depots else 0),
             self.n_sc_vars,
         ):
             raise ValueError(
@@ -45,7 +45,7 @@ class ADMMLoop(InitMixin):
                 Received: {}
                 Expected: ({},{})""".format(
                     initial_guess.shape,
-                    self.n_sc_design + (1 if self.builder.use_depots else 0),
+                    self.n_sc_design + (1 if self.optimizer._model_builder.use_depots else 0),
                     self.n_sc_vars,
                 )
             )
@@ -80,7 +80,7 @@ class ADMMLoop(InitMixin):
             )
             results = outer_loop.run()
             results["design vars"] = results["design vars"].reshape(
-                self.n_sc_design + (1 if self.builder.use_depots else 0), self.n_sc_vars
+                self.n_sc_design + (1 if self.optimizer._model_builder.use_depots else 0), self.n_sc_vars
             )
             print("### Optimization Results ###")
             if self.optimizer._model_builder.objective_type == "imleo":

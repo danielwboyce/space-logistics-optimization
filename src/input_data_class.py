@@ -406,23 +406,14 @@ class CommodityDetails:
     prop_com_names: list[str] = field(default_factory=lambda: ["oxygen", "hydrogen"])
     infinite_supply_dict: dict[str, list[dict[str, Any]]] = field(
         default_factory=lambda: {
-            "plant":          [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "maintenance":    [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "consumption":    [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "habitat":        [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "oxygen":         [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "hydrogen":       [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "plant":          [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "maintenance":    [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "consumption":    [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "habitat":        [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "oxygen":         [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "hydrogen":       [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "sample":         [{ "node": "LS",    "mission": "all", "io": "end" }],
         }
-    )
-    com_names_w_unlim_earth_supply: list[str] = field(
-        default_factory=lambda: [
-            "plant",
-            "maintenance",
-            "consumption",
-            "habitat",
-            "oxygen",
-            "hydrogen",
-        ]
     )
 
     def __post_init__(self):
