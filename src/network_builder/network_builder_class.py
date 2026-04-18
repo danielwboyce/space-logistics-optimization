@@ -341,37 +341,37 @@ class NetworkBuilder(InitMixin):
         oxygen also have unlimited supply at the lunar surface node in all
         return missions.
         """
-        for pl_name, mis_start_date, scnr in product(
-            self.comdty.com_names_w_unlim_earth_supply,
-            [self.mis_start_dates[0]],
-            range(self.n_scenarios),
-        ):
-            if pl_name in self.int_com_names:
-                self.int_com_demand[self.node_dict["Earth"]][
-                    self.int_com_dict[pl_name]
-                ][self.date_to_time_idx_dict[mis_start_date]][scnr] = float("inf")
-            elif pl_name in self.cnt_com_names:
-                self.cnt_com_demand[self.node_dict["Earth"]][
-                    self.cnt_com_dict[pl_name]
-                ][self.date_to_time_idx_dict[mis_start_date]][scnr] = float("inf")
+        for comdty_name in self.comdty.infinite_supply_dict.keys():
+            for comdty_data in self.comdty.infinite_supply_dict[comdty_name]:
+                node_name = comdty_data["node"]
+                node_id = self.node_dict[node_name]
+                mission = comdty_data["mission"]
+                io = comdty_data["io"]
+                
+                dates = []
+                if io == "all" or io == "start":
+                    if mission == "all":
+                        dates.extend(self.mis_start_dates)
+                    else: # if not all, mission will always be a valid integer
+                        dates.extend([self.mis_start_dates[int(mission)]])
+                if io == "all" or io == "end":
+                    if mission == "all":
+                        dates.extend(self.mis_end_dates)
+                    else: # if not all, mission will always be a valid integer
+                        dates.extend([self.mis_end_dates[int(mission)]])
 
-        for mis_end_date, scnr in product(
-            self.mis_end_dates,
-            range(self.n_scenarios),
-        ):
-            mis_end_date_id = self.date_to_time_idx_dict[mis_end_date]
-            self.cnt_com_demand[self.node_dict["LS"]][self.cnt_com_dict["sample"]][
-                mis_end_date_id
-            ][scnr] = float("inf")
-            self.cnt_com_demand[self.node_dict["LS"]][self.cnt_com_dict["hydrogen"]][
-                mis_end_date_id
-            ][scnr] = float("inf")
-            self.cnt_com_demand[self.node_dict["LS"]][self.cnt_com_dict["oxygen"]][
-                mis_end_date_id
-            ][scnr] = float("inf")
-            self.cnt_com_demand[self.node_dict["LS"]][self.cnt_com_dict["oxygen_storage"]][
-                mis_end_date_id
-            ][scnr] = float("inf")
+                for date, scnr in product(
+                    dates,
+                    range(self.n_scenarios)
+                ):
+                    if comdty_name in self.int_com_names:
+                        self.int_com_demand[node_id][self.int_com_dict[comdty_name]][
+                            self.date_to_time_idx_dict[date]
+                        ][scnr] = float("inf")
+                    elif comdty_name in self.cnt_com_names:
+                        self.cnt_com_demand[node_id][self.cnt_com_dict[comdty_name]][
+                            self.date_to_time_idx_dict[date]
+                        ][scnr] = float("inf")
 
     def _set_stochastic_demand(self) -> None:
         """Overwrite deterministic demand array for stochastic case."""

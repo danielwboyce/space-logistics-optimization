@@ -9,6 +9,7 @@ import warnings
 from dataclasses import dataclass, field
 from bidict import bidict
 from pyomo.environ import SolverFactory
+from typing import Any
 
 
 @dataclass
@@ -364,16 +365,27 @@ class CommodityDetails:
         int_com_costs: List of integer commodity costs per unit
         cnt_com_names: List of continuous commodity names
         prop_com_names (optional): List of propellant commodity names
-        com_names_w_unlim_earth_supply (optional): List of commodity
-            names with unlimited supply from Earth node. Do NOT include
-            any commodity that needs to return to Earth at the end of
-            each mission (e.g., sample, crew).
+        infinite_supply_dict (optional): Dictionary containing data on the
+            commodities, locations, and times of when supply may be infinite.
+            The keys are commodity names, the values are list of subdictionaries.
+            The child dictionaries should have keys "node", "mission", and
+            "io".
     """
 
     int_com_names: list[str]
     int_com_costs: list[float]
     cnt_com_names: list[str]
     prop_com_names: list[str] = field(default_factory=lambda: ["oxygen", "hydrogen"])
+    infinite_supply_dict: dict[str, list[dict[str, Any]]] = field(
+        default_factory=lambda: {
+            "plant":          [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "maintenance":    [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "consumption":    [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "habitat":        [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "oxygen":         [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "hydrogen":       [{ "node": "Earth", "mission": "0",   "io": "start" }],
+        }
+    )
     com_names_w_unlim_earth_supply: list[str] = field(
         default_factory=lambda: [
             "plant",
@@ -400,10 +412,25 @@ class CommodityDetails:
 
         assert all(
             com in self.int_com_names + self.cnt_com_names
-            for com in self.com_names_w_unlim_earth_supply
+            for com in self.infinite_supply_dict.keys()
         ), """
         All commodity names with unlimited supply from Earth
         must be in the commodity names list."""
+
+        acceptable_inf_com_data_keys = ["node", "mission", "io"]
+        for com_name in self.infinite_supply_dict.keys():
+            for com_data in self.infinite_supply_dict[com_name]:
+                assert all(
+                    com_data_key in acceptable_inf_com_data_keys
+                    for com_data_key in com_data.keys()
+                ), """
+                At least one key in commodity data subdictionary unrecognized.
+                    Received values: {}
+                    Expected values: {}""".format(
+                        com_data.keys(),
+                        acceptable_inf_com_data_keys
+                    )
+
 
         self.n_int_com: int = len(self.int_com_names)
         self.n_cnt_com: int = len(self.cnt_com_names)
@@ -624,6 +651,46 @@ class InputData:
                 self.depot.depot_nodes,
                 self.node.holdover_nodes,
             )
+
+        for comdty_name in self.comdty.infinite_supply_dict.keys():
+            for comdty_data in self.comdty.infinite_supply_dict[comdty_name]:
+                node_name = comdty_data["node"]
+                assert(node_name in self.node.node_names), """
+                Unrecognized node in infinite_supply_dict subdictionary for commodity {}
+                    Received value: {}
+                    Allowed node names: {}""".format(
+                        comdty_name,
+                        node_name,
+                        self.node.node_names
+                    )
+
+                mission = comdty_data["mission"]
+                assert(mission == "all" or mission.isdigit()),"""
+                "Uncrecognized mission in infinite_supply_dict subdictionary for commodity {}.
+                Mission should be "all" or the string representation of an integer.
+                    Received value: {}""".format(
+                        comdty_name,
+                        mission
+                    )
+                if mission.isdigit():
+                    assert(int(mission) < self.mission.n_mis),"""
+                "Uncrecognized mission in infinite_supply_dict subdictionary for commodity {}.
+                If mission is an integer, it should be less than the total number of missions.
+                    Received value: {}
+                    Number of missions: {}""".format(
+                        comdty_name,
+                        mission,
+                        self.mission.n_mis
+                    )
+
+                io = comdty_data["io"]
+                assert(io == "start" or io == "end" or io == "all"),"""
+                "Uncrecognized io in infinite_supply_dict subdictionary for commodity {}.
+                io should be "start", "end", or "all".
+                    Received value: {}""".format(
+                        comdty_name,
+                        io
+                )
 
         self.n_scenarios: int = 1
         self.is_stochastic: bool = False

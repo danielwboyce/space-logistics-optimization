@@ -102,6 +102,16 @@ def main():
         ],
         # list of propellant commodity names
         prop_com_names=["oxygen", "hydrogen"],
+        infinite_supply_dict={
+            "plant":          [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "maintenance":    [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "consumption":    [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "habitat":        [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "oxygen":         [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
+            "hydrogen":       [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
+            "sample":         [{ "node": "LS",    "mission": "all", "io": "end"   }],
+            "oxygen_storage": [{ "node": "LS",    "mission": "all", "io": "end"   }],
+        }
     )
 
     node_details = NodeDetails(
