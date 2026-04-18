@@ -37,25 +37,25 @@ def main():
         n_mis=n_mis,  # number of missions
         n_sc_design=2,  # number of SC design
         n_sc_per_design=3,  # number of SC per design
-        t_mis_tot=11,  # total single mission duration, days
-        t_surf_mis=1,  # lunar surface mission duration, days
-        n_crew=0,  # number of crew needed on lunar surface
-        sample_mass=np.zeros(n_mis).tolist(), #[0, 0],  # sample collected from lunar surface, kg
-        habit_pl_mass=np.zeros(n_mis).tolist(), #[0, 0],  # habitat and payload mass, kg
+        t_mis_tot=13,  # total single mission duration, days
+        t_surf_mis=3,  # lunar surface mission duration, days
+        n_crew=4,  # number of crew needed on lunar surface
+        sample_mass=[1000, 1100], #np.zeros(n_mis).tolist(), #[0, 0],  # sample collected from lunar surface, kg
+        habit_pl_mass=[2000, 3000], #np.zeros(n_mis).tolist(), #[0, 0],  # habitat and payload mass, kg
         # consumption cost (food+water+oxygen), kg/(day*person)
         consumption_cost=8.655,
         # maintenance cost, fraction/flight (0.01 means 1% per flight)
         maintenance_cost=0.01,
-        time_interval=11,  # time interval between missions, days
+        time_interval=365,  # time interval between missions, days
         use_increased_pl=False,  # true if increased demand is used
     )
 
     objective_parameters = ObjectiveParameters(
-        objective_type="fmleo", # Objective, should be "imleo" or "fmleo"
+        objective_type="imleo", # Objective, should be "imleo" or "fmleo"
     )
 
     sc_parameters = SCParameters(
-        isp=460,  # specific impulse, s
+        isp=420,  # specific impulse, s
         oxi_fuel_ratio=5.5,  # oxidizer to fuel ratio
         prop_density=360,  # propellant density, kg/m^3
         misc_mass_fraction=0.05,  # misc mass factor
@@ -107,16 +107,16 @@ def main():
         ],
         # list of propellant commodity names
         prop_com_names=["oxygen", "hydrogen"],
-        infinite_supply_dict={
-            "plant":          [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "maintenance":    [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "consumption":    [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "habitat":        [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "oxygen":         [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
-            "hydrogen":       [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
-            "sample":         [{ "node": "LS",    "mission": "all", "io": "end"   }],
-            "oxygen_storage": [{ "node": "LS",    "mission": "all", "io": "end"   }],
-        }
+        # infinite_supply_dict={
+        #     "plant":          [{ "node": "Earth", "mission": "0",   "io": "start" }],
+        #     "maintenance":    [{ "node": "Earth", "mission": "0",   "io": "start" }],
+        #     "consumption":    [{ "node": "Earth", "mission": "0",   "io": "start" }],
+        #     "habitat":        [{ "node": "Earth", "mission": "0",   "io": "start" }],
+        #     "oxygen":         [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
+        #     "hydrogen":       [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
+        #     "sample":         [{ "node": "LS",    "mission": "all", "io": "end"   }],
+        #     "oxygen_storage": [{ "node": "LS",    "mission": "all", "io": "end"   }],
+        # }
     )
 
     node_details = NodeDetails(
@@ -158,7 +158,7 @@ def main():
     )
     sl_cls = SpaceLogistics(input_data)
     # sl_cls.optimizer.admm.run_alc_loop()
-    # sl_cls.optimizer.pwl.solve_w_pwl_approx(pwl_increment=2500)
+    sl_cls.optimizer.pwl.solve_w_pwl_approx(pwl_increment=2500)
 
     # # Calculate some spacecraft params (for a spacecraft that does an
     # # out-and-back delivery of a payload)
@@ -180,46 +180,46 @@ def main():
     # z_depot = np.exp(total_dv_depot * 1.0e3 / (sc_parameters.isp * sc_parameters.g0))
     # depot_prop = (z_depot - 1) * depot_dry_mass * 1.05
 
-    fixed_sc_designs = np.array(
-        [
-            [
-                10000,  # payload (max)
-                23157.3159202894,     # propellant (max)
-                12104.3364467333, # dry mass
-            ],
-            [
-                2596.27723636357,
-                48813.8307342091,
-                12653.80774804,
-            ],
-            # [
-            #     10000,
-            #     36332.3613593395,
-            #     15052.7143185748
-            # ],
-            # [
-            #     500,
-            #     53768.0653044512,
-            #     12162.7074715113
-            # ],
-            # [
-            #     300000,
-            #     0.0,
-            #     0.0
-            # ],
-            # [
-            #     depot_payload,
-            #     0.0,
-            #     depot_dry_mass
-            # ],
-            # [
-            #     sc_payload,  # payload (max)
-            #     sc_prop,     # propellant (max)
-            #     sc_dry_mass, # dry mass
-            # ],
-        ]
-    )
-    sl_cls.optimizer.fixed_sc.solve_network_flow_MILP(fixed_sc_designs)
+    # fixed_sc_designs = np.array(
+    #     [
+    #         [
+    #             10000,  # payload (max)
+    #             23157.3159202894,     # propellant (max)
+    #             12104.3364467333, # dry mass
+    #         ],
+    #         [
+    #             2596.27723636357,
+    #             48813.8307342091,
+    #             12653.80774804,
+    #         ],
+    #         # [
+    #         #     10000,
+    #         #     36332.3613593395,
+    #         #     15052.7143185748
+    #         # ],
+    #         # [
+    #         #     500,
+    #         #     53768.0653044512,
+    #         #     12162.7074715113
+    #         # ],
+    #         # [
+    #         #     300000,
+    #         #     0.0,
+    #         #     0.0
+    #         # ],
+    #         # [
+    #         #     depot_payload,
+    #         #     0.0,
+    #         #     depot_dry_mass
+    #         # ],
+    #         # [
+    #         #     sc_payload,  # payload (max)
+    #         #     sc_prop,     # propellant (max)
+    #         #     sc_dry_mass, # dry mass
+    #         # ],
+    #     ]
+    # )
+    # sl_cls.optimizer.fixed_sc.solve_network_flow_MILP(fixed_sc_designs)
 
 
 if __name__ == "__main__":
