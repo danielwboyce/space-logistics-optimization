@@ -27,7 +27,7 @@ class Variables:
         if self.builder.objective_type == "imleo":
             # IMLEO result storage, not really a design variable
             m.imleo = variable(domain=NonNegativeReals)
-            self.builder.idx_name_dict["fmleo"] = []
+            self.builder.idx_name_dict["imleo"] = []
         elif self.builder.objective_type == "fmleo":
             # FMLEO result storage, not really a design variable
             m.fmleo = variable(domain=NonNegativeReals)
