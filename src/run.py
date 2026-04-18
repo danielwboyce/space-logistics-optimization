@@ -32,7 +32,7 @@ from input_data_class import (
 
 
 def main():
-    # Scenario: 2 crewed missions, no isru
+    # Scenario: 2 crewed missions, no isru, no depots
     if True:
         n_mis = 2
         t_mis_tot = 13
