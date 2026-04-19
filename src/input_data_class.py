@@ -580,17 +580,25 @@ class RuntimeSettings:
 
     Args:
         pwl_increment_list: List of PWL increments to try
-        store_results_to_csv(optional): True if results stored to a .csv file. Defaults to False.
-        mip_solver(optional): MIP solver name. Defaults to "gurobi"
-        mip_subsolver(optional): MIP subsolver name for spatial branch & bounds. Defaults to "cplex"
-        max_time(optional): maximum computation time in seconds. Defaults to 1000
-        max_time_wo_imprv(optional): maximum computation time without improvement in seconds.
-            Used for Baron and defaults to 1000.
-        max_threads(optional): maximum number of CPU threads allowed to use for computation
-        solver_verbose(optional): True if solver output is needed on terminal. Defaults to False.
-        keep_files: True if misc. solver output files (log file,
+        store_results_to_csv(optional): True if results stored to a .csv file.
+            Defaults to False.
+        mip_solver(optional): MIP solver name. Defaults to "gurobi".
+        mip_subsolver(optional): MIP subsolver name for spatial branch &
+            bounds. Defaults to "cplex"
+        max_time(optional): maximum computation time in seconds. Defaults to
+            1000.
+        max_time_wo_imprv(optional): maximum computation time without
+            improvement in seconds. Used for Baron and defaults to 1000.
+        max_threads(optional): maximum number of CPU threads allowed to use
+            for computation
+        solver_verbose(optional): True if solver output is needed on terminal.
+            Defaults to False.
+        keep_files(optional): True if misc. solver output files (log file,
             solution file, and model file) are kept. Defaults to False.
-        cplex_path(optional): Abosolute path to CPLEX executable (libcplex****.so). Relative path is not supported.
+        files_postfix(optional): If keep_files is True, a postfix that 
+            may be added to log files to distinguish them.
+        cplex_path(optional): Abosolute path to CPLEX executable
+            (libcplex****.so). Relative path is not supported.
     """
 
     pwl_increment_list: list[float]
@@ -602,6 +610,7 @@ class RuntimeSettings:
     max_threads: int = mp.cpu_count()
     solver_verbose: bool = False
     keep_files: bool = False
+    files_postfix: str = ""
     cplex_path: str = field(
         default_factory=lambda: (
             "/home/masafumi/opt/ibm/ILOG/CPLEX_Studio2211/cplex/bin/x86-64_linux/libcplex2211.so"

@@ -12,7 +12,7 @@ from pyomo.opt.results.results_ import SolverResults
 # from pyomo.common.log import logging
 from pyomo.environ import ConcreteModel
 from pyomo.kernel import block
-# from pyomo.repn.plugins.lp_writer import LPWriter
+from pyomo.repn.plugins.lp_writer import LPWriter
 
 try:
     from initializer import InitMixin
@@ -43,14 +43,19 @@ class SolverInterface(InitMixin):
             NotImplementedError(
                 "Pyomo environ ConcreteModel is not supported. Use pyomo kernel block instead."
             )
-        # lp_writer = LPWriter()
-        # lp_writer.write(model, open('mymodel.new.lp', 'w'), symbolic_solver_labels=True)
+        if self.runtime.keep_files:
+            lp_writer = LPWriter()
+            lp_writer.write(
+                model,
+                open('model' + self.model.files_postfix + '.lp', 'w'),
+                symbolic_solver_labels=True,
+            )
         opt = self._set_solver_options()
         solved_model: SolverResults = opt.solve(
             model,
             tee=self.runtime.solver_verbose,
             keepfiles=self.runtime.keep_files,
-            logfile="solver_logfile.log",
+            logfile="solver_logfile" + self.model.files_postfix + ".log",
         )
         print("Termination Condition: ", solved_model.solver.termination_condition)
         # if solved_model.solver.termination_condition in {
@@ -59,8 +64,12 @@ class SolverInterface(InitMixin):
         # }:
         #     logger = logging.getLogger('pyomo.util.infeasible')
         #     logger.setLevel(logging.INFO)
-        #     handler = logging.FileHandler('infeasible_constraints.log')
-        #     # handler = logging.FileHandler('infeasible_bounds.log')
+        #     handler = logging.FileHandler(
+        #         'infeasible_constraints' + self.model.files_postfix + '.log'
+        #     )
+        #     # handler = logging.FileHandler(
+        #     #     'infeasible_bounds' + self.model.files_postfix + '.log'
+        #     # )
         #     handler.setFormatter(logging.Formatter('%(message)s'))
         #     logger.addHandler(handler)
         #     log_infeasible_constraints(model, logger=logger)
@@ -68,7 +77,9 @@ class SolverInterface(InitMixin):
 
         # #     # logger = logging.getLogger('pyomo.contrib.iis')
         # #     # logger.setLevel(logging.INFO)
-        # #     # handler = logging.FileHandler('iis.log')
+        # #     # handler = logging.FileHandler(
+        # #     #     'iis' + self.model.files_postfix + '.log'
+        # #     # )
         # #     # handler.setFormatter(logging.Formatter('%(message)s'))
         # #     # logger.addHandler(handler)
         # #     # compute_infeasibility_explanation(solved_model, solver=solved_model.solver, logger=logger)
@@ -84,7 +95,10 @@ class SolverInterface(InitMixin):
             print("Optimal solution not found.")
             return model
         if self.runtime.store_results_to_csv:
-            self.optimizer.output.write_results(model)
+            self.optimizer.output.write_results(
+                model,
+                self.model.files.files_postfix
+            )
         return model
 
     def _set_solver_options(self) -> OptSolver:

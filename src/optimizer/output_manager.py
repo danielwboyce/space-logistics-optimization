@@ -51,7 +51,11 @@ class OutputManager(InitMixin):
             sc_vars[sc_des, self.sc_var_dict["dry mass"]] = model.dry_mass[sc_des].value
         return sc_vars
 
-    def write_results(self, model: block) -> pd.DataFrame | None:
+    def write_results(
+            self,
+            model: block,
+            files_postfix: str
+    ) -> pd.DataFrame | None:
         """Write the results of the optimization model to a .csv file
 
         pyomo.kernel block is the only supported format.
@@ -59,6 +63,8 @@ class OutputManager(InitMixin):
 
         Args:
             model: Solved optimization model defined as a block in pyomo.kernel
+            files_postfix: Optional postfix that can be affixed to output
+                files.
         Returns:
             Pandas dataframe of the reusults
         """
@@ -78,7 +84,7 @@ class OutputManager(InitMixin):
         )
         df = df.sort_values(by=["Variable Name", "time"], ascending=[True, True])
         if self.runtime.store_results_to_csv:
-            filename: str = datetime.now().strftime("%Y_%m_%d_%H%M%S") + ".csv"
+            filename: str = datetime.now().strftime("%Y_%m_%d_%H%M%S") + files_postfix + ".csv"
             dir = os.path.join("data", "opt_results")
             if os.path.exists(dir):
                 df.to_csv(os.path.join(dir, filename), index=False)
