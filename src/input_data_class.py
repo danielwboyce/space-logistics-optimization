@@ -301,6 +301,12 @@ class ISRUParameters:
                 Number of variables per design: {}
             """.format(self.n_isru_design, self.n_isru_vars)
 
+            assert(self.n_isru_design == 1),"""
+            For now, only 1 ISRU design is allowed.
+            Received value:
+                Number of ISRU design: {}
+            """.format(self.n_isru_design)
+
         assert self.production_rate > 0, """
         ISRU production rate must be positive. Received value: {}
         """.format(self.production_rate)

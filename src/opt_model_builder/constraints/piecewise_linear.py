@@ -1,4 +1,5 @@
 from __future__ import annotations
+from itertools import product
 from typing import TYPE_CHECKING
 from pyomo.kernel import (
     block,
@@ -48,12 +49,12 @@ class PiecewiseLinearConstraints:
         if self.builder.use_isru:
             m.pwl_isru_O2rate = block_dict()
             isru_pwl_bp: dict = self._generate_isru_pwl_breakpoints()
-            for isru in m.isru_des_idx:
-                m.pwl_isru_O2rate[isru] = piecewise(
+            for isru, time, scnr in product(m.isru_des_idx, m.time_idx, m.scnr_idx):
+                m.pwl_isru_O2rate[isru, time, scnr] = piecewise(
                     breakpoints=isru_pwl_bp["triangulation"],
                     values=isru_pwl_bp["function values"],
-                    input=m.isru_mass[isru],
-                    output=m.isru_O2rate[isru],
+                    input=m.isru_mass[isru, time, scnr],
+                    output=m.isru_O2rate[isru, time, scnr],
                     bound="eq",
                 )
         return m
