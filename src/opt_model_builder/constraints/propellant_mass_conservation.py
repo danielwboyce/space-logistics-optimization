@@ -297,7 +297,10 @@ class PropellantConservation:
             )
             + (self.builder.isru_work_time[i][t_id] / 365)
             * self.isru_ratio
-            * m.isru_mass[t, scnr]
+            * sum(
+                m.isru_mass[isru_des, t, scnr]
+                for isru_des in m.isru_des_idx
+            )
             * self.builder.isru.production_rate
             # FIX: is the production rate fixed here??
         )

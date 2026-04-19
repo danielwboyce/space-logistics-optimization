@@ -250,7 +250,10 @@ class CntComConservation:
         m.isru_plant_cnsv = constraint_dict()
         for t, scnr in product(m.time_idx, m.scnr_idx):
             m.isru_plant_cnsv[t, scnr] = constraint(
-                m.isru_mass[t, scnr]
+                sum(
+                    m.isru_mass[isru_des, t, scnr]
+                    for isru_des in m.isru_des_idx
+                )
                 == sum(
                     m.cnt_com[
                         sc_des,
@@ -264,7 +267,7 @@ class CntComConservation:
                     ]
                     for sc_des in m.sc_des_idx
                     for sc_cp in m.sc_copy_idx
-                    if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
+                    # if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
                 )
             )
         return m

@@ -61,6 +61,6 @@ class Indices:
 
         if self.builder.use_isru:
             m.isru_des_idx = range(self.builder.n_isru_design)
-            self.builder.idx_name_dict["all"] += ["isru"]
+            self.builder.idx_name_dict["all"] += ["isru_des"]
 
         return m

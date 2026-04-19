@@ -33,7 +33,7 @@ from input_data_class import (
 
 def main():
     # Scenario: 2 crewed missions, no isru, no depots
-    if True:
+    if False:
         n_mis = 2
         t_mis_tot = 13
         t_surf_mis = 3
@@ -45,6 +45,7 @@ def main():
         isp = 420.0
         depot_nodes = None
         use_isru = False
+        n_isru_design = 0
         infinite_supply_dict={
             "plant":          [{ "node": "Earth", "mission": "all", "io": "start" }],
             "maintenance":    [{ "node": "Earth", "mission": "all", "io": "start" }],
@@ -84,6 +85,7 @@ def main():
         isp = 460.0
         depot_nodes = None
         use_isru = False
+        n_isru_design = 0
         infinite_supply_dict={
             "plant":          [{ "node": "Earth", "mission": "0",   "io": "start" }],
             "maintenance":    [{ "node": "Earth", "mission": "0",   "io": "start" }],
@@ -124,6 +126,7 @@ def main():
         isp = 460.0
         depot_nodes = ["LEO", "LS"]
         use_isru = False
+        n_isru_design = 0
         infinite_supply_dict={
             "plant":          [{ "node": "Earth", "mission": "0",   "io": "start" }],
             "maintenance":    [{ "node": "Earth", "mission": "0",   "io": "start" }],
@@ -153,6 +156,46 @@ def main():
                     300000.0,          # payload (max)
                          0.0,          # propellant (max)
                          0.0,          # dry mass
+                ],
+            ]
+        )
+    # Scenario: 2 crewed missions, with isru, no depots
+    if True:
+        n_mis = 2
+        t_mis_tot = 13
+        t_surf_mis = 3
+        n_crew = 4
+        sample_mass = [1000, 1100]
+        habit_pl_mass = [2000, 3000]
+        time_interval = 365
+        objective_type = "imleo"
+        isp = 420.0
+        depot_nodes = None
+        use_isru = True
+        n_isru_design = 1
+        infinite_supply_dict={
+            "plant":          [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "maintenance":    [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "consumption":    [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "habitat":        [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "oxygen":         [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "hydrogen":       [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "sample":         [{ "node": "LS",    "mission": "all", "io": "end"   }],
+        }
+        holdover_nodes = ["LLO", "LS"]
+        use_fixed_sc_designs = False
+        # These are the returns for when use_fixed_sc_designs=False
+        fixed_sc_designs = np.array(
+            [
+                [
+                     2167.59307965386, # payload (max)
+                    14871.2848783733,  # propellant (max)
+                     7131.58477923172, # dry mass
+                ],
+                [
+                      500.0,          # payload (max)
+                    57554.0718996,    # propellant (max)
+                    14295.2063130593, # dry mass
                 ],
             ]
         )
@@ -193,7 +236,7 @@ def main():
 
     isru_parameters = ISRUParameters(
         use_isru=use_isru,  # True if ISRU is used
-        n_isru_design=0,  # number of ISRU design
+        n_isru_design=n_isru_design,  # number of ISRU design
         H2_H2O_ratio=1 / 9,  # H2 production per H2O
         O2_H2O_ratio=1 - 1 / 9,  # O2 production per H2O
         production_rate=5,  # production [kg] per year and per mass [kg]

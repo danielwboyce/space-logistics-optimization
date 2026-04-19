@@ -172,10 +172,10 @@ class Variables:
         """Define variables related to ISRU size and performance"""
         m.isru_mass = variable_dict()
         m.isru_O2rate = variable_dict()
-        for t, scnr in product(m.time_idx, m.scnr_idx):
+        for isru_des, t, scnr in product(m.isru_des_idx, m.time_idx, m.scnr_idx):
             # FIXME: Use big M to let it be 0 or above 400
-            m.isru_mass[t, scnr] = variable(domain=Reals, lb=0, ub=10000)
-            m.isru_O2rate[t, scnr] = variable(domain=NonNegativeReals)
-        self.builder.idx_name_dict["isru_mass"] = ["time", "scnr"]
-        self.builder.idx_name_dict["isru_O2rate"] = ["time", "scnr"]
+            m.isru_mass[isru_des, t, scnr] = variable(domain=Reals, lb=0, ub=10000)
+            m.isru_O2rate[isru_des, t, scnr] = variable(domain=NonNegativeReals)
+        self.builder.idx_name_dict["isru_mass"] = ["isru_des", "time", "scnr"]
+        self.builder.idx_name_dict["isru_O2rate"] = ["isru_des", "time", "scnr"]
         return m
