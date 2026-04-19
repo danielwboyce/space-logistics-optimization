@@ -27,6 +27,7 @@ class CntComConservation:
     def set_non_prop_continuous_com_conserv_constraints(self, m: block) -> block:
         if self.builder.use_isru:
             m = self._set_isru_plant_mass_defition(m)
+            self._set_isru_minimum_mass_constraint(m)
         m.cnt_com_cnsv = constraint_dict()
         for i, j, pc, t, scnr in product(
             m.dep_node_idx,
@@ -250,6 +251,7 @@ class CntComConservation:
         m.isru_plant_cnsv = constraint_dict()
         for t, scnr in product(m.time_idx, m.scnr_idx):
             m.isru_plant_cnsv[t, scnr] = constraint(
+                # ZZZ FIXME this will need fixing when we actually have different ISRU types
                 sum(
                     m.isru_mass[isru_des, t, scnr]
                     for isru_des in m.isru_des_idx
@@ -271,6 +273,19 @@ class CntComConservation:
                 )
             )
         return m
+    
+    def _set_isru_minimum_mass_constraint(self, m) -> block:
+        """Set minimum mass constraint for ISRU"""
+        m.isru_minimum_mass = constraint_dict()
+        for t, scnr in product(m.time_idx, m.scnr_idx):
+            # ZZZ FIXME this will need fixing when we actually have idfferent ISRU types
+            m.isru_minimum_mass[t, scnr] = constraint(
+                sum(
+                    m.isru_mass[isru_des, t, scnr]
+                    for isru_des in m.isru_des_idx
+                )
+                >= 400.0
+            )
 
     # def _set_oxygen_storage_constraints(self, m, i, j, pc, t, scnr) -> block:
     #     """Payload oxygen may be "consumed" to form regular oxygen and
