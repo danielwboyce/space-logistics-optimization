@@ -120,6 +120,11 @@ class Objective:
                     for sc_des in m.sc_des_idx
                     for sc_cp in m.sc_copy_idx
                     for t in time_list
+                    if self.builder.is_feasible_arc(
+                        self.builder.node_dict["Earth"],
+                        self.builder.node_dict["LEO"],
+                        sc_des,
+                        sc_cp)
                 )
                 for int_com in m.int_com_idx
             )
@@ -139,6 +144,11 @@ class Objective:
                     for sc_des in m.sc_des_idx
                     for sc_cp in m.sc_copy_idx
                     for t in time_list
+                    if self.builder.is_feasible_arc(
+                        self.builder.node_dict["Earth"],
+                        self.builder.node_dict["LEO"],
+                        sc_des,
+                        sc_cp)
                 )
                 for cnt_com in m.cnt_com_idx
             )
@@ -156,6 +166,11 @@ class Objective:
                 for sc_des in m.sc_des_idx
                 for sc_cp in m.sc_copy_idx
                 for t in time_list
+                if self.builder.is_feasible_arc(
+                    self.builder.node_dict["Earth"],
+                    self.builder.node_dict["LEO"],
+                    sc_des,
+                    sc_cp)
             )
         )
         return term

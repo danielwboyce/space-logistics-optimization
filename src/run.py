@@ -160,7 +160,7 @@ def main():
             ]
         )
     # Scenario: 2 crewed missions, with isru, no depots
-    if True:
+    if False:
         n_mis = 2
         t_mis_tot = 13
         t_surf_mis = 3
@@ -183,6 +183,46 @@ def main():
             "sample":         [{ "node": "LS",    "mission": "all", "io": "end"   }],
         }
         holdover_nodes = ["LLO", "LS"]
+        use_fixed_sc_designs = False
+        # These are the returns for when use_fixed_sc_designs=False
+        fixed_sc_designs = np.array(
+            [
+                [
+                     2167.59307965386, # payload (max)
+                    14871.2848783733,  # propellant (max)
+                     7131.58477923172, # dry mass
+                ],
+                [
+                      500.0,          # payload (max)
+                    57554.0718996,    # propellant (max)
+                    14295.2063130593, # dry mass
+                ],
+            ]
+        )
+    # Scenario: 2 crewed missions, with isru, with depots
+    if True:
+        n_mis = 2
+        t_mis_tot = 13
+        t_surf_mis = 3
+        n_crew = 4
+        sample_mass = [1000, 1100]
+        habit_pl_mass = [2000, 3000]
+        time_interval = 365
+        objective_type = "imleo"
+        isp = 420.0
+        depot_nodes = ["LEO", "LS"]
+        use_isru = True
+        n_isru_design = 1
+        infinite_supply_dict={
+            "plant":          [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "maintenance":    [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "consumption":    [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "habitat":        [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "oxygen":         [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "hydrogen":       [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "sample":         [{ "node": "LS",    "mission": "all", "io": "end"   }],
+        }
+        holdover_nodes = ["LEO", "LLO", "LS"]
         use_fixed_sc_designs = False
         # These are the returns for when use_fixed_sc_designs=False
         fixed_sc_designs = np.array(

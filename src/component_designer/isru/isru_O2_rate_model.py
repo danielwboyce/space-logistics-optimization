@@ -14,7 +14,7 @@ class ISRUDesign(InitMixin):
         super().__init__(self.comp._input_data)
 
     def get_isru_O2_rate(self, isru_mass: float) -> float:
-        if isru_mass > 400:
+        if isru_mass >= 400:
             return isru_mass * (
                 -0.43798
                 + 6.96226 * (1 - exp(-isru_mass / 812.15628))
