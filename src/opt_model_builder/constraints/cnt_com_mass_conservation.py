@@ -27,7 +27,7 @@ class CntComConservation:
     def set_non_prop_continuous_com_conserv_constraints(self, m: block) -> block:
         if self.builder.use_isru:
             m = self._set_isru_plant_mass_defition(m)
-            self._set_isru_minimum_mass_constraint(m)
+            # self._set_isru_minimum_mass_constraint(m)
         m.cnt_com_cnsv = constraint_dict()
         for i, j, pc, t, scnr in product(
             m.dep_node_idx,

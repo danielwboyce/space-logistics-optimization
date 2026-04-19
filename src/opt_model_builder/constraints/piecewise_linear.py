@@ -158,7 +158,7 @@ class PiecewiseLinearConstraints:
 
     # FIXME: The ISRU mass breakpoints are hard-coded.
     def _generate_isru_pwl_breakpoints(self) -> dict[str, list]:
-        isru_mass_breakpoints: list = [0, 400, 2000, 4000, 6000, 8000, 10000]
+        isru_mass_breakpoints: list = [0, 399, 400, 2000, 4000, 6000, 8000, 10000]
         isru_O2rate_breakpoints: list = []
         for isru_mass in isru_mass_breakpoints:
             isru_O2rate = self.builder._comp_design.isru_des.get_isru_O2_rate(
