@@ -47,7 +47,7 @@ class SolverInterface(InitMixin):
             lp_writer = LPWriter()
             lp_writer.write(
                 model,
-                open('model' + self.model.files_postfix + '.lp', 'w'),
+                open('model' + self.runtime.files_postfix + '.lp', 'w'),
                 symbolic_solver_labels=True,
             )
         opt = self._set_solver_options()
@@ -55,7 +55,7 @@ class SolverInterface(InitMixin):
             model,
             tee=self.runtime.solver_verbose,
             keepfiles=self.runtime.keep_files,
-            logfile="solver_logfile" + self.model.files_postfix + ".log",
+            logfile="solver_logfile" + self.runtime.files_postfix + ".log",
         )
         print("Termination Condition: ", solved_model.solver.termination_condition)
         # if solved_model.solver.termination_condition in {
@@ -65,10 +65,10 @@ class SolverInterface(InitMixin):
         #     logger = logging.getLogger('pyomo.util.infeasible')
         #     logger.setLevel(logging.INFO)
         #     handler = logging.FileHandler(
-        #         'infeasible_constraints' + self.model.files_postfix + '.log'
+        #         'infeasible_constraints' + self.runtime.files_postfix + '.log'
         #     )
         #     # handler = logging.FileHandler(
-        #     #     'infeasible_bounds' + self.model.files_postfix + '.log'
+        #     #     'infeasible_bounds' + self.runtime.files_postfix + '.log'
         #     # )
         #     handler.setFormatter(logging.Formatter('%(message)s'))
         #     logger.addHandler(handler)
@@ -78,7 +78,7 @@ class SolverInterface(InitMixin):
         # #     # logger = logging.getLogger('pyomo.contrib.iis')
         # #     # logger.setLevel(logging.INFO)
         # #     # handler = logging.FileHandler(
-        # #     #     'iis' + self.model.files_postfix + '.log'
+        # #     #     'iis' + self.runtime.files_postfix + '.log'
         # #     # )
         # #     # handler.setFormatter(logging.Formatter('%(message)s'))
         # #     # logger.addHandler(handler)
@@ -97,7 +97,7 @@ class SolverInterface(InitMixin):
         if self.runtime.store_results_to_csv:
             self.optimizer.output.write_results(
                 model,
-                self.model.files.files_postfix
+                self.runtime.files_postfix
             )
         return model
 
