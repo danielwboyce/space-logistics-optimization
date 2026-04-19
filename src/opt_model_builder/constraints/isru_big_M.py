@@ -32,6 +32,9 @@ class ISRUBigM:
 
     def set_isru_big_M_constraints(self, m: block) -> block:
         """Set big-M constraints for the ISRU variables."""
+        if not self.builder.use_isru:
+            return m
+
         little_M_val: float = 400
         big_M_val: float = 100000
         m.isru_bigM_const_1 = constraint_dict()
