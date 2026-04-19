@@ -301,6 +301,9 @@ class PropellantConservation:
                 m.isru_mass[isru_des, t, scnr]
                 for isru_des in m.isru_des_idx
             )
-            * self.builder.isru.production_rate
+            * sum(
+                m.isru_O2rate[isru_des, t, scnr]
+                for isru_des in m.isru_des_idx
+            )
             # FIX: is the production rate fixed here??
         )
