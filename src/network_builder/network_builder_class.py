@@ -485,13 +485,15 @@ class NetworkBuilder(InitMixin):
 
         ISRU work time is time between the previous and current time step.
         """
-        holdover_win_on_LS: list = self.allowed_time_window[self.node_dict["LS"]][
-            self.node_dict["LS"]
-        ]
+        node_id = self.node_dict["LS"]
+        holdover_win_on_LS: list = self.allowed_time_window[node_id][node_id]
+        LS_holdover_time = self._get_holdover_time("LS")
+
         for date_id in range(len(holdover_win_on_LS) - 1):
-            self.isru_work_time[self.node_dict["LS"]][date_id] = (
-                holdover_win_on_LS[date_id + 1] - holdover_win_on_LS[date_id]
-            )
+            if (holdover_win_on_LS[date_id] % self.mis.time_interval) % 2 == 0:
+                self.isru_work_time[node_id][date_id] = LS_holdover_time
+            else:
+                self.isru_work_time[node_id][date_id] = self.mis.time_interval - LS_holdover_time
 
     def _define_date_to_time_idx_dict(self) -> None:
         """Defines dict to convert date to time index and vice versa.
