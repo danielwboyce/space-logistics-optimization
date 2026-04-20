@@ -32,9 +32,12 @@ from input_data_class import (
 
 
 def main():
+    # Revision string
+    # revision = "abc1234"
+    revision = None
+
     # Scenario: 2 crewed missions, no isru, no depots
     if False:
-        files_postfix = "scen_2_crewed_no_isru_no_depots_imleo"
         n_mis = 2
         t_mis_tot = 13
         t_surf_mis = 3
@@ -75,7 +78,6 @@ def main():
         )
     # Scenario: 2 uncrewed missions, no isru, no depots
     if False:
-        files_postfix = "scen_2_uncrewed_no_isru_no_depots_fmleo"
         n_mis = 2
         t_mis_tot = 11
         t_surf_mis = 1
@@ -117,7 +119,6 @@ def main():
         )
     # Scenario: 2 uncrewed missions, no isru, with depots
     if False:
-        files_postfix = "scen_2_uncrewed_no_isru_with_depots_fmleo"
         n_mis = 2
         t_mis_tot = 11
         t_surf_mis = 1
@@ -164,7 +165,6 @@ def main():
         )
     # Scenario: 2 crewed missions, with isru, no depots
     if False:
-        files_postfix = "scen_2_crewed_with_isru_no_depots_imleo"
         n_mis = 2
         t_mis_tot = 13
         t_surf_mis = 3
@@ -205,7 +205,6 @@ def main():
         )
     # Scenario: 2 crewed missions, with isru, with depots
     if True:
-        files_postfix = "scen_2_crewed_with_isru_with_depots_imleo"
         n_mis = 2
         t_mis_tot = 13
         t_surf_mis = 3
@@ -244,14 +243,6 @@ def main():
                 ],
             ]
         )
-
-    # Revision string, adjust files_postfix
-    files_postfix = "." + files_postfix
-
-    revision = "a7da8f6"
-    # revision = None
-    if revision is not None:
-        files_postfix = "." + revision + files_postfix
 
     mission_parameters = MissionParameters(
         n_mis=n_mis,  # number of missions
@@ -336,6 +327,15 @@ def main():
         outbound_path=["Earth", "LEO", "LLO", "LS"],
     )
 
+    files_postfix = ".scen_"
+    if revision is not None:
+        files_postfix = "." + revision + files_postfix
+    files_postfix = (files_postfix
+                     + str(n_mis) + "mis_"
+                     + str(n_crew) + "crew_"
+                     + str(n_isru_design) + "isru_"
+                     + ("0" if depot_nodes is None else str(len(depot_nodes))) + "depots_"
+                     + objective_type)
     runtime_settings = RuntimeSettings(
         pwl_increment_list=[2500],  # List of PWL increment to try
         store_results_to_csv=True,  # True if results stored to a .csv file
