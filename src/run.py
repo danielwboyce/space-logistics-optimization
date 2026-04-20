@@ -34,7 +34,7 @@ from input_data_class import (
 def main():
     # Scenario: 2 crewed missions, no isru, no depots
     if False:
-        files_postfix = ".scen_2_crewed_no_isru_no_depots"
+        files_postfix = "scen_2_crewed_no_isru_no_depots_imleo"
         n_mis = 2
         t_mis_tot = 13
         t_surf_mis = 3
@@ -75,7 +75,7 @@ def main():
         )
     # Scenario: 2 uncrewed missions, no isru, no depots
     if False:
-        files_postfix = ".scen_2_uncrewed_no_isru_no_depots"
+        files_postfix = "scen_2_uncrewed_no_isru_no_depots_fmleo"
         n_mis = 2
         t_mis_tot = 11
         t_surf_mis = 1
@@ -117,7 +117,7 @@ def main():
         )
     # Scenario: 2 uncrewed missions, no isru, with depots
     if False:
-        files_postfix = ".scen_2_uncrewed_no_isru_with_depots"
+        files_postfix = "scen_2_uncrewed_no_isru_with_depots_fmleo"
         n_mis = 2
         t_mis_tot = 11
         t_surf_mis = 1
@@ -164,7 +164,7 @@ def main():
         )
     # Scenario: 2 crewed missions, with isru, no depots
     if False:
-        files_postfix = ".scen_2_crewed_with_isru_no_depots"
+        files_postfix = "scen_2_crewed_with_isru_no_depots_imleo"
         n_mis = 2
         t_mis_tot = 13
         t_surf_mis = 3
@@ -205,7 +205,7 @@ def main():
         )
     # Scenario: 2 crewed missions, with isru, with depots
     if True:
-        files_postfix = ".scen_2_crewed_with_isru_with_depots"
+        files_postfix = "scen_2_crewed_with_isru_with_depots_imleo"
         n_mis = 2
         t_mis_tot = 13
         t_surf_mis = 3
@@ -244,6 +244,14 @@ def main():
                 ],
             ]
         )
+
+    # Revision string, adjust files_postfix
+    files_postfix = "." + files_postfix
+
+    revision = "a7da8f6"
+    # revision = None
+    if revision is not None:
+        files_postfix = "." + revision + files_postfix
 
     mission_parameters = MissionParameters(
         n_mis=n_mis,  # number of missions
