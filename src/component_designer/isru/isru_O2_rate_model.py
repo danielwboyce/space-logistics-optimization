@@ -13,7 +13,8 @@ class ISRUDesign(InitMixin):
         self.comp = comp_designer
         super().__init__(self.comp._input_data)
 
-    def get_isru_O2_rate(self, isru_mass: float) -> float:
+    @staticmethod
+    def get_isru_carbothermal_O2_rate(isru_mass: float) -> float:
         if isru_mass >= 400:
             return isru_mass * (
                 -0.43798

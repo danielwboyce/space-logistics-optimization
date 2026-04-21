@@ -10,6 +10,10 @@ from dataclasses import dataclass, field
 from bidict import bidict
 from pyomo.environ import SolverFactory
 from typing import Any
+from math import isclose
+from collections.abc import Callable
+from numpy import logspace
+from .component_designer.isru.isru_O2_rate_model import ISRUDesign
 
 
 @dataclass
@@ -263,6 +267,110 @@ class DepotParameters:
 
 
 @dataclass(frozen=True)
+class ISRUReactorParameters:
+    """Data class containing ISRU data for a particular reactor type.
+    
+    Args:
+        inputs: Either None or a dictionary, where the keys are
+            commodity names of the reactor's inputs and values specify
+            the proportions in which each commodity is required. The
+            sum of the values must add up to 1.0.
+        outputs: A dictionary where the keys are commodity names of the
+            reactor's inputs and values specify the proportions in
+            which each commodity is output (as a fraction of the
+            reactor's overall production). The sum of the values must
+            add up to 1.0.
+        minimum_mass: Minimum mass required for reactor to be
+            operational [kg].
+        decay_rate: The reactor's productivity decay rate. Units:
+            decayed mass [kg] per year per reactor mass [kg].
+        maintenance_cost: The reactor's maintenance cost. Units:
+            cost[kg] per year per reactor mass [kg].
+        production_rate: This is a callable interface that returns the
+            production rate of the reactor. It is assumed that the
+            parameter will be the sum of the reactor mass for this type
+            (provided by reactor_mass_commodity) available at the ISRU
+            node. Units: total output [kg] per year per reactor mass
+            [kg].
+        reactor_mass_commodity: Name of commodity type that corresponds
+            to the reactor mass.
+        pwl_breakpoints (optional): List of the preferred breakpoints
+            (in the reactor_mass_commodity) for applying a piecewise
+            linear approximation of the production_rate function.
+    """
+
+
+    inputs: dict[str, float] | None
+    outputs: dict[str, float]
+    minimum_mass: float
+    decay_rate: float
+    maintenance_cost: float
+    production_rate: Callable[[float], float]
+    reactor_mass_commodity: str
+    pwl_breakpoints: list[float] = []
+
+
+    def __post_init__(self):
+        """Sanity check for input values"""
+
+        # Checking inputs add up to 1.0, if present
+        if self.inputs is not None:
+            assert(isclose(abs(sum(self.inputs.values())), 1.0, 1.0e-6)), """
+            The reactor input proportions must add up to 1.0.
+            Received value:
+                inputs: {}
+                sum of values: {}
+            """.format(self.inputs, sum(self.inputs.values()))
+
+        # Checking outputs add up to 1.0
+        assert(isclose(abs(sum(self.outputs.values())), 1.0, 1.0e-6)), """
+        The reactor output proportions must add up to 1.0.
+        Received value:
+            outputs: {}
+            sum of values: {}
+        """.format(self.outputs, sum(self.outputs.values()))
+
+        # Checking decay rate is in 0 <= decay_rate <= 1
+        assert(self.decay_rate >= 0.0 and self.decay_rate <= 1.0), """
+        The reactor decay_rate must be in [0.0, 1.0] (assuming that
+        the minimum operation time is 1 year).
+        Received value: {}
+        """.format(self.decay_rate)
+
+        # Checking minimum mass is at least 0.0
+        assert(self.minimum_mass >= 0.0), """
+        The reactor's minimum mass must be at least 0.0 kg.
+        Received value: {}
+        """.format(self.minimum_mass)
+
+        # Checking maintenance cost is in 0 <= maintenance_cost <= 1
+        assert(self.maintenance_cost >= 0.0 and self.maintenance_cost <= 1.0), """
+        The reactor maintenance_cost must be in [0.0, 1.0].
+        Received value: {}
+        """.format(self.maintenance_cost)
+
+        # Checking production_rate is a callable object
+        assert(callable(self.production_rate)), """
+        The reactor's production_rate option must be callable.
+        Received value: {}""".format(self.production_rate)
+
+        # Checking the piecewise linear breakpoints if they exist,
+        # generating some if they don't
+        if len(self.pwl_breakpoints) > 0:
+            assert(all(pwl_bp >= 0.0 for pwl_bp in self.pwl_breakpoints)), """
+            If piecewise linear breakpoints are received, they must
+            all be positive.
+            Received value: {}
+            """.format(self.pwl_breakpoints)
+        else:
+            if abs(self.minimum_mass) <= 1.0e-6:
+                self.pwl_breakpoints = logspace(0.0, 10.0e3, 7)
+            else:
+                self.pwl_breakpoints = [0.0]
+                self.pwl_breakpoints.extend(logspace(self.minimum_mass, 10.0e3, 6))
+
+
+@dataclass(frozen=True)
 class ISRUParameters:
     """Data class containing ISRU data
     Note that H2O produces LO2/LH2 + extra O2
@@ -270,6 +378,8 @@ class ISRUParameters:
     Args:
         use_isru: True if ISRU is used
         n_isru_design: Number of ISRU design
+        isru_design_map: Map of ISRU design data. Keys: reactor type
+            names. Values: Dictionaries of design parameters to 
         H2_H2O_ratio: H2 production per H2O
         O2_H2O_ratio: O2 production per H2O
         production_rate: ISRU production rate, production[kg] per year and per ISRU mass[kg]
@@ -281,61 +391,37 @@ class ISRUParameters:
 
     use_isru: bool
     n_isru_design: int
-    H2_H2O_ratio: float
-    O2_H2O_ratio: float
-    production_rate: float
-    decay_rate: float
-    maintenance_cost: float
-    n_isru_vars: int = 1
+    isru_design_map: dict[str, ISRUReactorParameters] = field(
+        default_factory=lambda: {
+            "carbothermal_O2": ISRUReactorParameters(
+                inputs=None,
+                outputs={"oxygen": 1.0 - 1.0/9.0, "hydrogen": 1.0/9.0},
+                minimum_mass=400.0,
+                decay_rate=0.1,
+                maintenance_cost=0.05,
+                production_rate=ISRUDesign.get_isru_carbothermal_O2_rate,
+                reactor_mass_commodity="carbothermal_O2_plant",
+                pwl_breakpoints=[0, 400, 2000, 4000, 6000, 8000, 10000],
+            )
+        }
+    )
 
     def __post_init__(self):
         """Sanity check for input values"""
 
         if self.use_isru:
-            assert all(
-                value > 0 for value in [self.n_isru_design, self.n_isru_vars]
-            ), """
-            Number of ISRU design and variable per design must be positive.
-            Received value:
-                Number of ISRU design: {}
-                Number of variables per design: {}
-            """.format(self.n_isru_design, self.n_isru_vars)
+            assert(len(self.isru_design_map) > 0), """
+            Error:
+            Is use_isru=True, then at least one ISRU reactor design
+            must be provided.
+            """
 
-            assert(self.n_isru_design == 1),"""
+            # ZZZ TEMP
+            assert(len(self.isru_design_map) == 1),"""
             For now, only 1 ISRU design is allowed.
             Received value:
                 Number of ISRU design: {}
             """.format(self.n_isru_design)
-
-        assert self.production_rate > 0, """
-        ISRU production rate must be positive. Received value: {}
-        """.format(self.production_rate)
-
-        assert abs(self.H2_H2O_ratio + self.O2_H2O_ratio) <= 1 + 1e-6, """
-        ISRU H2 and O2 production must sum up to 1."""
-
-        assert all(
-            0 < value < 1
-            for value in [
-                self.H2_H2O_ratio,
-                self.O2_H2O_ratio,
-                self.decay_rate,
-                self.maintenance_cost,
-            ]
-        ), """
-        Error:
-        All of the following must be in (0,1).
-        Received values:
-            H2 to H2O ratio: {}
-            O2 to H2O ratio: {}
-            ISRU decay rate: {}
-            ISRU maintenance cost: {}
-        """.format(
-            self.H2_H2O_ratio,
-            self.O2_H2O_ratio,
-            self.decay_rate,
-            self.maintenance_cost,
-        )
 
 
 @dataclass(frozen=True)
