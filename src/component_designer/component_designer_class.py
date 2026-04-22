@@ -20,4 +20,4 @@ class ComponentDesigner(InitMixin):
         super().__init__(input_data)
         self._input_data = input_data
         self.sc_sizing = SCSizing(self)
-        self.isru_des = ISRUDesign(self)
+        self.isru_des = ISRUDesign()

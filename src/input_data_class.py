@@ -13,7 +13,7 @@ from typing import Any
 from math import isclose
 from collections.abc import Callable
 from numpy import logspace
-from .component_designer.isru.isru_O2_rate_model import ISRUDesign
+from component_designer.isru.isru_O2_rate_model import ISRUDesign
 
 
 @dataclass
@@ -308,7 +308,9 @@ class ISRUReactorParameters:
     maintenance_cost: float
     production_rate: Callable[[float], float]
     reactor_mass_commodity: str
-    pwl_breakpoints: list[float] = []
+    pwl_breakpoints: list[float] = field(
+        default_factory=lambda: []
+    )
 
 
     def __post_init__(self):
@@ -316,7 +318,7 @@ class ISRUReactorParameters:
 
         # Checking inputs add up to 1.0, if present
         if self.inputs is not None:
-            assert(isclose(abs(sum(self.inputs.values())), 1.0, 1.0e-6)), """
+            assert(isclose(abs(sum(self.inputs.values())), 1.0, abs_tol=1.0e-6)), """
             The reactor input proportions must add up to 1.0.
             Received value:
                 inputs: {}
@@ -324,7 +326,7 @@ class ISRUReactorParameters:
             """.format(self.inputs, sum(self.inputs.values()))
 
         # Checking outputs add up to 1.0
-        assert(isclose(abs(sum(self.outputs.values())), 1.0, 1.0e-6)), """
+        assert(isclose(abs(sum(self.outputs.values())), 1.0, abs_tol=1.0e-6)), """
         The reactor output proportions must add up to 1.0.
         Received value:
             outputs: {}
