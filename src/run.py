@@ -322,7 +322,7 @@ def main():
     files_postfix = (files_postfix
                      + str(n_mis) + "mis_"
                      + str(n_crew) + "crew_"
-                     + str(len(isru_parameters.isru_designs)) + "isru_"
+                     + ("0" if not isru_parameters.use_isru else str(len(isru_parameters.isru_designs))) + "isru_"
                      + ("0" if depot_nodes is None else str(len(depot_nodes))) + "depots_"
                      + objective_type)
     runtime_settings = RuntimeSettings(
