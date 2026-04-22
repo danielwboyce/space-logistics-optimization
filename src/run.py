@@ -50,13 +50,13 @@ def main():
         depot_nodes = None
         use_isru = False
         infinite_supply_dict={
-            "plant":          [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "maintenance":    [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "consumption":    [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "habitat":        [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "oxygen":         [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "hydrogen":       [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "sample":         [{ "node": "LS",    "mission": "all", "io": "end"   }],
+            "carbothermal_O2_plant": [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "maintenance":           [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "consumption":           [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "habitat":               [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "oxygen":                [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "hydrogen":              [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "sample":                [{ "node": "LS",    "mission": "all", "io": "end"   }],
         }
         holdover_nodes = ["LLO", "LS"]
         use_fixed_sc_designs = False
@@ -89,14 +89,14 @@ def main():
         depot_nodes = None
         use_isru = False
         infinite_supply_dict={
-            "plant":          [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "maintenance":    [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "consumption":    [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "habitat":        [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "oxygen":         [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
-            "hydrogen":       [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
-            "sample":         [{ "node": "LS",    "mission": "all", "io": "end"   }],
-            "oxygen_storage": [{ "node": "LS",    "mission": "all", "io": "end"   }],
+            "carbothermal_O2_plant": [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "maintenance":           [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "consumption":           [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "habitat":               [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "oxygen":                [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
+            "hydrogen":              [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
+            "sample":                [{ "node": "LS",    "mission": "all", "io": "end"   }],
+            "oxygen_storage":        [{ "node": "LS",    "mission": "all", "io": "end"   }],
         }
         holdover_nodes = ["LEO", "LLO", "LS"]
         use_fixed_sc_designs = False
@@ -129,14 +129,14 @@ def main():
         depot_nodes = ["LEO", "LS"]
         use_isru = False
         infinite_supply_dict={
-            "plant":          [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "maintenance":    [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "consumption":    [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "habitat":        [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "oxygen":         [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
-            "hydrogen":       [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
-            "sample":         [{ "node": "LS",    "mission": "all", "io": "end"   }],
-            "oxygen_storage": [{ "node": "LS",    "mission": "all", "io": "end"   }],
+            "carbothermal_O2_plant": [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "maintenance":           [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "consumption":           [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "habitat":               [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "oxygen":                [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
+            "hydrogen":              [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
+            "sample":                [{ "node": "LS",    "mission": "all", "io": "end"   }],
+            "oxygen_storage":        [{ "node": "LS",    "mission": "all", "io": "end"   }],
         }
         holdover_nodes = ["LEO", "LLO", "LS"]
         use_fixed_sc_designs = False
@@ -174,13 +174,13 @@ def main():
         depot_nodes = None
         use_isru = True
         infinite_supply_dict={
-            "plant":          [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "maintenance":    [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "consumption":    [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "habitat":        [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "oxygen":         [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "hydrogen":       [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "sample":         [{ "node": "LS",    "mission": "all", "io": "end"   }],
+            "carbothermal_O2_plant": [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "maintenance":           [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "consumption":           [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "habitat":               [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "oxygen":                [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "hydrogen":              [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "sample":                [{ "node": "LS",    "mission": "all", "io": "end"   }],
         }
         holdover_nodes = ["LLO", "LS"]
         use_fixed_sc_designs = False
@@ -213,13 +213,13 @@ def main():
         depot_nodes = ["LEO", "LS"]
         use_isru = True
         infinite_supply_dict={
-            "plant":          [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "maintenance":    [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "consumption":    [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "habitat":        [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "oxygen":         [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "hydrogen":       [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "sample":         [{ "node": "LS",    "mission": "all", "io": "end"   }],
+            "carbothermal_O2_plant": [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "maintenance":           [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "consumption":           [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "habitat":               [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "oxygen":                [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "hydrogen":              [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "sample":                [{ "node": "LS",    "mission": "all", "io": "end"   }],
         }
         holdover_nodes = ["LEO", "LLO", "LS"]
         use_fixed_sc_designs = False
@@ -295,7 +295,7 @@ def main():
         int_com_costs=[100],  # list of integer commodity costs
         # list of continuous commodity names
         cnt_com_names=[
-            "plant",
+            "carbothermal_O2_plant",
             "maintenance",
             "consumption",
             "habitat",

@@ -412,7 +412,7 @@ class ISRUParameters:
             """
 
             list_of_reactor_names = [
-                isru_design.name for isru_design in self.isru_designs
+                isru_design.reactor_name for isru_design in self.isru_designs
             ]
             set_of_reactor_names = set(list_of_reactor_names)
             assert(len(set_of_reactor_names) == len(list_of_reactor_names)), """
@@ -853,7 +853,8 @@ class InputData:
         if not self.isru.use_isru:
             return
         
-        for reactor_name, reactor_design in self.isru.isru_design_map.items():
+        for reactor_design in self.isru.isru_designs:
+            reactor_name = reactor_design.reactor_name
             if reactor_design.inputs is not None:
                 assert(
                     all(

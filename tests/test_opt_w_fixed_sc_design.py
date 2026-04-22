@@ -49,12 +49,6 @@ depot_parameters = DepotParameters(
 
 isru_parameters = ISRUParameters(
     use_isru=False,  # True if ISRU is used
-    n_isru_design=0,  # number of ISRU design
-    H2_H2O_ratio=1 / 9,  # H2 production per H2O
-    O2_H2O_ratio=1 - 1 / 9,  # O2 production per H2O
-    production_rate=5,  # production [kg] per year and per mass [kg]
-    decay_rate=0.1,  # productivity decay rate per year
-    maintenance_cost=0.05,  # cost[kg] per year and per ISRU mass [kg]
 )
 
 alc_parameters = ALCParameters(
@@ -74,7 +68,7 @@ comdty_details = CommodityDetails(
     int_com_costs=[100],  # list of integer commodity costs
     # list of continuous commodity names
     cnt_com_names=[
-        "plant",
+        "carbothermal_O2_plant",
         "maintenance",
         "consumption",
         "habitat",
