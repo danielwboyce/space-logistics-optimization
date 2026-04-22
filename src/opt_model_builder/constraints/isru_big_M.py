@@ -35,7 +35,6 @@ class ISRUBigM:
         if not self.builder.use_isru:
             return m
 
-        little_M_val: float = 400
         big_M_val: float = 100000
         m.isru_bigM_const_1 = constraint_dict()
         m.isru_bigM_const_2 = constraint_dict()
@@ -45,6 +44,8 @@ class ISRUBigM:
             m.time_idx,
             m.scnr_idx,
         ):
+            little_M_val: float = self.builder.isru.isru_designs[isru_des].minimum_mass
+
             m.isru_bigM_const_1[isru_des, t, scnr] = constraint(
                 m.isru_mass[isru_des, t, scnr]
                 >= m.isru_use_ind[isru_des, t, scnr] * little_M_val
@@ -56,7 +57,7 @@ class ISRUBigM:
             )
 
             m.isru_bigM_const_3[isru_des, t, scnr] = constraint(
-                m.isru_O2rate[isru_des, t, scnr]
+                m.isru_rate[isru_des, t, scnr]
                 <= m.isru_use_ind[isru_des, t, scnr] * big_M_val
             )
 

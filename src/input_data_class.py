@@ -271,6 +271,7 @@ class ISRUReactorParameters:
     """Data class containing ISRU data for a particular reactor type.
     
     Args:
+        reactor_name: Name of the reactor.
         inputs: Either None or a dictionary, where the keys are
             commodity names of the reactor's inputs and values specify
             the proportions in which each commodity is required. The
@@ -299,7 +300,7 @@ class ISRUReactorParameters:
             linear approximation of the production_rate function.
     """
 
-
+    reactor_name: str
     inputs: dict[str, float] | None
     outputs: dict[str, float]
     minimum_mass: float
@@ -377,23 +378,15 @@ class ISRUParameters:
 
     Args:
         use_isru: True if ISRU is used
-        n_isru_design: Number of ISRU design
-        isru_design_map: Map of ISRU design data. Keys: reactor type
-            names. Values: Dictionaries of design parameters to 
-        H2_H2O_ratio: H2 production per H2O
-        O2_H2O_ratio: O2 production per H2O
-        production_rate: ISRU production rate, production[kg] per year and per ISRU mass[kg]
-        decay_rate: ISRU productivity decay rate per year
-        maintenance_cost: ISRU maintenance cost, cost[kg] per year and per ISRU mass[kg]
-        n_isru_vars (optional): Number of variables per ISRU design.
-            Defaults to 1
+        isru_designs: List of ISRU design data, where each entry is an
+            ISRUReactorParameters object.
     """
 
     use_isru: bool
-    n_isru_design: int
-    isru_design_map: dict[str, ISRUReactorParameters] = field(
-        default_factory=lambda: {
-            "carbothermal_O2": ISRUReactorParameters(
+    isru_designs: dict[str, ISRUReactorParameters] = field(
+        default_factory=lambda: [
+            ISRUReactorParameters(
+                reactor_name="carbothermal_O2",
                 inputs=None,
                 outputs={"oxygen": 1.0 - 1.0/9.0, "hydrogen": 1.0/9.0},
                 minimum_mass=400.0,
@@ -403,25 +396,37 @@ class ISRUParameters:
                 reactor_mass_commodity="carbothermal_O2_plant",
                 pwl_breakpoints=[0, 400, 2000, 4000, 6000, 8000, 10000],
             )
-        }
+        ]
     )
 
     def __post_init__(self):
         """Sanity check for input values"""
 
         if self.use_isru:
-            assert(len(self.isru_design_map) > 0), """
+            assert(len(self.isru_designs) > 0), """
             Error:
-            Is use_isru=True, then at least one ISRU reactor design
+            If use_isru=True, then at least one ISRU reactor design
             must be provided.
             """
 
+            list_of_reactor_names = [
+                isru_design.name for isru_design in self.isru_designs
+            ]
+            set_of_reactor_names = set(list_of_reactor_names)
+            assert(len(set_of_reactor_names) == len(list_of_reactor_names)), """
+            Error:
+            The reactor_name values for the entries in the isru_designs
+            list must all be unique.
+            Received values:
+                List of reactor_names: {}
+            """.format(list_of_reactor_names)
+
             # ZZZ TEMP
-            assert(len(self.isru_design_map) == 1),"""
+            assert(len(self.isru_designs) == 1),"""
             For now, only 1 ISRU design is allowed.
             Received value:
                 Number of ISRU design: {}
-            """.format(self.n_isru_design)
+            """.format(len(self.isru_designs))
 
 
 @dataclass(frozen=True)
@@ -753,10 +758,35 @@ class InputData:
 
     def __post_init__(self):
         self._create_bidicts()
+        self._check_depots()
+        self._check_infinite_supply_dict()
+        self._check_isru_commodity_parameters()
+
         if self.alc.prioritized_var_name:
             assert self.alc.prioritized_var_name in self.sc.var_names, """
             prioritized variable name is not valid"""
 
+        self.n_scenarios: int = 1
+        self.is_stochastic: bool = False
+        self.scenario_prob: list[float] = [1]
+        if self.scenario:
+            self.has_scenario_info: bool = True
+        else:
+            self.has_scenario_info: bool = False
+        if self.scenario and self.mission.n_mis > 2:
+            raise ValueError(
+                "Stochastic optimization is only supported up to two stages."
+            )
+
+    def activate_stochasticity(self):
+        if not self.scenario:
+            raise ValueError("Scenario information is missing.")
+        self.n_scenarios: int = self.scenario.n_scenarios
+        self.is_stochastic: bool = True
+        self.scenario_prob: list[float] = self.scenario.scenario_prob
+
+    def _check_depots(self):
+        """Sanity checks for depots."""
         if self.depot.get_use_depots():
             assert all(
                 depot in self.node.holdover_nodes
@@ -773,6 +803,8 @@ class InputData:
                 self.node.holdover_nodes,
             )
 
+    def _check_infinite_supply_dict(self):
+        """Sanity checks for infinite_supply_dict."""
         for comdty_name in self.comdty.infinite_supply_dict.keys():
             for comdty_data in self.comdty.infinite_supply_dict[comdty_name]:
                 node_name = comdty_data["node"]
@@ -813,24 +845,67 @@ class InputData:
                         io
                 )
 
-        self.n_scenarios: int = 1
-        self.is_stochastic: bool = False
-        self.scenario_prob: list[float] = [1]
-        if self.scenario:
-            self.has_scenario_info: bool = True
-        else:
-            self.has_scenario_info: bool = False
-        if self.scenario and self.mission.n_mis > 2:
-            raise ValueError(
-                "Stochastic optimization is only supported up to two stages."
+    def _check_isru_commodity_parameters(self):
+        """Sanity checks of commodities pointed to the ISRU parameters."""
+
+        if not self.isru.use_isru:
+            return
+        
+        for reactor_name, reactor_design in self.isru.isru_design_map.items():
+            if reactor_design.inputs is not None:
+                assert(
+                    all(
+                        input in self.comdty.com_names
+                        for input in reactor_design.inputs.keys()
+                    )
+                ), """
+                Error:
+                All input commodity types in the {} reactor parameters
+                must also be listed as one of the commodities in the
+                CommodityDetails input.
+                Received values:
+                    Reactor inputs: {}
+                    List of all commodities: {}
+                """.format(
+                    reactor_name,
+                    reactor_design.inputs.keys(),
+                    self.comdty.com_names,
+                )
+
+            assert(
+                all(
+                    output in self.comdty.com_names
+                    for output in reactor_design.outputs.keys()
+                )
+            ), """
+            Error:
+            All output commodity types in the {} reactor parameters
+            must also be listed as one of the commodities in the
+            CommodityDetails input.
+            Received values:
+                Reactor outputs: {}
+                List of all commodities: {}
+            """.format(
+                reactor_name,
+                reactor_design.outputs.keys(),
+                self.comdty.com_names,
             )
 
-    def activate_stochasticity(self):
-        if not self.scenario:
-            raise ValueError("Scenario information is missing.")
-        self.n_scenarios: int = self.scenario.n_scenarios
-        self.is_stochastic: bool = True
-        self.scenario_prob: list[float] = self.scenario.scenario_prob
+            assert(
+                reactor_design.reactor_mass_commodity in self.comdty.com_names
+            ), """
+            Error:
+            The reactor mass commodity type in the {} reactor
+            parameters must also be listed as one of the commodities in
+            the CommodityDetails input.
+            Received values:
+                Reactor mass commodity: {}
+                List of all commodities: {}
+            """.format(
+                reactor_name,
+                reactor_design.reactor_mass_commodity,
+                self.comdty.com_names,
+            )
 
     def _create_bidicts(self):
         """Create bidirectional dictionaries (key <-> attribute)
@@ -846,6 +921,7 @@ class InputData:
         int_com_dict: dict[str, int] = {}
         cnt_com_dict: dict[str, int] = {}
         depot_dict: dict[str, int] = {}
+        isru_reactor_dict: dict[str, int] = {}
 
         for com_id in range(self.comdty.n_int_com):
             int_com_name = self.comdty.int_com_names[com_id]
@@ -866,6 +942,10 @@ class InputData:
             depot_name = self.depot.depot_nodes[depot_id]
             depot_dict[depot_name] = depot_id
 
+        for isru_id in range(len(self.isru.isru_designs)):
+            isru_reactor_name = self.isru.isru_designs[isru_id].reactor_mass_commodity
+            isru_reactor_dict[isru_reactor_name] = isru_id
+
         flow_dict: dict[str, int] = {"out": 0, "in": 1}
 
         sc_var_dict: dict[str, int] = {}
@@ -879,5 +959,6 @@ class InputData:
         self.cnt_com_dict = bidict(cnt_com_dict)
         self.node_dict = bidict(node_dict)
         self.depot_dict = bidict(depot_dict)
+        self.isru_reactor_dict = bidict(isru_reactor_dict)
         self.flow_dict = bidict(flow_dict)
         self.sc_var_dict = bidict(sc_var_dict)

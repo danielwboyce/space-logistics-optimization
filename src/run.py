@@ -49,7 +49,6 @@ def main():
         isp = 420.0
         depot_nodes = None
         use_isru = False
-        n_isru_design = 0
         infinite_supply_dict={
             "plant":          [{ "node": "Earth", "mission": "all", "io": "start" }],
             "maintenance":    [{ "node": "Earth", "mission": "all", "io": "start" }],
@@ -89,7 +88,6 @@ def main():
         isp = 460.0
         depot_nodes = None
         use_isru = False
-        n_isru_design = 0
         infinite_supply_dict={
             "plant":          [{ "node": "Earth", "mission": "0",   "io": "start" }],
             "maintenance":    [{ "node": "Earth", "mission": "0",   "io": "start" }],
@@ -130,7 +128,6 @@ def main():
         isp = 460.0
         depot_nodes = ["LEO", "LS"]
         use_isru = False
-        n_isru_design = 0
         infinite_supply_dict={
             "plant":          [{ "node": "Earth", "mission": "0",   "io": "start" }],
             "maintenance":    [{ "node": "Earth", "mission": "0",   "io": "start" }],
@@ -176,7 +173,6 @@ def main():
         isp = 420.0
         depot_nodes = None
         use_isru = True
-        n_isru_design = 1
         infinite_supply_dict={
             "plant":          [{ "node": "Earth", "mission": "all", "io": "start" }],
             "maintenance":    [{ "node": "Earth", "mission": "all", "io": "start" }],
@@ -216,7 +212,6 @@ def main():
         isp = 420.0
         depot_nodes = ["LEO", "LS"]
         use_isru = True
-        n_isru_design = 1
         infinite_supply_dict={
             "plant":          [{ "node": "Earth", "mission": "all", "io": "start" }],
             "maintenance":    [{ "node": "Earth", "mission": "all", "io": "start" }],
@@ -280,12 +275,6 @@ def main():
 
     isru_parameters = ISRUParameters(
         use_isru=use_isru,  # True if ISRU is used
-        n_isru_design=n_isru_design,  # number of ISRU design
-        H2_H2O_ratio=1 / 9,  # H2 production per H2O
-        O2_H2O_ratio=1 - 1 / 9,  # O2 production per H2O
-        production_rate=5,  # production [kg] per year and per mass [kg]
-        decay_rate=0.1,  # productivity decay rate per year
-        maintenance_cost=0.05,  # cost[kg] per year and per ISRU mass [kg]
     )
 
     alc_parameters = ALCParameters(
@@ -333,7 +322,7 @@ def main():
     files_postfix = (files_postfix
                      + str(n_mis) + "mis_"
                      + str(n_crew) + "crew_"
-                     + str(n_isru_design) + "isru_"
+                     + str(len(isru_parameters.isru_designs)) + "isru_"
                      + ("0" if depot_nodes is None else str(len(depot_nodes))) + "depots_"
                      + objective_type)
     runtime_settings = RuntimeSettings(
