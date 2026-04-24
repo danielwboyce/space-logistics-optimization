@@ -89,6 +89,10 @@ class InitMixin:
         """Number of ISRU design"""
         self.isru_reactor_dict: bidict[str, int] = input_data.isru_reactor_dict
         """Bidirectional dictionary corresponding to ISRU reactor mass commodities and ISRU design indices."""
+        self.isru_io_dict: bidict[str, int] = input_data.isru_io_dict
+        """Bidirectional dictionary corresponding to commodities that are either inputs or outputs for any of the ISRU designs under consideration and an index."""
+        self.n_isru_io: int = len(input_data.isru_io_dict)
+        """Number of ISRU IO commodities."""
         self.com_dict: bidict[str, int] = input_data.com_dict
         """Bidrectional dictionary corresponding to commodity names and indicies."""
         self.int_com_dict: bidict[str, int] = input_data.int_com_dict

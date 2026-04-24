@@ -385,7 +385,7 @@ class ISRUParameters:
     """
 
     use_isru: bool
-    isru_designs: dict[str, ISRUReactorParameters] = field(
+    isru_designs: list[ISRUReactorParameters] = field(
         default_factory=lambda: [
             ISRUReactorParameters(
                 reactor_name="carbothermal_O2",
@@ -400,6 +400,21 @@ class ISRUParameters:
             )
         ]
     )
+
+    def get_isru_io_list(self) -> list[str]:
+        """Returns a list of all the input and output commodities used by the
+        ISRU designs provided.
+        """
+        isru_io: set[str] = set([])
+        for isru_design in self.isru_designs:
+            isru_io.add(isru_design.reactor_mass_commodity)
+            if isru_design.inputs is not None:
+                for input in isru_design.inputs.keys():
+                    isru_io.add(input)
+            for output in isru_design.outputs.keys():
+                isru_io.add(output)
+        return sorted(list(isru_io))
+
 
     def __post_init__(self):
         """Sanity check for input values"""
@@ -1008,6 +1023,7 @@ class InputData:
         cnt_com_dict: dict[str, int] = {}
         depot_dict: dict[str, int] = {}
         isru_reactor_dict: dict[str, int] = {}
+        isru_io_dict: dict[str, int] = {}
 
         for com_id in range(self.comdty.n_int_com):
             int_com_name = self.comdty.int_com_names[com_id]
@@ -1032,6 +1048,11 @@ class InputData:
             isru_reactor_name = self.isru.isru_designs[isru_id].reactor_mass_commodity
             isru_reactor_dict[isru_reactor_name] = isru_id
 
+        isru_io_list = self.isru.get_isru_io_list()
+        for isru_io_id in range(len(isru_io_list)):
+            isru_io_comdty = isru_io_list[isru_io_id]
+            isru_io_dict[isru_io_comdty] = isru_io_id
+
         flow_dict: dict[str, int] = {"out": 0, "in": 1}
 
         sc_var_dict: dict[str, int] = {}
@@ -1046,5 +1067,6 @@ class InputData:
         self.node_dict = bidict(node_dict)
         self.depot_dict = bidict(depot_dict)
         self.isru_reactor_dict = bidict(isru_reactor_dict)
+        self.isru_io_dict = bidict(isru_io_dict)
         self.flow_dict = bidict(flow_dict)
         self.sc_var_dict = bidict(sc_var_dict)

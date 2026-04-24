@@ -181,4 +181,5 @@ class Variables:
         self.builder.idx_name_dict["isru_mass"] = ["isru_des", "time", "scnr"]
         self.builder.idx_name_dict["isru_use_ind"] = ["isru_des", "time", "scnr"]
         self.builder.idx_name_dict["isru_rate"] = ["isru_des", "time", "scnr"]
+        self.builder.idx_name_dict["isru_total_prod"] = ["isru_des", "time", "scnr"]
         return m
