@@ -68,7 +68,7 @@ comdty_details = CommodityDetails(
     int_com_costs=[100],  # list of integer commodity costs
     # list of continuous commodity names
     cnt_com_names=[
-        "carbothermal_O2_plant",
+        "plant_carbothermal_O2H2",
         "maintenance",
         "consumption",
         "habitat",

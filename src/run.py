@@ -22,6 +22,7 @@ from input_data_class import (
     ObjectiveParameters,
     SCParameters,
     DepotParameters,
+    ISRUReactorParameters,
     ISRUParameters,
     ALCParameters,
     CommodityDetails,
@@ -29,6 +30,7 @@ from input_data_class import (
     RuntimeSettings,
     ScenarioDistribution,
 )
+from .component_designer.isru.isru_rate_model import ISRUDesign
 
 
 def main():
@@ -49,14 +51,25 @@ def main():
         isp = 420.0
         depot_nodes = None
         use_isru = False
-        infinite_supply_dict={
-            "carbothermal_O2_plant": [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "maintenance":           [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "consumption":           [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "habitat":               [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "oxygen":                [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "hydrogen":              [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "sample":                [{ "node": "LS",    "mission": "all", "io": "end"   }],
+        isru_designs = None # If this is set to None, we'll just use the default
+        cnt_com_names = [
+            "plant_carbothermal_O2H2",
+            "maintenance",
+            "consumption",
+            "habitat",
+            "sample",
+            "oxygen",
+            "hydrogen",
+            "oxygen_storage",
+        ]
+        infinite_supply_dict = {
+            "plant_carbothermal_O2H2": [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "maintenance":             [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "consumption":             [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "habitat":                 [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "oxygen":                  [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "hydrogen":                [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "sample":                  [{ "node": "LS",    "mission": "all", "io": "end"   }],
         }
         holdover_nodes = ["LLO", "LS"]
         use_fixed_sc_designs = False
@@ -88,15 +101,26 @@ def main():
         isp = 460.0
         depot_nodes = None
         use_isru = False
-        infinite_supply_dict={
-            "carbothermal_O2_plant": [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "maintenance":           [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "consumption":           [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "habitat":               [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "oxygen":                [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
-            "hydrogen":              [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
-            "sample":                [{ "node": "LS",    "mission": "all", "io": "end"   }],
-            "oxygen_storage":        [{ "node": "LS",    "mission": "all", "io": "end"   }],
+        isru_designs = None # If this is set to None, we'll just use the default
+        cnt_com_names = [
+            "plant_carbothermal_O2H2",
+            "maintenance",
+            "consumption",
+            "habitat",
+            "sample",
+            "oxygen",
+            "hydrogen",
+            "oxygen_storage",
+        ]
+        infinite_supply_dict = {
+            "plant_carbothermal_O2H2": [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "maintenance":             [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "consumption":             [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "habitat":                 [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "oxygen":                  [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
+            "hydrogen":                [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
+            "sample":                  [{ "node": "LS",    "mission": "all", "io": "end"   }],
+            "oxygen_storage":          [{ "node": "LS",    "mission": "all", "io": "end"   }],
         }
         holdover_nodes = ["LEO", "LLO", "LS"]
         use_fixed_sc_designs = False
@@ -128,15 +152,26 @@ def main():
         isp = 460.0
         depot_nodes = ["LEO", "LS"]
         use_isru = False
-        infinite_supply_dict={
-            "carbothermal_O2_plant": [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "maintenance":           [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "consumption":           [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "habitat":               [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "oxygen":                [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
-            "hydrogen":              [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
-            "sample":                [{ "node": "LS",    "mission": "all", "io": "end"   }],
-            "oxygen_storage":        [{ "node": "LS",    "mission": "all", "io": "end"   }],
+        isru_designs = None # If this is set to None, we'll just use the default
+        cnt_com_names = [
+            "plant_carbothermal_O2H2",
+            "maintenance",
+            "consumption",
+            "habitat",
+            "sample",
+            "oxygen",
+            "hydrogen",
+            "oxygen_storage",
+        ]
+        infinite_supply_dict = {
+            "plant_carbothermal_O2H2": [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "maintenance":             [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "consumption":             [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "habitat":                 [{ "node": "Earth", "mission": "0",   "io": "start" }],
+            "oxygen":                  [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
+            "hydrogen":                [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
+            "sample":                  [{ "node": "LS",    "mission": "all", "io": "end"   }],
+            "oxygen_storage":          [{ "node": "LS",    "mission": "all", "io": "end"   }],
         }
         holdover_nodes = ["LEO", "LLO", "LS"]
         use_fixed_sc_designs = False
@@ -173,14 +208,25 @@ def main():
         isp = 420.0
         depot_nodes = None
         use_isru = True
+        isru_designs = None # If this is set to None, we'll just use the default
+        cnt_com_names = [
+            "plant_carbothermal_O2H2",
+            "maintenance",
+            "consumption",
+            "habitat",
+            "sample",
+            "oxygen",
+            "hydrogen",
+            "oxygen_storage",
+        ]
         infinite_supply_dict={
-            "carbothermal_O2_plant": [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "maintenance":           [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "consumption":           [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "habitat":               [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "oxygen":                [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "hydrogen":              [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "sample":                [{ "node": "LS",    "mission": "all", "io": "end"   }],
+            "plant_carbothermal_O2H2": [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "maintenance":             [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "consumption":             [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "habitat":                 [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "oxygen":                  [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "hydrogen":                [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "sample":                  [{ "node": "LS",    "mission": "all", "io": "end"   }],
         }
         holdover_nodes = ["LLO", "LS"]
         use_fixed_sc_designs = False
@@ -200,7 +246,7 @@ def main():
             ]
         )
     # Scenario: 2 crewed missions, with isru, with depots
-    if True:
+    if False:
         n_mis = 2
         t_mis_tot = 13
         t_surf_mis = 3
@@ -212,14 +258,25 @@ def main():
         isp = 420.0
         depot_nodes = ["LEO", "LS"]
         use_isru = True
-        infinite_supply_dict={
-            "carbothermal_O2_plant": [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "maintenance":           [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "consumption":           [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "habitat":               [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "oxygen":                [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "hydrogen":              [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "sample":                [{ "node": "LS",    "mission": "all", "io": "end"   }],
+        isru_designs = None # If this is set to None, we'll just use the default
+        cnt_com_names = [
+            "plant_carbothermal_O2H2",
+            "maintenance",
+            "consumption",
+            "habitat",
+            "sample",
+            "oxygen",
+            "hydrogen",
+            "oxygen_storage",
+        ]
+        infinite_supply_dict = {
+            "plant_carbothermal_O2H2": [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "maintenance":             [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "consumption":             [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "habitat":                 [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "oxygen":                  [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "hydrogen":                [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "sample":                  [{ "node": "LS",    "mission": "all", "io": "end"   }],
         }
         holdover_nodes = ["LEO", "LLO", "LS"]
         use_fixed_sc_designs = False
@@ -238,6 +295,89 @@ def main():
                 ],
             ]
         )
+    # Scenario: 2 crewed missions, with multiple isru, with depots
+    if True:
+        n_mis = 2
+        t_mis_tot = 11
+        t_surf_mis = 1
+        n_crew = 4
+        sample_mass = np.zeros(n_mis).tolist()
+        habit_pl_mass = [2000, 3000]
+        time_interval = 365
+        objective_type = "fmleo"
+        isp = 420.0
+        depot_nodes = ["LEO", "LS"]
+        use_isru = True
+        isru_designs = [
+            ISRUReactorParameters(
+                reactor_name="carbothermal_O2H2",
+                inputs=None,
+                outputs={"oxygen": 1.0 - 1.0/9.0, "hydrogen": 1.0/9.0},
+                minimum_mass=400.0,
+                decay_rate=0.1,
+                maintenance_cost=0.05,
+                production_rate=ISRUDesign.get_isru_rate_carbothermal_O2H2,
+                is_production_rate_constant=False,
+                reactor_mass_commodity="plant_carbothermal_O2H2",
+                pwl_breakpoints=[0, 400, 2000, 4000, 6000, 8000, 10000],
+            ),
+            ISRUReactorParameters(
+                reactor_name="mre_metal",
+                inputs=None,
+                outputs={"metal": 1.0},
+                minimum_mass=600.0,
+                decay_rate=0.1,
+                maintenance_cost=0.05,
+                production_rate=ISRUDesign.get_isru_rate_mre_metal,
+                is_production_rate_constant=False,
+                reactor_mass_commodity="plant_mre_metal",
+            ),
+            ISRUReactorParameters(
+                reactor_name="workshop",
+                inputs={"metal": 2.0},
+                outputs={
+                    "maintenance": 1/4,
+                    "plant_carbothermal_O2H2": 1/4,
+                    "plant_mre_metal": 1/4,
+                    "plant_workshop": 1/4
+                },
+                minimum_mass=600.0,
+                decay_rate=0.1,
+                maintenance_cost=0.05,
+                production_rate=ISRUDesign.get_isru_rate_mre_metal,
+                is_production_rate_constant=True,
+                reactor_mass_commodity="plant_workshop",
+            ),
+        ]
+        cnt_com_names = [
+            "plant_carbothermal_O2H2",
+            "plant_mre_metal",
+            "plant_workshop",
+            "maintenance",
+            "consumption",
+            "habitat",
+            "sample",
+            "oxygen",
+            "hydrogen",
+            "oxygen_storage",
+        ]
+        infinite_supply_dict = {
+            "plant_carbothermal_O2H2": [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "plant_mre_metal":         [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "plant_workshop":          [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "maintenance":             [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "consumption":             [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "habitat":                 [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "oxygen":                  [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "hydrogen":                [{ "node": "Earth", "mission": "all", "io": "start" }],
+            "sample":                  [{ "node": "LS",    "mission": "all", "io": "end"   }],
+        }
+        holdover_nodes = ["LEO", "LLO", "LS"]
+        use_fixed_sc_designs = False
+        # # These are the returns for when use_fixed_sc_designs=False
+        # fixed_sc_designs = np.array(
+        #     []
+        # )
 
     mission_parameters = MissionParameters(
         n_mis=n_mis,  # number of missions
@@ -273,9 +413,15 @@ def main():
         depot_nodes=depot_nodes,
     )
 
-    isru_parameters = ISRUParameters(
-        use_isru=use_isru,  # True if ISRU is used
-    )
+    if isru_designs is not None:
+        isru_parameters = ISRUParameters(
+            use_isru=use_isru,  # True if ISRU is used
+            isru_designs=isru_designs,
+        )
+    else:
+        isru_parameters = ISRUParameters(
+            use_isru=use_isru,  # True if ISRU is used
+        )
 
     alc_parameters = ALCParameters(
         initial_weight=1,
@@ -294,16 +440,7 @@ def main():
         int_com_names=["crew #"],  # list of integer commodity names
         int_com_costs=[100],  # list of integer commodity costs
         # list of continuous commodity names
-        cnt_com_names=[
-            "carbothermal_O2_plant",
-            "maintenance",
-            "consumption",
-            "habitat",
-            "sample",
-            "oxygen",
-            "hydrogen",
-            "oxygen_storage",
-        ],
+        cnt_com_names=cnt_com_names,
         # list of propellant commodity names
         prop_com_names=["oxygen", "hydrogen"],
         infinite_supply_dict=infinite_supply_dict,
