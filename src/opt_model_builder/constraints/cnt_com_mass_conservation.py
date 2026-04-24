@@ -40,6 +40,10 @@ class CntComConservation:
                 continue
             elif self.builder.cnt_com_dict.inverse[pc] in self.builder.prop_com_names:
                 continue
+            elif (self.builder.can_operate_ISRU(i, j) and
+                    self.builder.cnt_com_dict.inverse[pc] in self.builder.isru_io_dict and
+                    self.builder.cnt_com_dict.inverse[pc] not in self.builder.prop_com_names):
+                continue
             if self.builder.cnt_com_dict.inv[pc] in self.builder.isru_reactor_dict.keys():
                 if self.builder.can_operate_ISRU(i, j):
                     self._set_isru_plant_decay_constraint(m, i, j, pc, t, scnr)

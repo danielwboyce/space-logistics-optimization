@@ -9,6 +9,7 @@ from .constraints.isru_big_M import ISRUBigM
 from .constraints.int_com_mass_conservation import IntComConservation
 from .constraints.cnt_com_mass_conservation import CntComConservation
 from .constraints.propellant_mass_conservation import PropellantConservation
+from .constraints.isru_mass_conservation import ISRUConservation
 from .constraints.piecewise_linear import PiecewiseLinearConstraints
 from .constraints.alc_subprob_components import ADMMSubprobComponents
 from .constraints.fixed_sc_design import FixSCDesign
@@ -33,6 +34,7 @@ class Constraints:
             self.builder
         ).set_non_prop_continuous_com_conserv_constraints(m)
         PropellantConservation(self.builder).set_propellant_conservation_constraints(m)
+        ISRUConservation(self.builder).set_isru_conservation_constraints(m)
 
         if self.builder.mode == "Piecewise Linear Approx":
             PiecewiseLinearConstraints(self.builder).set_piecewise_linear_constraints(
