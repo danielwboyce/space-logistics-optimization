@@ -13,7 +13,7 @@ from typing import Any
 from math import isclose
 from collections.abc import Callable
 from numpy import logspace
-from component_designer.isru.isru_O2_rate_model import ISRUDesign
+from src.component_designer.isru.isru_rate_model import ISRUDesign
 
 
 @dataclass
@@ -293,6 +293,8 @@ class ISRUReactorParameters:
             (provided by reactor_mass_commodity) available at the ISRU
             node. Units: total output [kg] per year per reactor mass
             [kg].
+        is_production_rate_constant: True if the production_rate
+            callable interface returns a constant rate. False otherwise.
         reactor_mass_commodity: Name of commodity type that corresponds
             to the reactor mass.
         pwl_breakpoints (optional): List of the preferred breakpoints
@@ -307,6 +309,7 @@ class ISRUReactorParameters:
     decay_rate: float
     maintenance_cost: float
     production_rate: Callable[[float], float]
+    is_production_rate_constant: bool
     reactor_mass_commodity: str
     pwl_breakpoints: list[float] = field(
         default_factory=lambda: []
@@ -357,6 +360,51 @@ class ISRUReactorParameters:
         The reactor's production_rate option must be callable.
         Received value: {}""".format(self.production_rate)
 
+        # Checking that if is_production_rate_constant matches what is
+        # returned by the production_rate callable
+        test_point_1 = 1.5 * self.minimum_mass
+        test_point_2 = 3.0 * test_point_1
+        result_1 = self.production_rate(test_point_1)
+        result_2 = self.production_rate(test_point_2)
+        if self.is_production_rate_constant:
+            assert(isclose(result_1, result_2)), """
+            If is_production_rate_constant is True, then the production
+            rates returned at different test points should be the same.
+            Received values:
+                is_production_rate_constant = {},
+                test_point_1 = {},
+                test_point_2 = {},
+                production_rate(test_point_1) = {},
+                production_rate(test_point_2) = {},
+                isclose(production_rate(test_point_1), production_rate(test_point_1)) = {}
+            """.format(
+                self.is_production_rate_constant,
+                test_point_1,
+                test_point_2,
+                self.production_rate(test_point_1),
+                self.production_rate(test_point_2),
+                isclose(result_1, result_2)
+            )
+        else:
+            assert(not isclose(result_1, result_2)), """
+            If is_production_rate_constant is False, then the production
+            rates returned at different test points should be different.
+            Received values:
+                is_production_rate_constant = {},
+                test_point_1 = {},
+                test_point_2 = {},
+                production_rate(test_point_1) = {},
+                production_rate(test_point_2) = {},
+                isclose(production_rate(test_point_1), production_rate(test_point_1)) = {}
+            """.format(
+                self.is_production_rate_constant,
+                test_point_1,
+                test_point_2,
+                self.production_rate(test_point_1),
+                self.production_rate(test_point_2),
+                isclose(result_1, result_2)
+            )
+
         # Checking the piecewise linear breakpoints if they exist,
         # generating some if they don't
         if len(self.pwl_breakpoints) > 0:
@@ -394,8 +442,8 @@ class ISRUParameters:
                 minimum_mass=400.0,
                 decay_rate=0.1,
                 maintenance_cost=0.05,
-                production_rate=ISRUDesign.get_isru_carbothermal_O2_rate,
                 reactor_mass_commodity="carbothermal_O2_plant",
+                production_rate=ISRUDesign.get_isru_rate_carbothermal_O2H2,
                 pwl_breakpoints=[0, 400, 2000, 4000, 6000, 8000, 10000],
             )
         ]

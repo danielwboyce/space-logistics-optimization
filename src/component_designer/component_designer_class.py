@@ -1,6 +1,6 @@
 import sys
 from .spacecraft.spacecraft_sizing import SCSizing
-from .isru.isru_O2_rate_model import ISRUDesign
+from .isru.isru_rate_model import ISRUDesign
 
 try:
     from initializer import InitMixin
