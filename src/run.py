@@ -31,7 +31,7 @@ from input_data_class import (
     RuntimeSettings,
     ScenarioDistribution,
 )
-from .component_designer.isru.isru_rate_model import ISRUDesign
+from component_designer.isru.isru_rate_model import ISRUDesign
 
 
 def main():

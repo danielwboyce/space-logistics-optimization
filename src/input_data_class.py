@@ -13,7 +13,7 @@ from typing import Any
 from math import isclose
 from collections.abc import Callable
 from numpy import logspace
-from src.component_designer.isru.isru_rate_model import ISRUDesign
+from component_designer.isru.isru_rate_model import ISRUDesign
 
 
 @dataclass
@@ -266,7 +266,7 @@ class DepotParameters:
         return self.get_n_depots() > 0
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=False)
 class ISRUReactorParameters:
     """Data class containing ISRU data for a particular reactor type.
     
@@ -315,9 +315,7 @@ class ISRUReactorParameters:
     production_rate: Callable[[float], float]
     is_production_rate_constant: bool
     reactor_mass_commodity: str
-    pwl_breakpoints: list[float] = field(
-        default_factory=lambda: []
-    )
+    pwl_breakpoints: list[float] | None = None
 
 
     def __post_init__(self):
@@ -411,18 +409,31 @@ class ISRUReactorParameters:
 
         # Checking the piecewise linear breakpoints if they exist,
         # generating some if they don't
-        if len(self.pwl_breakpoints) > 0:
-            assert(all(pwl_bp >= 0.0 for pwl_bp in self.pwl_breakpoints)), """
-            If piecewise linear breakpoints are received, they must
-            all be positive.
-            Received value: {}
-            """.format(self.pwl_breakpoints)
-        else:
-            if abs(self.minimum_mass) <= 1.0e-6:
-                self.pwl_breakpoints = logspace(0.0, 10.0e3, 7)
+        if not self.is_production_rate_constant:
+            if self.pwl_breakpoints is not None and len(self.pwl_breakpoints) > 0:
+                assert(all(pwl_bp >= 0.0 for pwl_bp in self.pwl_breakpoints)), """
+                If piecewise linear breakpoints are received, they must
+                all be positive.
+                Received value: {}
+                """.format(self.pwl_breakpoints)
             else:
-                self.pwl_breakpoints = [0.0]
-                self.pwl_breakpoints.extend(logspace(self.minimum_mass, 10.0e3, 6))
+                if abs(self.minimum_mass) <= 1.0e-6:
+                    self.pwl_breakpoints = logspace(0.0, 10.0e3, 7)
+                else:
+                    self.pwl_breakpoints = [0.0]
+                    self.pwl_breakpoints.extend(logspace(self.minimum_mass, 10.0e3, 6))
+        else:
+            assert(self.pwl_breakpoints is None or len(self.pwl_breakpoints) == 0), """
+            If production rate is constant, then pwl_breakpoints
+            shouldn't be provided.
+            Received values:
+                is_production_rate_constant = {},
+                pwl_breakpoints = {}
+            """.format(
+                self.is_production_rate_constant,
+                self.pwl_breakpoints,
+            )
+
 
 
 @dataclass(frozen=True)
