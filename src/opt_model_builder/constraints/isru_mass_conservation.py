@@ -6,6 +6,7 @@ from pyomo.kernel import (
     constraint_dict,
     block,
 )
+from pyomo.core.expr.ndarray import NumericNDArray
 import numpy as np
 
 if TYPE_CHECKING:
@@ -43,6 +44,7 @@ class ISRUConservation:
             isru_work_time = self.builder.isru_work_time[i][
                 self.builder._network_def.date_to_time_idx_dict[t]
             ]
+            self._calculate_isru_work_matrix_for_reactor(m, 0, isru_work_time, t, scnr)
 
         return m
 
@@ -93,7 +95,7 @@ class ISRUConservation:
             )
         return (out_array, in_array)
     
-    def _calculate_isru_work_matrix_for_reactor(self, isru_des: int, isru_work_time: float) -> np.ndarray:
+    def _calculate_isru_work_matrix_for_reactor(self, m: block, isru_des: int, isru_work_time: float, t: int, scnr: int) -> np.ndarray:
         """Calcualte the flow transformation matrix for a specific subprocess/ISRU reactor.
         
         This assumes the matrix relation
@@ -123,7 +125,8 @@ class ISRUConservation:
                 (self.builder.n_isru_io, self.builder.n_isru_io)
         """
 
-        Q = np.eye(self.builder.n_isru_var)
-        for pl in range(self.builder.n_isru_var):
-            print("glerg")
+        Q = NumericNDArray((self.builder.n_isru_io, self.builder.n_isru_io))
+        # for i in range(self.builder.n_isru_io):
+        #     Q[i, i] = 1.0
+        Q[0, 2] = m.isru_rate[isru_des, t, scnr]
 
