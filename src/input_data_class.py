@@ -275,7 +275,11 @@ class ISRUReactorParameters:
         inputs: Either None or a dictionary, where the keys are
             commodity names of the reactor's inputs and values specify
             the proportions in which each commodity is required. The
-            sum of the values must add up to 1.0.
+            proportions represent a fraction of the of the reactor's
+            overall production rate, so the proportions don't
+            necessarily need to add up to 1 (often they will be greater
+            than 1, assuming some inefficiency/waste in converting
+            inputs to outputs).
         outputs: A dictionary where the keys are commodity names of the
             reactor's inputs and values specify the proportions in
             which each commodity is output (as a fraction of the
@@ -321,8 +325,8 @@ class ISRUReactorParameters:
 
         # Checking inputs add up to 1.0, if present
         if self.inputs is not None:
-            assert(isclose(abs(sum(self.inputs.values())), 1.0, abs_tol=1.0e-6)), """
-            The reactor input proportions must add up to 1.0.
+            assert(sum(self.inputs.values()) > 0.0), """
+            The reactor input proportions must be at least 0.0.
             Received value:
                 inputs: {}
                 sum of values: {}
@@ -436,14 +440,14 @@ class ISRUParameters:
     isru_designs: list[ISRUReactorParameters] = field(
         default_factory=lambda: [
             ISRUReactorParameters(
-                reactor_name="carbothermal_O2",
+                reactor_name="carbothermal_O2H2",
                 inputs=None,
                 outputs={"oxygen": 1.0 - 1.0/9.0, "hydrogen": 1.0/9.0},
                 minimum_mass=400.0,
                 decay_rate=0.1,
                 maintenance_cost=0.05,
-                reactor_mass_commodity="carbothermal_O2_plant",
                 production_rate=ISRUDesign.get_isru_rate_carbothermal_O2H2,
+                reactor_mass_commodity="plant_carbothermal_O2H2",
                 pwl_breakpoints=[0, 400, 2000, 4000, 6000, 8000, 10000],
             )
         ]
@@ -486,12 +490,12 @@ class ISRUParameters:
                 List of reactor_names: {}
             """.format(list_of_reactor_names)
 
-            # ZZZ TEMP
-            assert(len(self.isru_designs) == 1),"""
-            For now, only 1 ISRU design is allowed.
-            Received value:
-                Number of ISRU design: {}
-            """.format(len(self.isru_designs))
+            # # ZZZ TEMP
+            # assert(len(self.isru_designs) == 1),"""
+            # For now, only 1 ISRU design is allowed.
+            # Received value:
+            #     Number of ISRU design: {}
+            # """.format(len(self.isru_designs))
 
 
 @dataclass(frozen=True)

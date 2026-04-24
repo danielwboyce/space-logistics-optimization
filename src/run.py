@@ -22,6 +22,7 @@ from input_data_class import (
     ObjectiveParameters,
     SCParameters,
     DepotParameters,
+    ISRUReactorParameters,
     ISRUParameters,
     ALCParameters,
     SupplyDemandDetails,
@@ -30,6 +31,7 @@ from input_data_class import (
     RuntimeSettings,
     ScenarioDistribution,
 )
+from .component_designer.isru.isru_rate_model import ISRUDesign
 
 
 def main():
@@ -289,7 +291,7 @@ def main():
             ]
         )
     # Scenario: 2 crewed missions, with isru, with depots
-    if True:
+    if False:
         n_mis = 2
         t_mis_tot = 13
         t_surf_mis = 3
@@ -475,9 +477,15 @@ def main():
         depot_nodes=depot_nodes,
     )
 
-    isru_parameters = ISRUParameters(
-        use_isru=use_isru,  # True if ISRU is used
-    )
+    if isru_designs is not None:
+        isru_parameters = ISRUParameters(
+            use_isru=use_isru,  # True if ISRU is used
+            isru_designs=isru_designs,
+        )
+    else:
+        isru_parameters = ISRUParameters(
+            use_isru=use_isru,  # True if ISRU is used
+        )
 
     alc_parameters = ALCParameters(
         initial_weight=1,
@@ -496,16 +504,7 @@ def main():
         int_com_names=["crew #"],  # list of integer commodity names
         int_com_costs=[100],  # list of integer commodity costs
         # list of continuous commodity names
-        cnt_com_names=[
-            "carbothermal_O2_plant",
-            "maintenance",
-            "consumption",
-            "habitat",
-            "sample",
-            "oxygen",
-            "hydrogen",
-            "oxygen_storage",
-        ],
+        cnt_com_names=cnt_com_names,
         # list of propellant commodity names
         prop_com_names=["oxygen", "hydrogen"],
         infinite_supply_dict=infinite_supply_dict,
