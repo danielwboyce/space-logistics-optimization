@@ -47,6 +47,8 @@ class ISRUConservation:
                     scnr=scnr,
                 )
 
+            m = self._calculate_bilinear_constraints(m=m, i=i, t=t, scnr=scnr)
+
         return m
 
     def _calculate_isru_constraint_per_node(
@@ -61,6 +63,7 @@ class ISRUConservation:
         """Calculates the ISRU constraints at each time step."""
 
         comdty_id = self.builder.com_dict[comdty_name]
+        t_id = self.builder._network_def.date_to_time_idx_dict[t]
         if comdty_name in self.builder.int_com_names:
             constraint_lhs = sum(
                 m.int_com[
@@ -149,7 +152,7 @@ class ISRUConservation:
                 constraint_rhs = (
                     constraint_rhs
                     - (isru_design.maintenance_cost
-                        * self.builder.isru_work_time[i][t]
+                        * self.builder.isru_work_time[i][t_id]
                         / 365.0)
                     * m.isru_mass[isru_des_id, t, scnr]
                 )
@@ -163,14 +166,14 @@ class ISRUConservation:
                             constraint_rhs
                             - isru_design.outputs[output] # output fraction
                             * (isru_design_child.maintenance_cost
-                                * self.builder.isru_work_time[i][t]
+                                * self.builder.isru_work_time[i][t_id]
                                 / 365.0)
                             * m.isru_total_prod[isru_des_id, t, scnr]
                             )
             if comdty_name == isru_design.reactor_mass_commodity:
                 constraint_rhs = (constraint_rhs
                                     - isru_design.decay_rate
-                                    * (self.builder.isru_work_time[i][t] / 365.0)
+                                    * (self.builder.isru_work_time[i][t_id] / 365.0)
                                     * m.isru_mass[isru_des_id, t, scnr])
             if isru_design.reactor_name == "workshop":
                 # Adding in trilinear constraints
@@ -205,13 +208,15 @@ class ISRUConservation:
             scnr: int
     ) -> block:
         """Calculates the bilinear constraints for ISRU."""
+        t_id = self.builder._network_def.date_to_time_idx_dict[t]
         for isru_des in m.isru_des_idx:
             m.isru_bilinear_definitions[isru_des, t, scnr] = constraint(
                 m.isru_total_prod[isru_des, t, scnr]
-                == (self.builder.isru_work_time[i][t] / 365.0)
+                == (self.builder.isru_work_time[i][t_id] / 365.0)
                 * m.isru_rate[isru_des, t, scnr]
                 * m.isru_mass[isru_des, t, scnr]
             )
+        return m
 
     # def _create_intermediate_variables_array(self, m, i, j, t, scnr):
     #     """
