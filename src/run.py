@@ -350,8 +350,68 @@ def main():
                 ],
             ]
         )
-    # Scenario: 2 crewed missions, with multiple isru, with depots
+    # Scenario: 3 crewed missions, with isru, 2 depots
     if True:
+        n_mis = 3
+        t_mis_tot = 13
+        t_surf_mis = 3
+        n_crew = 4
+        crew_consumption_cost = 8.655
+        sample_mass = [0.0, 1100, 1200]
+        habit_pl_mass = [2000, 3000, 0.0]
+        time_interval = 365
+        objective_type = "imleo"
+        isp = 420.0
+        depot_nodes = ["LEO", "LS"]
+        use_isru = True
+        isru_designs = None # If this is set to None, we'll just use the default
+        cnt_com_names = [
+            "plant_carbothermal_O2H2",
+            "maintenance",
+            "consumption",
+            "habitat",
+            "sample",
+            "oxygen",
+            "hydrogen",
+            "oxygen_storage",
+        ]
+        supply_demand_list = [
+            SupplyDemandDetails("crew #",                  "Earth", "all", "start",  n_crew),
+            SupplyDemandDetails("crew #",                  "LS",    "all", "start", -n_crew),
+            SupplyDemandDetails("habitat",                 "LS",    0,     "start", -habit_pl_mass[0]),
+            SupplyDemandDetails("habitat",                 "LS",    1,     "start", -habit_pl_mass[1]),
+            SupplyDemandDetails("crew #",                  "Earth", "all", "end",   -n_crew),
+            SupplyDemandDetails("crew #",                  "LS",    "all", "end",    n_crew),
+            SupplyDemandDetails("consumption",             "LS",    "all", "end",   -n_crew * t_surf_mis * crew_consumption_cost),
+            SupplyDemandDetails("sample",                  "Earth", 0,     "end",   -sample_mass[0]),
+            SupplyDemandDetails("sample",                  "Earth", 1,     "end",   -sample_mass[1]),
+            SupplyDemandDetails("plant_carbothermal_O2H2", "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("maintenance",             "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("consumption",             "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("habitat",                 "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("oxygen",                  "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("hydrogen",                "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("sample",                  "LS",    "all", "end",   float("inf")),
+        ]
+        holdover_nodes = ["LLO", "LS"]
+        use_fixed_sc_designs = False
+        # These are the returns for when use_fixed_sc_designs=False
+        fixed_sc_designs = np.array(
+            [
+                [
+                     2167.59307965386, # payload (max)
+                    14871.2848783733,  # propellant (max)
+                     7131.58477923172, # dry mass
+                ],
+                [
+                      500.0,          # payload (max)
+                    57554.0718996,    # propellant (max)
+                    14295.2063130593, # dry mass
+                ],
+            ]
+        )
+    # Scenario: 2 crewed missions, with multiple isru, with depots
+    if False:
         n_mis = 2
         t_mis_tot = 11
         t_surf_mis = 1
