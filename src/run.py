@@ -24,6 +24,7 @@ from input_data_class import (
     DepotParameters,
     ISRUParameters,
     ALCParameters,
+    SupplyDemandDetails,
     CommodityDetails,
     NodeDetails,
     RuntimeSettings,
@@ -42,6 +43,7 @@ def main():
         t_mis_tot = 13
         t_surf_mis = 3
         n_crew = 4
+        crew_consumption_cost = 8.655
         sample_mass = [1000, 1100]
         habit_pl_mass = [2000, 3000]
         time_interval = 365
@@ -49,15 +51,35 @@ def main():
         isp = 420.0
         depot_nodes = None
         use_isru = False
-        infinite_supply_dict={
-            "carbothermal_O2_plant": [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "maintenance":           [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "consumption":           [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "habitat":               [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "oxygen":                [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "hydrogen":              [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "sample":                [{ "node": "LS",    "mission": "all", "io": "end"   }],
-        }
+        isru_designs = None # If this is set to None, we'll just use the default
+        cnt_com_names = [
+            "plant_carbothermal_O2H2",
+            "maintenance",
+            "consumption",
+            "habitat",
+            "sample",
+            "oxygen",
+            "hydrogen",
+            "oxygen_storage",
+        ]
+        supply_demand_list = [
+            SupplyDemandDetails("crew #",                  "Earth", "all", "start",  n_crew),
+            SupplyDemandDetails("crew #",                  "LS",    "all", "start", -n_crew),
+            SupplyDemandDetails("habitat",                 "LS",    0,     "start", -habitat_pl_mass[0]),
+            SupplyDemandDetails("habitat",                 "LS",    1,     "start", -habitat_pl_mass[1]),
+            SupplyDemandDetails("crew #",                  "Earth", "all", "end",   -n_crew),
+            SupplyDemandDetails("crew #",                  "LS",    "all", "end",    n_crew),
+            SupplyDemandDetails("consumption",             "LS",    "all", "end",   -n_crew * t_surf_mis * crew_consumption_cost),
+            SupplyDemandDetails("sample",                  "Earth", 0,     "end",   -sample_mass[0]),
+            SupplyDemandDetails("sample",                  "Earth", 1,     "end",   -sample_mass[1]),
+            SupplyDemandDetails("plant_carbothermal_O2H2", "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("maintenance",             "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("consumption",             "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("habitat",                 "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("oxygen",                  "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("hydrogen",                "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("sample",                  "LS",    "all", "end",   float("inf")),
+        ]
         holdover_nodes = ["LLO", "LS"]
         use_fixed_sc_designs = False
         # These are the returns for when use_fixed_sc_designs=False
@@ -81,6 +103,7 @@ def main():
         t_mis_tot = 11
         t_surf_mis = 1
         n_crew = 0
+        crew_consumption_cost = 8.655
         sample_mass = np.zeros(n_mis).tolist()
         habit_pl_mass = np.zeros(n_mis).tolist()
         time_interval = 11
@@ -88,16 +111,38 @@ def main():
         isp = 460.0
         depot_nodes = None
         use_isru = False
-        infinite_supply_dict={
-            "carbothermal_O2_plant": [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "maintenance":           [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "consumption":           [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "habitat":               [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "oxygen":                [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
-            "hydrogen":              [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
-            "sample":                [{ "node": "LS",    "mission": "all", "io": "end"   }],
-            "oxygen_storage":        [{ "node": "LS",    "mission": "all", "io": "end"   }],
-        }
+        isru_designs = None # If this is set to None, we'll just use the default
+        cnt_com_names = [
+            "plant_carbothermal_O2H2",
+            "maintenance",
+            "consumption",
+            "habitat",
+            "sample",
+            "oxygen",
+            "hydrogen",
+            "oxygen_storage",
+        ]
+        supply_demand_list = [
+            # SupplyDemandDetails("crew #",                  "Earth", "all", "start",  n_crew),
+            # SupplyDemandDetails("crew #",                  "LS",    "all", "start", -n_crew),
+            # SupplyDemandDetails("habitat",                 "LS",    0,     "start", -habitat_pl_mass[0]),
+            # SupplyDemandDetails("habitat",                 "LS",    1,     "start", -habitat_pl_mass[1]),
+            # SupplyDemandDetails("crew #",                  "Earth", "all", "end",   -n_crew),
+            # SupplyDemandDetails("crew #",                  "LS",    "all", "end",    n_crew),
+            # SupplyDemandDetails("consumption",             "LS",    "all", "end",   -n_crew * t_surf_mis * crew_consumption_cost),
+            # SupplyDemandDetails("sample",                  "Earth", 0,     "end",   -sample_mass[0]),
+            # SupplyDemandDetails("sample",                  "Earth", 1,     "end",   -sample_mass[1]),
+            SupplyDemandDetails("plant_carbothermal_O2H2", "Earth", 0,     "start", float("inf")),
+            SupplyDemandDetails("maintenance",             "Earth", 0,     "start", float("inf")),
+            SupplyDemandDetails("consumption",             "Earth", 0,     "start", float("inf")),
+            SupplyDemandDetails("habitat",                 "Earth", 0,     "start", float("inf")),
+            SupplyDemandDetails("oxygen",                  "Earth", 0,     "start", float("inf")),
+            SupplyDemandDetails("hydrogen",                "Earth", 0,     "start", float("inf")),
+            SupplyDemandDetails("sample",                  "LS",    "all", "end",   float("inf")),
+            SupplyDemandDetails("oxygen",                  "LS",    "all", "end",   float("inf")),
+            SupplyDemandDetails("hydrogen",                "LS",    "all", "end",   float("inf")),
+            SupplyDemandDetails("oxygen_storage",          "LS",    "all", "end",   float("inf")),
+        ]
         holdover_nodes = ["LEO", "LLO", "LS"]
         use_fixed_sc_designs = False
         # These are the returns for when use_fixed_sc_designs=False
@@ -121,6 +166,7 @@ def main():
         t_mis_tot = 11
         t_surf_mis = 1
         n_crew = 0
+        crew_consumption_cost = 8.655
         sample_mass = np.zeros(n_mis).tolist()
         habit_pl_mass = np.zeros(n_mis).tolist()
         time_interval = 11
@@ -128,16 +174,38 @@ def main():
         isp = 460.0
         depot_nodes = ["LEO", "LS"]
         use_isru = False
-        infinite_supply_dict={
-            "carbothermal_O2_plant": [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "maintenance":           [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "consumption":           [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "habitat":               [{ "node": "Earth", "mission": "0",   "io": "start" }],
-            "oxygen":                [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
-            "hydrogen":              [{ "node": "Earth", "mission": "0",   "io": "start" }, { "node": "LS",    "mission": "all", "io": "end"   }],
-            "sample":                [{ "node": "LS",    "mission": "all", "io": "end"   }],
-            "oxygen_storage":        [{ "node": "LS",    "mission": "all", "io": "end"   }],
-        }
+        isru_designs = None # If this is set to None, we'll just use the default
+        cnt_com_names = [
+            "plant_carbothermal_O2H2",
+            "maintenance",
+            "consumption",
+            "habitat",
+            "sample",
+            "oxygen",
+            "hydrogen",
+            "oxygen_storage",
+        ]
+        supply_demand_list = [
+            # SupplyDemandDetails("crew #",                  "Earth", "all", "start",  n_crew),
+            # SupplyDemandDetails("crew #",                  "LS",    "all", "start", -n_crew),
+            # SupplyDemandDetails("habitat",                 "LS",    0,     "start", -habitat_pl_mass[0]),
+            # SupplyDemandDetails("habitat",                 "LS",    1,     "start", -habitat_pl_mass[1]),
+            # SupplyDemandDetails("crew #",                  "Earth", "all", "end",   -n_crew),
+            # SupplyDemandDetails("crew #",                  "LS",    "all", "end",    n_crew),
+            # SupplyDemandDetails("consumption",             "LS",    "all", "end",   -n_crew * t_surf_mis * crew_consumption_cost),
+            # SupplyDemandDetails("sample",                  "Earth", 0,     "end",   -sample_mass[0]),
+            # SupplyDemandDetails("sample",                  "Earth", 1,     "end",   -sample_mass[1]),
+            SupplyDemandDetails("plant_carbothermal_O2H2", "Earth", 0,     "start", float("inf")),
+            SupplyDemandDetails("maintenance",             "Earth", 0,     "start", float("inf")),
+            SupplyDemandDetails("consumption",             "Earth", 0,     "start", float("inf")),
+            SupplyDemandDetails("habitat",                 "Earth", 0,     "start", float("inf")),
+            SupplyDemandDetails("oxygen",                  "Earth", 0,     "start", float("inf")),
+            SupplyDemandDetails("hydrogen",                "Earth", 0,     "start", float("inf")),
+            SupplyDemandDetails("sample",                  "LS",    "all", "end",   float("inf")),
+            SupplyDemandDetails("oxygen",                  "LS",    "all", "end",   float("inf")),
+            SupplyDemandDetails("hydrogen",                "LS",    "all", "end",   float("inf")),
+            SupplyDemandDetails("oxygen_storage",          "LS",    "all", "end",   float("inf")),
+        ]
         holdover_nodes = ["LEO", "LLO", "LS"]
         use_fixed_sc_designs = False
         # These are the returns for when use_fixed_sc_designs=False
@@ -166,6 +234,7 @@ def main():
         t_mis_tot = 13
         t_surf_mis = 3
         n_crew = 4
+        crew_consumption_cost = 8.655
         sample_mass = [1000, 1100]
         habit_pl_mass = [2000, 3000]
         time_interval = 365
@@ -173,15 +242,35 @@ def main():
         isp = 420.0
         depot_nodes = None
         use_isru = True
-        infinite_supply_dict={
-            "carbothermal_O2_plant": [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "maintenance":           [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "consumption":           [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "habitat":               [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "oxygen":                [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "hydrogen":              [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "sample":                [{ "node": "LS",    "mission": "all", "io": "end"   }],
-        }
+        isru_designs = None # If this is set to None, we'll just use the default
+        cnt_com_names = [
+            "plant_carbothermal_O2H2",
+            "maintenance",
+            "consumption",
+            "habitat",
+            "sample",
+            "oxygen",
+            "hydrogen",
+            "oxygen_storage",
+        ]
+        supply_demand_list = [
+            SupplyDemandDetails("crew #",                  "Earth", "all", "start",  n_crew),
+            SupplyDemandDetails("crew #",                  "LS",    "all", "start", -n_crew),
+            SupplyDemandDetails("habitat",                 "LS",    0,     "start", -habitat_pl_mass[0]),
+            SupplyDemandDetails("habitat",                 "LS",    1,     "start", -habitat_pl_mass[1]),
+            SupplyDemandDetails("crew #",                  "Earth", "all", "end",   -n_crew),
+            SupplyDemandDetails("crew #",                  "LS",    "all", "end",    n_crew),
+            SupplyDemandDetails("consumption",             "LS",    "all", "end",   -n_crew * t_surf_mis * crew_consumption_cost),
+            SupplyDemandDetails("sample",                  "Earth", 0,     "end",   -sample_mass[0]),
+            SupplyDemandDetails("sample",                  "Earth", 1,     "end",   -sample_mass[1]),
+            SupplyDemandDetails("plant_carbothermal_O2H2", "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("maintenance",             "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("consumption",             "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("habitat",                 "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("oxygen",                  "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("hydrogen",                "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("sample",                  "LS",    "all", "end",   float("inf")),
+        ]
         holdover_nodes = ["LLO", "LS"]
         use_fixed_sc_designs = False
         # These are the returns for when use_fixed_sc_designs=False
@@ -205,6 +294,7 @@ def main():
         t_mis_tot = 13
         t_surf_mis = 3
         n_crew = 4
+        crew_consumption_cost = 8.655
         sample_mass = [1000, 1100]
         habit_pl_mass = [2000, 3000]
         time_interval = 365
@@ -212,15 +302,35 @@ def main():
         isp = 420.0
         depot_nodes = ["LEO", "LS"]
         use_isru = True
-        infinite_supply_dict={
-            "carbothermal_O2_plant": [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "maintenance":           [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "consumption":           [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "habitat":               [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "oxygen":                [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "hydrogen":              [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "sample":                [{ "node": "LS",    "mission": "all", "io": "end"   }],
-        }
+        isru_designs = None # If this is set to None, we'll just use the default
+        cnt_com_names = [
+            "plant_carbothermal_O2H2",
+            "maintenance",
+            "consumption",
+            "habitat",
+            "sample",
+            "oxygen",
+            "hydrogen",
+            "oxygen_storage",
+        ]
+        supply_demand_list = [
+            SupplyDemandDetails("crew #",                  "Earth", "all", "start",  n_crew),
+            SupplyDemandDetails("crew #",                  "LS",    "all", "start", -n_crew),
+            SupplyDemandDetails("habitat",                 "LS",    0,     "start", -habitat_pl_mass[0]),
+            SupplyDemandDetails("habitat",                 "LS",    1,     "start", -habitat_pl_mass[1]),
+            SupplyDemandDetails("crew #",                  "Earth", "all", "end",   -n_crew),
+            SupplyDemandDetails("crew #",                  "LS",    "all", "end",    n_crew),
+            SupplyDemandDetails("consumption",             "LS",    "all", "end",   -n_crew * t_surf_mis * crew_consumption_cost),
+            SupplyDemandDetails("sample",                  "Earth", 0,     "end",   -sample_mass[0]),
+            SupplyDemandDetails("sample",                  "Earth", 1,     "end",   -sample_mass[1]),
+            SupplyDemandDetails("plant_carbothermal_O2H2", "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("maintenance",             "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("consumption",             "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("habitat",                 "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("oxygen",                  "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("hydrogen",                "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("sample",                  "LS",    "all", "end",   float("inf")),
+        ]
         holdover_nodes = ["LEO", "LLO", "LS"]
         use_fixed_sc_designs = False
         # These are the returns for when use_fixed_sc_designs=False
@@ -238,6 +348,98 @@ def main():
                 ],
             ]
         )
+    # Scenario: 2 crewed missions, with multiple isru, with depots
+    if True:
+        n_mis = 2
+        t_mis_tot = 11
+        t_surf_mis = 1
+        n_crew = 4
+        crew_consumption_cost = 8.655
+        sample_mass = np.zeros(n_mis).tolist()
+        habit_pl_mass = [2000, 3000]
+        time_interval = 365
+        objective_type = "fmleo"
+        isp = 420.0
+        depot_nodes = ["LEO", "LS"]
+        use_isru = True
+        isru_designs = [
+            ISRUReactorParameters(
+                reactor_name="carbothermal_O2H2",
+                inputs=None,
+                outputs={"oxygen": 1.0 - 1.0/9.0, "hydrogen": 1.0/9.0},
+                minimum_mass=400.0,
+                decay_rate=0.1,
+                maintenance_cost=0.05,
+                production_rate=ISRUDesign.get_isru_rate_carbothermal_O2H2,
+                is_production_rate_constant=False,
+                reactor_mass_commodity="plant_carbothermal_O2H2",
+                pwl_breakpoints=[0, 400, 2000, 4000, 6000, 8000, 10000],
+            ),
+            ISRUReactorParameters(
+                reactor_name="mre_metal",
+                inputs=None,
+                outputs={"metal": 1.0},
+                minimum_mass=600.0,
+                decay_rate=0.1,
+                maintenance_cost=0.05,
+                production_rate=ISRUDesign.get_isru_rate_mre_metal,
+                is_production_rate_constant=False,
+                reactor_mass_commodity="plant_mre_metal",
+            ),
+            ISRUReactorParameters(
+                reactor_name="workshop",
+                inputs={"metal": 2.0},
+                outputs={
+                    "maintenance": 1/4,
+                    "plant_carbothermal_O2H2": 1/4,
+                    "plant_mre_metal": 1/4,
+                    "plant_workshop": 1/4
+                },
+                minimum_mass=600.0,
+                decay_rate=0.1,
+                maintenance_cost=0.05,
+                production_rate=ISRUDesign.get_isru_rate_workshop,
+                is_production_rate_constant=True,
+                reactor_mass_commodity="plant_workshop",
+            ),
+        ]
+        cnt_com_names = [
+            "plant_carbothermal_O2H2",
+            "plant_mre_metal",
+            "plant_workshop",
+            "maintenance",
+            "consumption",
+            "habitat",
+            "sample",
+            "oxygen",
+            "hydrogen",
+            "oxygen_storage",
+            "metal",
+        ]
+        supply_demand_list = [
+            SupplyDemandDetails("crew #",                  "Earth", "all", "start",  n_crew),
+            SupplyDemandDetails("crew #",                  "LS",    "all", "start", -n_crew),
+            SupplyDemandDetails("habitat",                 "LS",    0,     "start", -habit_pl_mass[0]),
+            SupplyDemandDetails("habitat",                 "LS",    1,     "start", -habit_pl_mass[1]),
+            SupplyDemandDetails("crew #",                  "Earth", "all", "end",   -n_crew),
+            SupplyDemandDetails("crew #",                  "LS",    "all", "end",    n_crew),
+            SupplyDemandDetails("consumption",             "LS",    "all", "end",   -n_crew * t_surf_mis * crew_consumption_cost),
+            SupplyDemandDetails("sample",                  "Earth", 0,     "end",   -sample_mass[0]),
+            SupplyDemandDetails("sample",                  "Earth", 1,     "end",   -sample_mass[1]),
+            SupplyDemandDetails("plant_carbothermal_O2H2", "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("maintenance",             "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("consumption",             "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("habitat",                 "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("oxygen",                  "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("hydrogen",                "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("sample",                  "LS",    "all", "end",   float("inf")),
+        ]
+        holdover_nodes = ["LEO", "LLO", "LS"]
+        use_fixed_sc_designs = False
+        # # These are the returns for when use_fixed_sc_designs=False
+        # fixed_sc_designs = np.array(
+        #     []
+        # )
 
     mission_parameters = MissionParameters(
         n_mis=n_mis,  # number of missions

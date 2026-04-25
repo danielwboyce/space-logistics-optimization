@@ -483,6 +483,52 @@ class ALCParameters:
         Weight update fraction must be in (0,1). Recommended value is 0.25.
         Received value: {}""".format(self.weight_update_fraction)
 
+@dataclass(frozen=True)
+class SupplyDemandDetails:
+    """Data class containing details of supply and demand.
+
+    Args:
+        commodity_name: Name of the commodity being supplied or
+            demanded.
+        node_name: Name of the node where the supply or demand occurs.
+        mission: Either a valid integer denoting the mission of
+            interest or the string "all".
+        io: String denoting whether the supply is at mission starts,
+            mission ends, or both. Valid values are "start", "end", or
+            "all".
+        value: Float containing the amount of supply or demand being
+            specified. If positive, it denotes a supply of the
+            commodity at the node. If negative, it specifies a demand.
+            The value may never be zero, but float(inf) and float(-inf)
+            are valid possible values.
+    """
+
+    commodity_name: str
+    node_name: str
+    mission: int | str
+    io: str
+    value: float
+
+    def __post_init__(self):
+        """Sanity checks for input values."""
+        
+        assert(self.mission == "all" or (isinstance(self.mission, int) and self.mission >= 0)),"""
+        The mission input must either be "all" or a positive integer.
+        Received value:
+            mission = {}
+        """.format(self.mission)
+        
+        assert(self.io == "all" or self.io == "start" or self.io == "end"),"""
+        The io input must either be "start", "end", or "all".
+        Received value:
+            io = {}
+        """.format(self.io)
+
+        assert(isinstance(self.value, float) and self.value != 0.0), """
+        The value must be a nonzero float.
+        Received value:
+            value = {}
+        """.format(self.value)
 
 @dataclass
 class CommodityDetails:
@@ -492,28 +538,61 @@ class CommodityDetails:
         int_com_costs: List of integer commodity costs per unit
         cnt_com_names: List of continuous commodity names
         prop_com_names (optional): List of propellant commodity names
-        infinite_supply_dict (optional): Dictionary containing data on the
-            commodities, locations, and times of when supply may be infinite.
-            The keys are commodity names, the values are list of subdictionaries.
-            The child dictionaries should have keys "node", "mission", and
-            "io".
+        supply_demand_list (optional): List of SupplyDemandDetails
+            objects specifying which nodes supply or demand which
+            commodities. Note multiple objects may never refer have the
+            same combination of commodity_name, node_name, mission,
+            
     """
 
     int_com_names: list[str]
     int_com_costs: list[float]
     cnt_com_names: list[str]
     prop_com_names: list[str] = field(default_factory=lambda: ["oxygen", "hydrogen"])
-    infinite_supply_dict: dict[str, list[dict[str, Any]]] = field(
-        default_factory=lambda: {
-            "plant":          [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "maintenance":    [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "consumption":    [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "habitat":        [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "oxygen":         [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "hydrogen":       [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "sample":         [{ "node": "LS",    "mission": "all", "io": "end" }],
-        }
+    supply_demand_list: list[SupplyDemandDetails] = field(
+        default_factory = lambda:  CommodityDetails._create_default_supply_demand_list(
+            4, 2, 3, 8.655, [2000.0, 3000.0], [1000.0, 1100.0])
     )
+
+    @staticmethod
+    def _create_default_supply_demand_list(
+            n_crew: int,
+            n_mis: int,
+            t_surf_mis: int,
+            consumption_cost: float,
+            habitat_pl_mass: list[float] | None = None,
+            sample_mass: list[float] | None = None,
+    ) -> list[SupplyDemandDetails]:
+        retval = [
+                SupplyDemandDetails("plant_carbothermal_O2H2", "Earth", "all", "start", float("inf")),
+                SupplyDemandDetails("maintenance",             "Earth", "all", "start", float("inf")),
+                SupplyDemandDetails("oxygen",                  "Earth", "all", "start", float("inf")),
+                SupplyDemandDetails("hydrogen",                "Earth", "all", "start", float("inf")),
+        ]
+        if n_crew > 0:
+            retval.add([
+                SupplyDemandDetails("consumption",             "Earth", "all", "start", float("inf")),
+                SupplyDemandDetails("consumption",             "LS",    "all", "end",   -n_crew * t_surf_mis * consumption_cost)])
+            retval.add([
+                SupplyDemandDetails("crew #",                  "Earth", "all", "start",  n_crew),
+                SupplyDemandDetails("crew #",                  "LS",    "all", "start", -n_crew),
+                SupplyDemandDetails("crew #",                  "Earth", "all", "end",   -n_crew),
+                SupplyDemandDetails("crew #",                  "LS",    "all", "end",    n_crew)])
+        if habitat_pl_mass is not None and any(mass > 0.0 for mass in habitat_pl_mass):
+            retval.add(
+                SupplyDemandDetails("habitat",                 "Earth", "all", "start", float("inf")))
+            retval.expand([
+                SupplyDemandDetails("habitat",                 "LS",    i,     "start", -habitat_pl_mass[i])
+                for i in range(n_mis)
+            ])
+        if sample_mass is not None and any(mass > 0.0 for mass in sample_mass):
+            retval.add(
+                SupplyDemandDetails("sample",                  "LS",    "all", "end",   float("inf")))
+            retval.expand([
+                SupplyDemandDetails("sample",                  "Earth", i,     "end",   -sample_mass[i])
+                for i in range(n_mis)
+            ])
+
 
     def __post_init__(self):
         """Sanity check for input values and define derived variables"""
@@ -528,27 +607,31 @@ class CommodityDetails:
         All propellant commodity names must be
         in the continuous commodity names list."""
 
+        supply_demand_tuples = [
+            (detail.commodity_name, detail.node_name, detail.mission, detail.io)
+            for detail in self.supply_demand_list
+        ]
         assert all(
-            com in self.int_com_names + self.cnt_com_names
-            for com in self.infinite_supply_dict.keys()
+            supply_demand[0] in self.int_com_names + self.cnt_com_names
+            for supply_demand in supply_demand_tuples
         ), """
-        All commodity names with unlimited supply from Earth
-        must be in the commodity names list."""
+        All commodity names in the supply_demand_list must be in one of
+        the commodity names lists.
+        Received values:
+            Supply/Demand Commodity Names = {},
+            Integer Commodity Names = {},
+            Continuous Commodity Names = {}
+        """.format(
+            [supply_demand[0] for supply_demand in supply_demand_tuples],
+            self.int_com_names,
+            self.cnt_com_names,
+        )
 
-        acceptable_inf_com_data_keys = ["node", "mission", "io"]
-        for com_name in self.infinite_supply_dict.keys():
-            for com_data in self.infinite_supply_dict[com_name]:
-                assert all(
-                    com_data_key in acceptable_inf_com_data_keys
-                    for com_data_key in com_data.keys()
-                ), """
-                At least one key in commodity data subdictionary unrecognized.
-                    Received values: {}
-                    Expected values: {}""".format(
-                        com_data.keys(),
-                        acceptable_inf_com_data_keys
-                    )
-
+        assert(len(supply_demand_tuples) == len(set(supply_demand_tuples))), """
+        All combinations of commodity_name, node_name, mission, io must be unique.
+        Received values:
+            Supply/Demand List values = {}
+        """.format(supply_demand_tuples)
 
         self.n_int_com: int = len(self.int_com_names)
         self.n_cnt_com: int = len(self.cnt_com_names)
