@@ -458,6 +458,7 @@ class ISRUParameters:
                 decay_rate=0.1,
                 maintenance_cost=0.05,
                 production_rate=ISRUDesign.get_isru_rate_carbothermal_O2H2,
+                is_production_rate_constant=False,
                 reactor_mass_commodity="plant_carbothermal_O2H2",
                 pwl_breakpoints=[0, 400, 2000, 4000, 6000, 8000, 10000],
             )
@@ -602,7 +603,7 @@ class SupplyDemandDetails:
             io = {}
         """.format(self.io)
 
-        assert(isinstance(self.value, float) and self.value != 0.0), """
+        assert(isinstance(self.value, float | int) and self.value != 0.0), """
         The value must be a nonzero float.
         Received value:
             value = {}
@@ -922,7 +923,7 @@ class InputData:
     def __post_init__(self):
         self._create_bidicts()
         self._check_depots()
-        self._check_infinite_supply_dict()
+        self._check_supply_demand_data()
         self._check_isru_commodity_parameters()
 
         if self.alc.prioritized_var_name:
@@ -966,46 +967,29 @@ class InputData:
                 self.node.holdover_nodes,
             )
 
-    def _check_infinite_supply_dict(self):
-        """Sanity checks for infinite_supply_dict."""
-        for comdty_name in self.comdty.infinite_supply_dict.keys():
-            for comdty_data in self.comdty.infinite_supply_dict[comdty_name]:
-                node_name = comdty_data["node"]
-                assert(node_name in self.node.node_names), """
-                Unrecognized node in infinite_supply_dict subdictionary for commodity {}
-                    Received value: {}
-                    Allowed node names: {}""".format(
-                        comdty_name,
-                        node_name,
-                        self.node.node_names
-                    )
+    def _check_supply_demand_data(self):
+        """Sanity checks for supply_demand_list."""
+        for supply_demand_data in self.comdty.supply_demand_list:
+            comdty_name = supply_demand_data.commodity_name
+            node_name = supply_demand_data.node_name
+            assert(node_name in self.node.node_names), """
+            Unrecognized node in supply_demand_list for commodity {}
+                Received value: {}
+                Allowed node names: {}""".format(
+                    comdty_name,
+                    node_name,
+                    self.node.node_names
+                )
 
-                mission = comdty_data["mission"]
-                assert(mission == "all" or mission.isdigit()),"""
-                "Uncrecognized mission in infinite_supply_dict subdictionary for commodity {}.
-                Mission should be "all" or the string representation of an integer.
-                    Received value: {}""".format(
-                        comdty_name,
-                        mission
-                    )
-                if mission.isdigit():
-                    assert(int(mission) < self.mission.n_mis),"""
-                "Uncrecognized mission in infinite_supply_dict subdictionary for commodity {}.
-                If mission is an integer, it should be less than the total number of missions.
-                    Received value: {}
-                    Number of missions: {}""".format(
-                        comdty_name,
-                        mission,
-                        self.mission.n_mis
-                    )
-
-                io = comdty_data["io"]
-                assert(io == "start" or io == "end" or io == "all"),"""
-                "Uncrecognized io in infinite_supply_dict subdictionary for commodity {}.
-                io should be "start", "end", or "all".
-                    Received value: {}""".format(
-                        comdty_name,
-                        io
+            mission = supply_demand_data.mission
+            if isinstance(mission, int):
+                assert(mission < self.mission.n_mis),"""
+            "If mission is an integer, it should be less than the total number of missions.
+                Received value: {}
+                Number of missions: {}""".format(
+                    comdty_name,
+                    mission,
+                    self.mission.n_mis
                 )
 
     def _check_isru_commodity_parameters(self):

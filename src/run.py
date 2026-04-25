@@ -67,8 +67,8 @@ def main():
         supply_demand_list = [
             SupplyDemandDetails("crew #",                  "Earth", "all", "start",  n_crew),
             SupplyDemandDetails("crew #",                  "LS",    "all", "start", -n_crew),
-            SupplyDemandDetails("habitat",                 "LS",    0,     "start", -habitat_pl_mass[0]),
-            SupplyDemandDetails("habitat",                 "LS",    1,     "start", -habitat_pl_mass[1]),
+            SupplyDemandDetails("habitat",                 "LS",    0,     "start", -habit_pl_mass[0]),
+            SupplyDemandDetails("habitat",                 "LS",    1,     "start", -habit_pl_mass[1]),
             SupplyDemandDetails("crew #",                  "Earth", "all", "end",   -n_crew),
             SupplyDemandDetails("crew #",                  "LS",    "all", "end",    n_crew),
             SupplyDemandDetails("consumption",             "LS",    "all", "end",   -n_crew * t_surf_mis * crew_consumption_cost),
@@ -127,8 +127,8 @@ def main():
         supply_demand_list = [
             # SupplyDemandDetails("crew #",                  "Earth", "all", "start",  n_crew),
             # SupplyDemandDetails("crew #",                  "LS",    "all", "start", -n_crew),
-            # SupplyDemandDetails("habitat",                 "LS",    0,     "start", -habitat_pl_mass[0]),
-            # SupplyDemandDetails("habitat",                 "LS",    1,     "start", -habitat_pl_mass[1]),
+            # SupplyDemandDetails("habitat",                 "LS",    0,     "start", -habit_pl_mass[0]),
+            # SupplyDemandDetails("habitat",                 "LS",    1,     "start", -habit_pl_mass[1]),
             # SupplyDemandDetails("crew #",                  "Earth", "all", "end",   -n_crew),
             # SupplyDemandDetails("crew #",                  "LS",    "all", "end",    n_crew),
             # SupplyDemandDetails("consumption",             "LS",    "all", "end",   -n_crew * t_surf_mis * crew_consumption_cost),
@@ -190,8 +190,8 @@ def main():
         supply_demand_list = [
             # SupplyDemandDetails("crew #",                  "Earth", "all", "start",  n_crew),
             # SupplyDemandDetails("crew #",                  "LS",    "all", "start", -n_crew),
-            # SupplyDemandDetails("habitat",                 "LS",    0,     "start", -habitat_pl_mass[0]),
-            # SupplyDemandDetails("habitat",                 "LS",    1,     "start", -habitat_pl_mass[1]),
+            # SupplyDemandDetails("habitat",                 "LS",    0,     "start", -habit_pl_mass[0]),
+            # SupplyDemandDetails("habitat",                 "LS",    1,     "start", -habit_pl_mass[1]),
             # SupplyDemandDetails("crew #",                  "Earth", "all", "end",   -n_crew),
             # SupplyDemandDetails("crew #",                  "LS",    "all", "end",    n_crew),
             # SupplyDemandDetails("consumption",             "LS",    "all", "end",   -n_crew * t_surf_mis * crew_consumption_cost),
@@ -258,8 +258,8 @@ def main():
         supply_demand_list = [
             SupplyDemandDetails("crew #",                  "Earth", "all", "start",  n_crew),
             SupplyDemandDetails("crew #",                  "LS",    "all", "start", -n_crew),
-            SupplyDemandDetails("habitat",                 "LS",    0,     "start", -habitat_pl_mass[0]),
-            SupplyDemandDetails("habitat",                 "LS",    1,     "start", -habitat_pl_mass[1]),
+            SupplyDemandDetails("habitat",                 "LS",    0,     "start", -habit_pl_mass[0]),
+            SupplyDemandDetails("habitat",                 "LS",    1,     "start", -habit_pl_mass[1]),
             SupplyDemandDetails("crew #",                  "Earth", "all", "end",   -n_crew),
             SupplyDemandDetails("crew #",                  "LS",    "all", "end",    n_crew),
             SupplyDemandDetails("consumption",             "LS",    "all", "end",   -n_crew * t_surf_mis * crew_consumption_cost),
@@ -318,8 +318,8 @@ def main():
         supply_demand_list = [
             SupplyDemandDetails("crew #",                  "Earth", "all", "start",  n_crew),
             SupplyDemandDetails("crew #",                  "LS",    "all", "start", -n_crew),
-            SupplyDemandDetails("habitat",                 "LS",    0,     "start", -habitat_pl_mass[0]),
-            SupplyDemandDetails("habitat",                 "LS",    1,     "start", -habitat_pl_mass[1]),
+            SupplyDemandDetails("habitat",                 "LS",    0,     "start", -habit_pl_mass[0]),
+            SupplyDemandDetails("habitat",                 "LS",    1,     "start", -habit_pl_mass[1]),
             SupplyDemandDetails("crew #",                  "Earth", "all", "end",   -n_crew),
             SupplyDemandDetails("crew #",                  "LS",    "all", "end",    n_crew),
             SupplyDemandDetails("consumption",             "LS",    "all", "end",   -n_crew * t_surf_mis * crew_consumption_cost),
@@ -507,7 +507,7 @@ def main():
         cnt_com_names=cnt_com_names,
         # list of propellant commodity names
         prop_com_names=["oxygen", "hydrogen"],
-        infinite_supply_dict=infinite_supply_dict,
+        supply_demand_list=supply_demand_list,
     )
 
     node_details = NodeDetails(
