@@ -77,6 +77,7 @@ class OutputManager(InitMixin):
         ] + self.optimizer._model_builder.idx_name_dict["all"]
         df = pd.DataFrame(self._extract_var_data(model), columns=df_col)
         df = self.convert_idx_to_name(df)
+        df = self._apply_nodes_to_isru_vars(df)
         df = self._apply_real_dates_to_df(df)
         df = df.drop(df[abs(df["Value"]) < 1e-4].index)
         df["Variable Name"] = pd.Categorical(
@@ -465,4 +466,33 @@ class OutputManager(InitMixin):
                 ]
                 + holdover_in_outboud_end_date
             )
+        return df
+
+    def _apply_nodes_to_isru_vars(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.DataFrame:
+        """The ISRU variables will make a lot more sense if
+        departure/arrival nodes are added to them, at least in the data
+        frame."""
+
+        if not self.use_isru:
+            return df
+
+        isru_var_names = [
+            var_name
+            for var_name in self.optimizer._model_builder.idx_name_dict
+            if var_name.find("isru") != -1
+        ]
+
+        mask = df["Variable Name"].isin(isru_var_names)
+        df.loc[mask, "dep_node"] = "LS"
+        df.loc[mask, "arr_node"] = "LS"
+
+        mask = mask & df["time"].isin(self._network.mis_start_dates)
+        df.loc[mask, "time"] = (
+            df.loc[mask, "time"]
+            + int(self._network.get_real_date_from_mis_start("LS", "LS", is_outbound=True))
+        )
+
         return df
