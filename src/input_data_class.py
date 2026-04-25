@@ -649,28 +649,29 @@ class CommodityDetails:
                 SupplyDemandDetails("hydrogen",                "Earth", "all", "start", float("inf")),
         ]
         if n_crew > 0:
-            retval.add([
+            retval.extend([
                 SupplyDemandDetails("consumption",             "Earth", "all", "start", float("inf")),
                 SupplyDemandDetails("consumption",             "LS",    "all", "end",   -n_crew * t_surf_mis * consumption_cost)])
-            retval.add([
+            retval.extend([
                 SupplyDemandDetails("crew #",                  "Earth", "all", "start",  n_crew),
                 SupplyDemandDetails("crew #",                  "LS",    "all", "start", -n_crew),
                 SupplyDemandDetails("crew #",                  "Earth", "all", "end",   -n_crew),
                 SupplyDemandDetails("crew #",                  "LS",    "all", "end",    n_crew)])
         if habitat_pl_mass is not None and any(mass > 0.0 for mass in habitat_pl_mass):
-            retval.add(
+            retval.append(
                 SupplyDemandDetails("habitat",                 "Earth", "all", "start", float("inf")))
-            retval.expand([
+            retval.extend([
                 SupplyDemandDetails("habitat",                 "LS",    i,     "start", -habitat_pl_mass[i])
                 for i in range(n_mis)
             ])
         if sample_mass is not None and any(mass > 0.0 for mass in sample_mass):
-            retval.add(
+            retval.append(
                 SupplyDemandDetails("sample",                  "LS",    "all", "end",   float("inf")))
-            retval.expand([
+            retval.extend([
                 SupplyDemandDetails("sample",                  "Earth", i,     "end",   -sample_mass[i])
                 for i in range(n_mis)
             ])
+        return retval
 
 
     def __post_init__(self):
