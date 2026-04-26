@@ -202,12 +202,13 @@ class ISRUConservation:
                             * m.isru_trilinear_prod[isru_design_child_id, t, scnr]
                         )
                     if comdty_name in isru_design_child.outputs:
-                        constraint_rhs = (
-                            constraint_rhs
-                            + isru_design.outputs[isru_design_child_name]
-                            * isru_design_child.inputs[comdty_name]
-                            * m.isru_trilinear_prod[isru_design_child_id, t, scnr]
-                        )
+                        if isru_design_child.inputs is not None and comdty_name in isru_design_child.inputs:
+                            constraint_rhs = (
+                                constraint_rhs
+                                + isru_design.outputs[isru_design_child_name]
+                                * isru_design_child.inputs[comdty_name]
+                                * m.isru_trilinear_prod[isru_design_child_id, t, scnr]
+                            )
         m.isru_mass_cnsv[i, j, comdty_id, t, scnr] = constraint(constraint_lhs == constraint_rhs)
         return m
 
