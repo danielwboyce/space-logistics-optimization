@@ -85,6 +85,8 @@ class InitMixin:
         """Bidirectional dictionary corresponding to depot names and indices."""
         self.use_isru: bool = input_data.isru.use_isru
         """True if ISRU is used"""
+        self.isru_use_convex_relaxation = input_data.isru.use_convex_relaxation
+        """True if convex relaxation is used for ISRU production."""
         self.n_isru_design: int = len(input_data.isru.isru_designs)
         """Number of ISRU design"""
         self.isru_reactor_dict: bidict[str, int] = input_data.isru_reactor_dict

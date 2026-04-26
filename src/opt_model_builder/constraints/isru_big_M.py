@@ -35,7 +35,6 @@ class ISRUBigM:
         if not self.builder.use_isru:
             return m
 
-        big_M_val: float = 100000
         m.isru_bigM_const_1 = constraint_dict()
         m.isru_bigM_const_2 = constraint_dict()
         m.isru_bigM_const_3 = constraint_dict()
@@ -44,21 +43,29 @@ class ISRUBigM:
             m.time_idx,
             m.scnr_idx,
         ):
-            little_M_val: float = self.builder.isru.isru_designs[isru_des].minimum_mass
+            little_M_mass: float = self.builder.isru.isru_designs[isru_des].minimum_mass
+            big_M_mass: float = self.builder.isru.get_mass_upper_bound() - little_M_mass
+            big_M_rate: float = self.builder.isru.isru_designs[isru_des].production_rate(big_M_mass)
 
             m.isru_bigM_const_1[isru_des, t, scnr] = constraint(
                 m.isru_mass[isru_des, t, scnr]
-                >= m.isru_use_ind[isru_des, t, scnr] * little_M_val
+                >= m.isru_use_ind[isru_des, t, scnr] * little_M_mass
             )
 
             m.isru_bigM_const_2[isru_des, t, scnr] = constraint(
                 m.isru_mass[isru_des, t, scnr]
-                <= little_M_val + m.isru_use_ind[isru_des, t, scnr] * big_M_val
+                <= little_M_mass + m.isru_use_ind[isru_des, t, scnr] * big_M_mass
             )
 
-            m.isru_bigM_const_3[isru_des, t, scnr] = constraint(
-                m.isru_rate[isru_des, t, scnr]
-                <= m.isru_use_ind[isru_des, t, scnr] * big_M_val
-            )
+            if self.builder.isru.isru_designs[isru_des].is_production_rate_constant:
+                m.isru_bigM_const_3[isru_des, t, scnr] = constraint(
+                    m.isru_rate[isru_des, t, scnr]
+                    == self.builder.isru.isru_designs[isru_des].production_rate(1.5 * little_M_mass)
+                )
+            else:
+                m.isru_bigM_const_3[isru_des, t, scnr] = constraint(
+                    m.isru_rate[isru_des, t, scnr]
+                    <= m.isru_use_ind[isru_des, t, scnr] * big_M_rate
+                )
 
         return m

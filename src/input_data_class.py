@@ -448,6 +448,7 @@ class ISRUParameters:
     """
 
     use_isru: bool
+    use_convex_relaxation: bool = False
     isru_designs: list[ISRUReactorParameters] = field(
         default_factory=lambda: [
             ISRUReactorParameters(
@@ -479,6 +480,9 @@ class ISRUParameters:
                 isru_io.add(output)
         return sorted(list(isru_io))
 
+    @staticmethod
+    def get_mass_upper_bound() -> float:
+        return 100.0e3
 
     def __post_init__(self):
         """Sanity check for input values"""

@@ -36,8 +36,8 @@ from component_designer.isru.isru_rate_model import ISRUDesign
 
 def main():
     # Revision string
-    # revision = "abc1234"
-    revision = None
+    revision = "06_7c59572"
+    # revision = None
 
     # Scenario: 2 crewed missions, no isru, no depots
     if False:
@@ -53,6 +53,7 @@ def main():
         isp = 420.0
         depot_nodes = None
         use_isru = False
+        use_convex_relaxation = False
         isru_designs = None # If this is set to None, we'll just use the default
         cnt_com_names = [
             "plant_carbothermal_O2H2",
@@ -113,6 +114,7 @@ def main():
         isp = 460.0
         depot_nodes = None
         use_isru = False
+        use_convex_relaxation = False
         isru_designs = None # If this is set to None, we'll just use the default
         cnt_com_names = [
             "plant_carbothermal_O2H2",
@@ -176,6 +178,7 @@ def main():
         isp = 460.0
         depot_nodes = ["LEO", "LS"]
         use_isru = False
+        use_convex_relaxation = False
         isru_designs = None # If this is set to None, we'll just use the default
         cnt_com_names = [
             "plant_carbothermal_O2H2",
@@ -231,7 +234,7 @@ def main():
             ]
         )
     # Scenario: 2 crewed missions, with isru, no depots
-    if False:
+    if True:
         n_mis = 2
         t_mis_tot = 13
         t_surf_mis = 3
@@ -244,6 +247,7 @@ def main():
         isp = 420.0
         depot_nodes = None
         use_isru = True
+        use_convex_relaxation = False
         isru_designs = None # If this is set to None, we'll just use the default
         cnt_com_names = [
             "plant_carbothermal_O2H2",
@@ -304,6 +308,7 @@ def main():
         isp = 420.0
         depot_nodes = ["LEO", "LS"]
         use_isru = True
+        use_convex_relaxation = False
         isru_designs = None # If this is set to None, we'll just use the default
         cnt_com_names = [
             "plant_carbothermal_O2H2",
@@ -364,6 +369,7 @@ def main():
         isp = 420.0
         depot_nodes = None
         use_isru = True
+        use_convex_relaxation = False
         isru_designs = None # If this is set to None, we'll just use the default
         cnt_com_names = [
             "plant_carbothermal_O2H2",
@@ -413,7 +419,7 @@ def main():
             ]
         )
     # Scenario: 3 crewed missions, with isru, 2 depots
-    if True:
+    if False:
         n_mis = 3
         t_mis_tot = 13
         t_surf_mis = 3
@@ -426,6 +432,7 @@ def main():
         isp = 420.0
         depot_nodes = ["LEO", "LS"]
         use_isru = True
+        use_convex_relaxation = False
         isru_designs = None # If this is set to None, we'll just use the default
         cnt_com_names = [
             "plant_carbothermal_O2H2",
@@ -488,6 +495,7 @@ def main():
         isp = 420.0
         depot_nodes = ["LEO", "LS"]
         use_isru = True
+        use_convex_relaxation = False
         isru_designs = [
             ISRUReactorParameters(
                 reactor_name="carbothermal_O2H2",
@@ -604,11 +612,13 @@ def main():
     if isru_designs is not None:
         isru_parameters = ISRUParameters(
             use_isru=use_isru,  # True if ISRU is used
+            use_convex_relaxation=use_convex_relaxation,
             isru_designs=isru_designs,
         )
     else:
         isru_parameters = ISRUParameters(
             use_isru=use_isru,  # True if ISRU is used
+            use_convex_relaxation=use_convex_relaxation,
         )
 
     alc_parameters = ALCParameters(
@@ -648,6 +658,7 @@ def main():
                      + str(n_mis) + "mis_"
                      + str(n_crew) + "crew_"
                      + ("0" if not isru_parameters.use_isru else str(len(isru_parameters.isru_designs))) + "isru_"
+                     + ("1" if isru_parameters.use_convex_relaxation else "0") + "convexrelax_"
                      + ("0" if depot_nodes is None else str(len(depot_nodes))) + "depots_"
                      + objective_type)
     runtime_settings = RuntimeSettings(
