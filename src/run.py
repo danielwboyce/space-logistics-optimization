@@ -234,7 +234,7 @@ def main():
             ]
         )
     # Scenario: 2 crewed missions, with isru, no depots
-    if True:
+    if False:
         n_mis = 2
         t_mis_tot = 13
         t_surf_mis = 3
@@ -481,18 +481,18 @@ def main():
                 ],
             ]
         )
-    # Scenario: 2 crewed missions, with multiple isru, with depots
-    if False:
+    # Scenario: 2 uncrewed missions, with multiple isru, with depots
+    if True:
         n_mis = 2
-        t_mis_tot = 11
-        t_surf_mis = 1
-        n_crew = 4
+        t_mis_tot = 13
+        t_surf_mis = 3
+        n_crew = 0
         crew_consumption_cost = 8.655
         sample_mass = np.zeros(n_mis).tolist()
-        habit_pl_mass = [2000, 3000]
+        habit_pl_mass = np.zeros(n_mis).tolist()
         time_interval = 365
         objective_type = "fmleo"
-        isp = 420.0
+        isp = 460.0
         depot_nodes = ["LEO", "LS"]
         use_isru = True
         use_convex_relaxation = False
@@ -507,7 +507,7 @@ def main():
                 production_rate=ISRUDesign.get_isru_rate_carbothermal_O2H2,
                 is_production_rate_constant=False,
                 reactor_mass_commodity="plant_carbothermal_O2H2",
-                pwl_breakpoints=[0, 400, 2000, 4000, 6000, 8000, 10000],
+                pwl_breakpoints=[0, 400, 2000, 4000, 6000, 8000, 10000, 20000, 40000],
             ),
             ISRUReactorParameters(
                 reactor_name="mre_metal",
@@ -519,28 +519,29 @@ def main():
                 production_rate=ISRUDesign.get_isru_rate_mre_metal,
                 is_production_rate_constant=False,
                 reactor_mass_commodity="plant_mre_metal",
+                pwl_breakpoints=[0, 600, 2000, 4000, 6000, 8000, 10000, 20000, 40000],
             ),
-            ISRUReactorParameters(
-                reactor_name="workshop",
-                inputs={"metal": 2.0},
-                outputs={
-                    "maintenance": 1/4,
-                    "plant_carbothermal_O2H2": 1/4,
-                    "plant_mre_metal": 1/4,
-                    "plant_workshop": 1/4
-                },
-                minimum_mass=600.0,
-                decay_rate=0.1,
-                maintenance_cost=0.05,
-                production_rate=ISRUDesign.get_isru_rate_workshop,
-                is_production_rate_constant=True,
-                reactor_mass_commodity="plant_workshop",
-            ),
+            # ISRUReactorParameters(
+            #     reactor_name="workshop",
+            #     inputs={"metal": 2.0},
+            #     outputs={
+            #         "maintenance": 1/4,
+            #         "plant_carbothermal_O2H2": 1/4,
+            #         "plant_mre_metal": 1/4,
+            #         "plant_workshop": 1/4
+            #     },
+            #     minimum_mass=600.0,
+            #     decay_rate=0.1,
+            #     maintenance_cost=0.05,
+            #     production_rate=ISRUDesign.get_isru_rate_workshop,
+            #     is_production_rate_constant=True,
+            #     reactor_mass_commodity="plant_workshop",
+            # ),
         ]
         cnt_com_names = [
             "plant_carbothermal_O2H2",
             "plant_mre_metal",
-            "plant_workshop",
+            # "plant_workshop",
             "maintenance",
             "consumption",
             "habitat",
@@ -551,16 +552,19 @@ def main():
             "metal",
         ]
         supply_demand_list = [
-            SupplyDemandDetails("crew #",                  "Earth", "all", "start",  n_crew),
-            SupplyDemandDetails("crew #",                  "LS",    "all", "start", -n_crew),
-            SupplyDemandDetails("habitat",                 "LS",    0,     "start", -habit_pl_mass[0]),
-            SupplyDemandDetails("habitat",                 "LS",    1,     "start", -habit_pl_mass[1]),
-            SupplyDemandDetails("crew #",                  "Earth", "all", "end",   -n_crew),
-            SupplyDemandDetails("crew #",                  "LS",    "all", "end",    n_crew),
-            SupplyDemandDetails("consumption",             "LS",    "all", "end",   -n_crew * t_surf_mis * crew_consumption_cost),
-            SupplyDemandDetails("sample",                  "Earth", 0,     "end",   -sample_mass[0]),
-            SupplyDemandDetails("sample",                  "Earth", 1,     "end",   -sample_mass[1]),
+            # SupplyDemandDetails("crew #",                  "Earth", "all", "start",  n_crew),
+            # SupplyDemandDetails("crew #",                  "LS",    "all", "start", -n_crew),
+            # SupplyDemandDetails("habitat",                 "LS",    0,     "start", -habit_pl_mass[0]),
+            # SupplyDemandDetails("habitat",                 "LS",    1,     "start", -habit_pl_mass[1]),
+            # SupplyDemandDetails("crew #",                  "Earth", "all", "end",   -n_crew),
+            # SupplyDemandDetails("crew #",                  "LS",    "all", "end",    n_crew),
+            # SupplyDemandDetails("consumption",             "LS",    "all", "end",   -n_crew * t_surf_mis * crew_consumption_cost),
+            # SupplyDemandDetails("sample",                  "Earth", 0,     "end",   -sample_mass[0]),
+            # SupplyDemandDetails("sample",                  "Earth", 1,     "end",   -sample_mass[1]),
+            SupplyDemandDetails("plant_carbothermal_O2H2", "LS",    0,     "start", 5000.0),
+            SupplyDemandDetails("plant_mre_metal",         "LS",    0,     "start", 5000.0),
             SupplyDemandDetails("plant_carbothermal_O2H2", "Earth", "all", "start", float("inf")),
+            SupplyDemandDetails("plant_mre_metal",         "Earth", "all", "start", float("inf")),
             SupplyDemandDetails("maintenance",             "Earth", "all", "start", float("inf")),
             SupplyDemandDetails("consumption",             "Earth", "all", "start", float("inf")),
             SupplyDemandDetails("habitat",                 "Earth", "all", "start", float("inf")),
