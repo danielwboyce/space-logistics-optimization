@@ -620,7 +620,7 @@ def main():
             ),
             ISRUReactorParameters(
                 reactor_name="workshop",
-                inputs={"metal": 0.9},
+                inputs={"metal": 1.5},
                 outputs={
                     "maintenance": 1/4,
                     "plant_carbothermal_O2H2": 1/4,
@@ -633,7 +633,7 @@ def main():
                 production_rate=ISRUDesign.get_isru_rate_workshop,
                 is_production_rate_constant=True,
                 reactor_mass_commodity="plant_workshop",
-                pwl_breakpoints=[0, ISRUParameters.get_mass_upper_bound()],
+                pwl_breakpoints=[0, 100, ISRUParameters.get_mass_upper_bound()],
             ),
         ]
         cnt_com_names = [
@@ -661,7 +661,7 @@ def main():
             # SupplyDemandDetails("sample",                  "Earth", 1,     "end",   -sample_mass[1]),
             SupplyDemandDetails("plant_carbothermal_O2H2", "LS",    0,     "start", 5000.0),
             SupplyDemandDetails("plant_mre_metal",         "LS",    0,     "start", 5000.0),
-            SupplyDemandDetails("plant_workshop",          "LS",    0,     "start", 600.0),
+            SupplyDemandDetails("plant_workshop",          "LS",    0,     "start", 5000.0),
             SupplyDemandDetails("plant_carbothermal_O2H2", "Earth", "all", "start", float("inf")),
             SupplyDemandDetails("plant_mre_metal",         "Earth", "all", "start", float("inf")),
             SupplyDemandDetails("plant_workshop",          "Earth", "all", "start", float("inf")),
