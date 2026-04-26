@@ -186,80 +186,15 @@ class Objective:
         Returns:
             SumExpression: sum of commodities and sc mass launched to LEO
         """
-        term = (
-            self.builder.cnt_com_costs[self.builder.cnt_com_dict["oxygen_storage"]]
-            * sum(
-                m.cnt_com[
-                    sc_des,
-                    sc_cp,
-                    j,
-                    self.builder.node_dict["LEO"],
-                    self.builder.cnt_com_dict["oxygen_storage"],
-                    self.builder.flow_dict["in"],
-                    time_list[-1] - self.builder.delta_t[j][self.builder.node_dict["LEO"]][len(time_list) - 1],
-                    scnr,
-                ]
-                for sc_des in m.sc_des_idx
-                for sc_cp in m.sc_copy_idx
-                for j in m.arr_node_idx
-                if self.builder.is_feasible_arc(self.builder.node_dict["LEO"], j, sc_des, sc_cp)
-                if time_list[-1] - self.builder.delta_t[j][self.builder.node_dict["LEO"]][len(time_list) - 1] in m.time_idx
-            )
-            - self.builder.cnt_com_costs[self.builder.cnt_com_dict["oxygen_storage"]]
-            * sum(
-                m.cnt_com[
-                    sc_des,
-                    sc_cp,
-                    self.builder.node_dict["Earth"],
-                    self.builder.node_dict["LEO"],
-                    self.builder.cnt_com_dict["oxygen_storage"],
-                    self.builder.flow_dict["out"],
-                    t,
-                    scnr,
-                ]
-                for sc_des in m.sc_des_idx
-                for sc_cp in m.sc_copy_idx
-                for t in time_list
-                if self.builder.is_feasible_arc(
-                    self.builder.node_dict["Earth"],
-                    self.builder.node_dict["LEO"],
-                    sc_des,
-                    sc_cp
-                )
-            )
-            - self.builder.cnt_com_costs[self.builder.cnt_com_dict["oxygen"]]
-            * sum(
-                m.cnt_com[
-                    sc_des,
-                    sc_cp,
-                    self.builder.node_dict["Earth"],
-                    self.builder.node_dict["LEO"],
-                    self.builder.cnt_com_dict["oxygen"],
-                    self.builder.flow_dict["out"],
-                    t,
-                    scnr,
-                ]
-                for sc_des in m.sc_des_idx
-                for sc_cp in m.sc_copy_idx
-                for t in time_list
-                if self.builder.is_feasible_arc(
-                    self.builder.node_dict["Earth"],
-                    self.builder.node_dict["LEO"],
-                    sc_des,
-                    sc_cp
-                )
-            )
-        )
-
         # term = (
-        #     self.builder.cnt_com_costs[self.builder.cnt_com_dict["metal"]]
+        #     self.builder.cnt_com_costs[self.builder.cnt_com_dict["oxygen_storage"]]
         #     * sum(
         #         m.cnt_com[
         #             sc_des,
         #             sc_cp,
         #             j,
         #             self.builder.node_dict["LEO"],
-        #             self.builder.cnt_com_dict["metal"],
+        #             self.builder.cnt_com_dict["oxygen_storage"],
         #             self.builder.flow_dict["in"],
         #             time_list[-1] - self.builder.delta_t[j][self.builder.node_dict["LEO"]][len(time_list) - 1],
         #             scnr,
@@ -270,14 +205,36 @@ class Objective:
         #         if self.builder.is_feasible_arc(self.builder.node_dict["LEO"], j, sc_des, sc_cp)
         #         if time_list[-1] - self.builder.delta_t[j][self.builder.node_dict["LEO"]][len(time_list) - 1] in m.time_idx
         #     )
-        #     - self.builder.cnt_com_costs[self.builder.cnt_com_dict["metal"]]
+        #     - self.builder.cnt_com_costs[self.builder.cnt_com_dict["oxygen_storage"]]
         #     * sum(
         #         m.cnt_com[
         #             sc_des,
         #             sc_cp,
         #             self.builder.node_dict["Earth"],
         #             self.builder.node_dict["LEO"],
-        #             self.builder.cnt_com_dict["metal"],
+        #             self.builder.cnt_com_dict["oxygen_storage"],
+        #             self.builder.flow_dict["out"],
+        #             t,
+        #             scnr,
+        #         ]
+        #         for sc_des in m.sc_des_idx
+        #         for sc_cp in m.sc_copy_idx
+        #         for t in time_list
+        #         if self.builder.is_feasible_arc(
+        #             self.builder.node_dict["Earth"],
+        #             self.builder.node_dict["LEO"],
+        #             sc_des,
+        #             sc_cp
+        #         )
+        #     )
+        #     - self.builder.cnt_com_costs[self.builder.cnt_com_dict["oxygen"]]
+        #     * sum(
+        #         m.cnt_com[
+        #             sc_des,
+        #             sc_cp,
+        #             self.builder.node_dict["Earth"],
+        #             self.builder.node_dict["LEO"],
+        #             self.builder.cnt_com_dict["oxygen"],
         #             self.builder.flow_dict["out"],
         #             t,
         #             scnr,
@@ -293,5 +250,48 @@ class Objective:
         #         )
         #     )
         # )
+
+        term = (
+            self.builder.cnt_com_costs[self.builder.cnt_com_dict["metal"]]
+            * sum(
+                m.cnt_com[
+                    sc_des,
+                    sc_cp,
+                    j,
+                    self.builder.node_dict["LEO"],
+                    self.builder.cnt_com_dict["metal"],
+                    self.builder.flow_dict["in"],
+                    time_list[-1] - self.builder.delta_t[j][self.builder.node_dict["LEO"]][len(time_list) - 1],
+                    scnr,
+                ]
+                for sc_des in m.sc_des_idx
+                for sc_cp in m.sc_copy_idx
+                for j in m.arr_node_idx
+                if self.builder.is_feasible_arc(self.builder.node_dict["LEO"], j, sc_des, sc_cp)
+                if time_list[-1] - self.builder.delta_t[j][self.builder.node_dict["LEO"]][len(time_list) - 1] in m.time_idx
+            )
+            - self.builder.cnt_com_costs[self.builder.cnt_com_dict["metal"]]
+            * sum(
+                m.cnt_com[
+                    sc_des,
+                    sc_cp,
+                    self.builder.node_dict["Earth"],
+                    self.builder.node_dict["LEO"],
+                    self.builder.cnt_com_dict["metal"],
+                    self.builder.flow_dict["out"],
+                    t,
+                    scnr,
+                ]
+                for sc_des in m.sc_des_idx
+                for sc_cp in m.sc_copy_idx
+                for t in time_list
+                if self.builder.is_feasible_arc(
+                    self.builder.node_dict["Earth"],
+                    self.builder.node_dict["LEO"],
+                    sc_des,
+                    sc_cp
+                )
+            )
+        )
         # term = term - self._get_obj_term_imleo(m, scnr, time_list)
         return term

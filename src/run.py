@@ -486,10 +486,10 @@ def main():
         n_mis = 2
         t_mis_tot = 13
         t_surf_mis = 3
-        n_crew = 0
+        n_crew = 4
         crew_consumption_cost = 8.655
-        sample_mass = np.zeros(n_mis).tolist()
-        habit_pl_mass = np.zeros(n_mis).tolist()
+        sample_mass = [1000, 1100] #np.zeros(n_mis).tolist()
+        habit_pl_mass = [2000, 3000] #np.zeros(n_mis).tolist()
         time_interval = 365
         objective_type = "fmleo"
         isp = 460.0
@@ -552,15 +552,15 @@ def main():
             "metal",
         ]
         supply_demand_list = [
-            # SupplyDemandDetails("crew #",                  "Earth", "all", "start",  n_crew),
-            # SupplyDemandDetails("crew #",                  "LS",    "all", "start", -n_crew),
-            # SupplyDemandDetails("habitat",                 "LS",    0,     "start", -habit_pl_mass[0]),
-            # SupplyDemandDetails("habitat",                 "LS",    1,     "start", -habit_pl_mass[1]),
-            # SupplyDemandDetails("crew #",                  "Earth", "all", "end",   -n_crew),
-            # SupplyDemandDetails("crew #",                  "LS",    "all", "end",    n_crew),
-            # SupplyDemandDetails("consumption",             "LS",    "all", "end",   -n_crew * t_surf_mis * crew_consumption_cost),
-            # SupplyDemandDetails("sample",                  "Earth", 0,     "end",   -sample_mass[0]),
-            # SupplyDemandDetails("sample",                  "Earth", 1,     "end",   -sample_mass[1]),
+            SupplyDemandDetails("crew #",                  "Earth", "all", "start",  n_crew),
+            SupplyDemandDetails("crew #",                  "LS",    "all", "start", -n_crew),
+            SupplyDemandDetails("habitat",                 "LS",    0,     "start", -habit_pl_mass[0]),
+            SupplyDemandDetails("habitat",                 "LS",    1,     "start", -habit_pl_mass[1]),
+            SupplyDemandDetails("crew #",                  "Earth", "all", "end",   -n_crew),
+            SupplyDemandDetails("crew #",                  "LS",    "all", "end",    n_crew),
+            SupplyDemandDetails("consumption",             "LS",    "all", "end",   -n_crew * t_surf_mis * crew_consumption_cost),
+            SupplyDemandDetails("sample",                  "Earth", 0,     "end",   -sample_mass[0]),
+            SupplyDemandDetails("sample",                  "Earth", 1,     "end",   -sample_mass[1]),
             SupplyDemandDetails("plant_carbothermal_O2H2", "LS",    0,     "start", 5000.0),
             SupplyDemandDetails("plant_mre_metal",         "LS",    0,     "start", 5000.0),
             SupplyDemandDetails("plant_carbothermal_O2H2", "Earth", "all", "start", float("inf")),
