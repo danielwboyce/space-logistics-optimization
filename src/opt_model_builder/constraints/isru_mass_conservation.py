@@ -186,29 +186,29 @@ class ISRUConservation:
                                     - isru_design.decay_rate
                                     * (self.builder.isru_work_time[i][t_id] / 365.0)
                                     * m.isru_mass[isru_des_id, t, scnr])
-            if isru_design.reactor_name == "workshop":
-                # Adding in trilinear constraints
-                for isru_design_child_name in isru_design.outputs:
-                    if isru_design_child_name not in self.builder.isru_reactor_dict:
-                        continue
-                    isru_design_child_id = self.builder.isru_reactor_dict[isru_design_child_name]
-                    isru_design_child = self.builder.isru.isru_designs[isru_design_child_id]
-                    if (isru_design_child.inputs is not None and
-                            comdty_name in isru_design_child.inputs):
-                        constraint_rhs = (
-                            constraint_rhs
-                            - isru_design.outputs[isru_design_child_name]
-                            * isru_design_child.inputs[comdty_name]
-                            * m.isru_trilinear_prod[isru_design_child_id, t, scnr]
-                        )
-                    if comdty_name in isru_design_child.outputs:
-                        if isru_design_child.inputs is not None and comdty_name in isru_design_child.inputs:
-                            constraint_rhs = (
-                                constraint_rhs
-                                + isru_design.outputs[isru_design_child_name]
-                                * isru_design_child.inputs[comdty_name]
-                                * m.isru_trilinear_prod[isru_design_child_id, t, scnr]
-                            )
+            # if isru_design.reactor_name == "workshop":
+            #     # Adding in trilinear constraints
+            #     for isru_design_child_name in isru_design.outputs:
+            #         if isru_design_child_name not in self.builder.isru_reactor_dict:
+            #             continue
+            #         isru_design_child_id = self.builder.isru_reactor_dict[isru_design_child_name]
+            #         isru_design_child = self.builder.isru.isru_designs[isru_design_child_id]
+            #         if (isru_design_child.inputs is not None and
+            #                 comdty_name in isru_design_child.inputs):
+            #             constraint_rhs = (
+            #                 constraint_rhs
+            #                 - isru_design.outputs[isru_design_child_name]
+            #                 * isru_design_child.inputs[comdty_name]
+            #                 * m.isru_trilinear_prod[isru_design_child_id, t, scnr]
+            #             )
+            #         if comdty_name in isru_design_child.outputs:
+            #             if isru_design_child.inputs is not None and comdty_name in isru_design_child.inputs:
+            #                 constraint_rhs = (
+            #                     constraint_rhs
+            #                     + isru_design.outputs[isru_design_child_name]
+            #                     * isru_design_child.inputs[comdty_name]
+            #                     * m.isru_trilinear_prod[isru_design_child_id, t, scnr]
+            #                 )
         m.isru_mass_cnsv[i, j, comdty_id, t, scnr] = constraint(constraint_lhs == constraint_rhs)
         return m
 
@@ -229,12 +229,12 @@ class ISRUConservation:
                     * m.isru_rate[isru_des, t, scnr]
                     * m.isru_mass[isru_des, t, scnr]
                 )
-                if "plant_workshop" in self.builder.isru_reactor_dict:
-                    m.isru_trilinear_definitions[isru_des, t, scnr] = constraint(
-                        m.isru_trilinear_prod[isru_des, t, scnr]
-                        == m.isru_rate[isru_des, t, scnr]
-                        * m.isru_total_prod[self.builder.isru_reactor_dict["plant_workshop"], t, scnr]
-                    )
+                # if "plant_workshop" in self.builder.isru_reactor_dict:
+                #     m.isru_trilinear_definitions[isru_des, t, scnr] = constraint(
+                #         m.isru_trilinear_prod[isru_des, t, scnr]
+                #         == m.isru_rate[isru_des, t, scnr]
+                #         * m.isru_total_prod[self.builder.isru_reactor_dict["plant_workshop"], t, scnr]
+                #     )
         else:
             # Convex relation (McCormick Envelope) on bilinear constraints
             for isru_des in m.isru_des_idx:
@@ -260,35 +260,35 @@ class ISRUConservation:
                     z <= work_time * ((x1_ub * x2) + (x2_lb * x1) - (x1_ub * x2_lb))
                 )
 
-            if "plant_workshop" in self.builder.isru_reactor_dict:
-                # Convex relation (McCormick Envelope) on trilinear constraints.
-                # Because the isru_total_prod already has a set of convex relation
-                # constraints active, we don't need to anything special to handle
-                # the trilinear linear case other than create a bilinear relaxation
-                # between the third term and the original bilinear term.
-                for isru_des in m.isru_des_idx:
-                    isru_des_ws = self.builder.isru_reactor_dict["plant_workshop"]
-                    mass_ub = self.builder.isru.get_mass_upper_bound()
-                    z = m.isru_trilinear_prod[isru_des, t, scnr]
-                    x1 = m.isru_total_prod[isru_des_ws, t, scnr]
-                    x2 = m.isru_rate[isru_des, t, scnr]
-                    x1_lb = 0.0
-                    x1_ub = mass_ub * self.builder.isru.isru_designs[isru_des_ws].production_rate(mass_ub)
-                    x2_lb = 0.0
-                    x2_ub = self.builder.isru.isru_designs[isru_des].production_rate(mass_ub)
+            # if "plant_workshop" in self.builder.isru_reactor_dict:
+            #     # Convex relation (McCormick Envelope) on trilinear constraints.
+            #     # Because the isru_total_prod already has a set of convex relation
+            #     # constraints active, we don't need to anything special to handle
+            #     # the trilinear linear case other than create a bilinear relaxation
+            #     # between the third term and the original bilinear term.
+            #     for isru_des in m.isru_des_idx:
+            #         isru_des_ws = self.builder.isru_reactor_dict["plant_workshop"]
+            #         mass_ub = self.builder.isru.get_mass_upper_bound()
+            #         z = m.isru_trilinear_prod[isru_des, t, scnr]
+            #         x1 = m.isru_total_prod[isru_des_ws, t, scnr]
+            #         x2 = m.isru_rate[isru_des, t, scnr]
+            #         x1_lb = 0.0
+            #         x1_ub = mass_ub * self.builder.isru.isru_designs[isru_des_ws].production_rate(mass_ub)
+            #         x2_lb = 0.0
+            #         x2_ub = self.builder.isru.isru_designs[isru_des].production_rate(mass_ub)
 
-                    m.isru_trilinear_relaxation1[isru_des, t, scnr] = constraint(
-                        z >= (x1_lb * x2) + (x2_lb * x1) - (x1_lb * x2_lb)
-                    )
-                    m.isru_trilinear_relaxation2[isru_des, t, scnr] = constraint(
-                        z >= (x1_ub * x2) + (x2_ub * x1) - (x1_ub * x2_ub)
-                    )
-                    m.isru_trilinear_relaxation3[isru_des, t, scnr] = constraint(
-                        z <= (x1_lb * x2) + (x2_ub * x1) - (x1_lb * x2_ub)
-                    )
-                    m.isru_trilinear_relaxation4[isru_des, t, scnr] = constraint(
-                        z <= (x1_ub * x2) + (x2_lb * x1) - (x1_ub * x2_lb)
-                    )
+            #         m.isru_trilinear_relaxation1[isru_des, t, scnr] = constraint(
+            #             z >= (x1_lb * x2) + (x2_lb * x1) - (x1_lb * x2_lb)
+            #         )
+            #         m.isru_trilinear_relaxation2[isru_des, t, scnr] = constraint(
+            #             z >= (x1_ub * x2) + (x2_ub * x1) - (x1_ub * x2_ub)
+            #         )
+            #         m.isru_trilinear_relaxation3[isru_des, t, scnr] = constraint(
+            #             z <= (x1_lb * x2) + (x2_ub * x1) - (x1_lb * x2_ub)
+            #         )
+            #         m.isru_trilinear_relaxation4[isru_des, t, scnr] = constraint(
+            #             z <= (x1_ub * x2) + (x2_lb * x1) - (x1_ub * x2_lb)
+            #         )
 
         return m
 

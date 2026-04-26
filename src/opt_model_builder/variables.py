@@ -174,17 +174,17 @@ class Variables:
         m.isru_use_ind = variable_dict()
         m.isru_rate = variable_dict()
         m.isru_total_prod = variable_dict()
-        m.isru_trilinear_prod = variable_dict()
+        # m.isru_trilinear_prod = variable_dict()
         for isru_des, t, scnr in product(m.isru_des_idx, m.time_idx, m.scnr_idx):
             # FIXME: Use big M to let it be 0 or above 400
             m.isru_mass[isru_des, t, scnr] = variable(domain=Reals, lb=0, ub=10000)
             m.isru_use_ind[isru_des, t, scnr] = variable(domain=Binary)
             m.isru_rate[isru_des, t, scnr] = variable(domain=NonNegativeReals)
             m.isru_total_prod[isru_des, t, scnr] = variable(domain=NonNegativeReals)
-            m.isru_trilinear_prod[isru_des, t, scnr] = variable(domain=NonNegativeReals)
+            # m.isru_trilinear_prod[isru_des, t, scnr] = variable(domain=NonNegativeReals)
         self.builder.idx_name_dict["isru_mass"] = ["isru_des", "time", "scnr"]
         self.builder.idx_name_dict["isru_use_ind"] = ["isru_des", "time", "scnr"]
         self.builder.idx_name_dict["isru_rate"] = ["isru_des", "time", "scnr"]
         self.builder.idx_name_dict["isru_total_prod"] = ["isru_des", "time", "scnr"]
-        self.builder.idx_name_dict["isru_trilinear_prod"] = ["isru_des", "time", "scnr"]
+        # self.builder.idx_name_dict["isru_trilinear_prod"] = ["isru_des", "time", "scnr"]
         return m
