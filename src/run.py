@@ -877,7 +877,7 @@ def main():
         mip_solver="gurobi",
         mip_subsolver="cplex",
         solver_verbose=True,
-        max_time=3600 * 3,  # maximum time allowed for optimization in seconds
+        max_time=3600 * 1,  # maximum time allowed for optimization in seconds
         max_time_wo_imprv=600, #3600 * 3,
         keep_files=True,
         files_postfix=files_postfix,
