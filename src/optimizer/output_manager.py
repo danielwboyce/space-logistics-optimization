@@ -385,13 +385,19 @@ class OutputManager(InitMixin):
         if node_name == self.node.destination_node:
             # WARNING: ad-hoc
             # TODO: holdover to next mission at desitnation?
-            df.loc[mask_out, "time"] = (
-                df.loc[mask_out, "time"]
+            df.loc[mask_out & df["time"].isin(self._network.mis_start_dates), "time"] = (
+                df.loc[mask_out & df["time"].isin(self._network.mis_start_dates), "time"]
                 + self._network.n_dates_until_return_mis
-                - self._network.real_arc_time[node_id][node_id]
+                - int(self._network.real_arc_time[node_id][node_id])
             )
-            df.loc[mask_in, "time"] = (
-                df.loc[mask_in, "time"] + self._network.n_dates_until_return_mis
+            df.loc[mask_in & df["time"].isin([date + self._network.n_dates_until_return_mis for date in self._network.mis_start_dates[:-1]]), "time"] = (
+                df.loc[mask_in & df["time"].isin([date + self._network.n_dates_until_return_mis for date in self._network.mis_start_dates[:-1]]), "time"]
+                + self.mis.time_interval
+                - self.mis.t_surf_mis
+            )
+            df.loc[mask_in & df["time"].isin(self._network.mis_start_dates), "time"] = (
+                df.loc[mask_in & df["time"].isin(self._network.mis_start_dates), "time"]
+                + self._network.n_dates_until_return_mis
             )
         else:
             prv_node_name_outbound = self.node.outbound_path[node_id - 1]
