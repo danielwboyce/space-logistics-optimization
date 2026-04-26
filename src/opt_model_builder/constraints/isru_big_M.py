@@ -60,7 +60,7 @@ class ISRUBigM:
             if self.builder.isru.isru_designs[isru_des].is_production_rate_constant:
                 m.isru_bigM_const_3[isru_des, t, scnr] = constraint(
                     m.isru_rate[isru_des, t, scnr]
-                    == self.builder.isru.isru_designs[isru_des].production_rate(1.5 * little_M_mass)
+                    <= self.builder.isru.isru_designs[isru_des].production_rate(1.5 * little_M_mass)
                 )
             else:
                 m.isru_bigM_const_3[isru_des, t, scnr] = constraint(
