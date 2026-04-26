@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from bidict import bidict
 from pyomo.environ import SolverFactory
 from typing import Any
-from math import isclose
+from math import (isclose, log10)
 from collections.abc import Callable
 from numpy import logspace
 from component_designer.isru.isru_rate_model import ISRUDesign
@@ -409,30 +409,20 @@ class ISRUReactorParameters:
 
         # Checking the piecewise linear breakpoints if they exist,
         # generating some if they don't
-        if not self.is_production_rate_constant:
-            if self.pwl_breakpoints is not None and len(self.pwl_breakpoints) > 0:
-                assert(all(pwl_bp >= 0.0 for pwl_bp in self.pwl_breakpoints)), """
-                If piecewise linear breakpoints are received, they must
-                all be positive.
-                Received value: {}
-                """.format(self.pwl_breakpoints)
-            else:
-                if abs(self.minimum_mass) <= 1.0e-6:
-                    self.pwl_breakpoints = logspace(0.0, 10.0e3, 7)
-                else:
-                    self.pwl_breakpoints = [0.0]
-                    self.pwl_breakpoints.extend(logspace(self.minimum_mass, 10.0e3, 6))
+        if self.pwl_breakpoints is not None and len(self.pwl_breakpoints) > 0:
+            assert(all(pwl_bp >= 0.0 for pwl_bp in self.pwl_breakpoints)), """
+            If piecewise linear breakpoints are received, they must
+            all be positive.
+            Received value: {}
+            """.format(self.pwl_breakpoints)
         else:
-            assert(self.pwl_breakpoints is None or len(self.pwl_breakpoints) == 0), """
-            If production rate is constant, then pwl_breakpoints
-            shouldn't be provided.
-            Received values:
-                is_production_rate_constant = {},
-                pwl_breakpoints = {}
-            """.format(
-                self.is_production_rate_constant,
-                self.pwl_breakpoints,
-            )
+            if not self.is_production_rate_constant:
+                self.pwl_breakpoints = [0.0]
+                start = (log10(100.0) if abs(self.minimum_mass) <= 1.0e-6 else log10(self.minimum_mass))
+                end = log10(ISRUParameters.get_mass_upper_bound())
+                self.pwl_breakpoints.extend(logspace(start, end, 9))
+            else:
+                self.pwl_breakpoints = [0.0, ISRUParameters.get_mass_upper_bound()]
 
 
 
