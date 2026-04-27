@@ -36,8 +36,8 @@ from component_designer.isru.isru_rate_model import ISRUDesign
 
 def main():
     # Revision string
-    revision = "06_7c59572"
-    # revision = None
+    # revision = "abc1234"
+    revision = None
 
     # Scenario: 2 crewed missions, no isru, no depots
     if False:
