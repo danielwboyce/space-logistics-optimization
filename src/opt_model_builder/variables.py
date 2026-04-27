@@ -177,7 +177,7 @@ class Variables:
         # m.isru_trilinear_prod = variable_dict()
         for isru_des, t, scnr in product(m.isru_des_idx, m.time_idx, m.scnr_idx):
             # FIXME: Use big M to let it be 0 or above 400
-            m.isru_mass[isru_des, t, scnr] = variable(domain=Reals, lb=0, ub=10000)
+            m.isru_mass[isru_des, t, scnr] = variable(domain=Reals, lb=0, ub=self.builder.isru.get_mass_upper_bound())
             m.isru_use_ind[isru_des, t, scnr] = variable(domain=Binary)
             m.isru_rate[isru_des, t, scnr] = variable(domain=NonNegativeReals)
             m.isru_total_prod[isru_des, t, scnr] = variable(domain=NonNegativeReals)

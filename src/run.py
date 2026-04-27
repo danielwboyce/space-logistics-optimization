@@ -704,7 +704,7 @@ def main():
                 production_rate=ISRUDesign.get_isru_rate_carbothermal_O2H2,
                 is_production_rate_constant=False,
                 reactor_mass_commodity="plant_carbothermal_O2H2",
-                pwl_breakpoints=[0, 400, 2000, 4000, 6000, 8000, 10000, 20000, 40000],
+                pwl_breakpoints=[0, 400, 2000, 4000, 6000, 8000, 10000, 20000, 100000],
             ),
             ISRUReactorParameters(
                 reactor_name="mre_metal",
@@ -716,7 +716,7 @@ def main():
                 production_rate=ISRUDesign.get_isru_rate_mre_metal,
                 is_production_rate_constant=False,
                 reactor_mass_commodity="plant_mre_metal",
-                pwl_breakpoints=[0, 600, 2000, 4000, 6000, 8000, 10000, 20000, 40000],
+                pwl_breakpoints=[0, 600, 2000, 4000, 6000, 8000, 10000, 20000, 100000],
             ),
             ISRUReactorParameters(
                 reactor_name="workshop",
