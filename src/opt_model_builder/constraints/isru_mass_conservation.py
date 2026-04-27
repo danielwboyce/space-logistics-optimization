@@ -239,6 +239,14 @@ class ISRUConservation:
             # Convex relation (McCormick Envelope) on bilinear constraints
             for isru_des in m.isru_des_idx:
                 work_time = self.builder.isru_work_time[i][t_id] / 365.0
+                # assert(work_time > 0), """
+                # Error:
+                # If ISRU can be run, the ISRU work time must be greater
+                # than zero.
+                # Received value:
+                #     self.builder.isru_work_time[{}][{}] / 365.0 = {}
+                # """.format(i, t_id, self.builder.isru_work_time[i][t_id] / 365.0)
+
                 z = m.isru_total_prod[isru_des, t, scnr]
                 x1 = m.isru_mass[isru_des, t, scnr]
                 x2 = m.isru_rate[isru_des, t, scnr]
