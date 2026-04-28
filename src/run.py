@@ -740,9 +740,9 @@ def main():
             "plant_carbothermal_O2H2",
             "plant_mre_metal",
             "maintenance",
-            "consumption",
-            "habitat",
-            "sample",
+            # "consumption",
+            # "habitat",
+            # "sample",
             "oxygen",
             "hydrogen",
             "oxygen_storage",
@@ -877,8 +877,8 @@ def main():
         mip_solver="gurobi",
         mip_subsolver="cplex",
         solver_verbose=True,
-        max_time=3600 * 6,  # maximum time allowed for optimization in seconds
-        max_time_wo_imprv=3600 * 1,
+        max_time=3600 * 1,  # maximum time allowed for optimization in seconds
+        max_time_wo_imprv=600 * 1,
         keep_files=True,
         files_postfix=files_postfix,
     )
