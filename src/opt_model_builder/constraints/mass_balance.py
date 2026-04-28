@@ -143,7 +143,7 @@ class MassBalance:
         node_name = self.builder.node_dict.inv[i]
         # Don't need to filter depots at Earth because we've already checked
         # for a feasible arc
-        if node_name == "Earth":
+        if node_name == "Earth" and t==0:
             return 1
         if ((sc_des == self.builder.depot_sc_des_idx) and
             (sc_cp < self.builder.n_depots) and
