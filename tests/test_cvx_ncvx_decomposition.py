@@ -68,7 +68,7 @@ comdty_details = CommodityDetails(
     int_com_costs=[100],  # list of integer commodity costs
     # list of continuous commodity names
     cnt_com_names=[
-        "carbothermal_O2_plant",
+        "plant_carbothermal_O2H2",
         "maintenance",
         "consumption",
         "habitat",
@@ -78,6 +78,14 @@ comdty_details = CommodityDetails(
     ],
     # list of propellant commodity names
     prop_com_names=["oxygen", "hydrogen"],
+    supply_demand_list=CommodityDetails._create_default_supply_demand_list(
+        n_crew=mission_parameters.n_crew,
+        n_mis=mission_parameters.n_mis,
+        t_surf_mis=mission_parameters.t_surf_mis,
+        consumption_cost=mission_parameters.consumption_cost,
+        habitat_pl_mass=mission_parameters.habit_pl_mass,
+        sample_mass=mission_parameters.sample_mass
+    ),
 )
 
 node_details = NodeDetails(

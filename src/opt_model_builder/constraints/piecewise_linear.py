@@ -162,8 +162,10 @@ class PiecewiseLinearConstraints:
         isru_mass_breakpoints: list[float] = isru_design.pwl_breakpoints
         isru_rate_breakpoints: list[float] = []
         for isru_mass in isru_mass_breakpoints:
-            isru_rate = isru_design.production_rate(
-                isru_mass)
+            if isru_mass < isru_design.minimum_mass:
+                isru_rate = 0.0
+            else:
+                isru_rate = isru_design.production_rate(isru_mass)
             isru_rate_breakpoints.append(isru_rate)
         return {
             "triangulation": isru_mass_breakpoints,

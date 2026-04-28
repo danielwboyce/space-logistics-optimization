@@ -10,10 +10,10 @@ from dataclasses import dataclass, field
 from bidict import bidict
 from pyomo.environ import SolverFactory
 from typing import Any
-from math import isclose
+from math import (isclose, log10)
 from collections.abc import Callable
 from numpy import logspace
-from component_designer.isru.isru_O2_rate_model import ISRUDesign
+from component_designer.isru.isru_rate_model import ISRUDesign
 
 
 @dataclass
@@ -266,7 +266,7 @@ class DepotParameters:
         return self.get_n_depots() > 0
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=False)
 class ISRUReactorParameters:
     """Data class containing ISRU data for a particular reactor type.
     
@@ -275,7 +275,11 @@ class ISRUReactorParameters:
         inputs: Either None or a dictionary, where the keys are
             commodity names of the reactor's inputs and values specify
             the proportions in which each commodity is required. The
-            sum of the values must add up to 1.0.
+            proportions represent a fraction of the of the reactor's
+            overall production rate, so the proportions don't
+            necessarily need to add up to 1 (often they will be greater
+            than 1, assuming some inefficiency/waste in converting
+            inputs to outputs).
         outputs: A dictionary where the keys are commodity names of the
             reactor's inputs and values specify the proportions in
             which each commodity is output (as a fraction of the
@@ -293,6 +297,8 @@ class ISRUReactorParameters:
             (provided by reactor_mass_commodity) available at the ISRU
             node. Units: total output [kg] per year per reactor mass
             [kg].
+        is_production_rate_constant: True if the production_rate
+            callable interface returns a constant rate. False otherwise.
         reactor_mass_commodity: Name of commodity type that corresponds
             to the reactor mass.
         pwl_breakpoints (optional): List of the preferred breakpoints
@@ -307,10 +313,9 @@ class ISRUReactorParameters:
     decay_rate: float
     maintenance_cost: float
     production_rate: Callable[[float], float]
+    is_production_rate_constant: bool
     reactor_mass_commodity: str
-    pwl_breakpoints: list[float] = field(
-        default_factory=lambda: []
-    )
+    pwl_breakpoints: list[float] | None = None
 
 
     def __post_init__(self):
@@ -318,8 +323,8 @@ class ISRUReactorParameters:
 
         # Checking inputs add up to 1.0, if present
         if self.inputs is not None:
-            assert(isclose(abs(sum(self.inputs.values())), 1.0, abs_tol=1.0e-6)), """
-            The reactor input proportions must add up to 1.0.
+            assert(sum(self.inputs.values()) > 0.0), """
+            The reactor input proportions must be at least 0.0.
             Received value:
                 inputs: {}
                 sum of values: {}
@@ -357,20 +362,68 @@ class ISRUReactorParameters:
         The reactor's production_rate option must be callable.
         Received value: {}""".format(self.production_rate)
 
+        # Checking that if is_production_rate_constant matches what is
+        # returned by the production_rate callable
+        test_point_1 = 1.5 * self.minimum_mass
+        test_point_2 = 3.0 * test_point_1
+        result_1 = self.production_rate(test_point_1)
+        result_2 = self.production_rate(test_point_2)
+        if self.is_production_rate_constant:
+            assert(isclose(result_1, result_2)), """
+            If is_production_rate_constant is True, then the production
+            rates returned at different test points should be the same.
+            Received values:
+                is_production_rate_constant = {},
+                test_point_1 = {},
+                test_point_2 = {},
+                production_rate(test_point_1) = {},
+                production_rate(test_point_2) = {},
+                isclose(production_rate(test_point_1), production_rate(test_point_1)) = {}
+            """.format(
+                self.is_production_rate_constant,
+                test_point_1,
+                test_point_2,
+                self.production_rate(test_point_1),
+                self.production_rate(test_point_2),
+                isclose(result_1, result_2)
+            )
+        else:
+            assert(not isclose(result_1, result_2)), """
+            If is_production_rate_constant is False, then the production
+            rates returned at different test points should be different.
+            Received values:
+                is_production_rate_constant = {},
+                test_point_1 = {},
+                test_point_2 = {},
+                production_rate(test_point_1) = {},
+                production_rate(test_point_2) = {},
+                isclose(production_rate(test_point_1), production_rate(test_point_1)) = {}
+            """.format(
+                self.is_production_rate_constant,
+                test_point_1,
+                test_point_2,
+                self.production_rate(test_point_1),
+                self.production_rate(test_point_2),
+                isclose(result_1, result_2)
+            )
+
         # Checking the piecewise linear breakpoints if they exist,
         # generating some if they don't
-        if len(self.pwl_breakpoints) > 0:
+        if self.pwl_breakpoints is not None and len(self.pwl_breakpoints) > 0:
             assert(all(pwl_bp >= 0.0 for pwl_bp in self.pwl_breakpoints)), """
             If piecewise linear breakpoints are received, they must
             all be positive.
             Received value: {}
             """.format(self.pwl_breakpoints)
         else:
-            if abs(self.minimum_mass) <= 1.0e-6:
-                self.pwl_breakpoints = logspace(0.0, 10.0e3, 7)
-            else:
+            if not self.is_production_rate_constant:
                 self.pwl_breakpoints = [0.0]
-                self.pwl_breakpoints.extend(logspace(self.minimum_mass, 10.0e3, 6))
+                start = (log10(100.0) if abs(self.minimum_mass) <= 1.0e-6 else log10(self.minimum_mass))
+                end = log10(ISRUParameters.get_mass_upper_bound())
+                self.pwl_breakpoints.extend(logspace(start, end, 9))
+            else:
+                self.pwl_breakpoints = [0.0, ISRUParameters.get_mass_upper_bound()]
+
 
 
 @dataclass(frozen=True)
@@ -385,21 +438,41 @@ class ISRUParameters:
     """
 
     use_isru: bool
-    isru_designs: dict[str, ISRUReactorParameters] = field(
+    use_convex_relaxation: bool = False
+    isru_designs: list[ISRUReactorParameters] = field(
         default_factory=lambda: [
             ISRUReactorParameters(
-                reactor_name="carbothermal_O2",
+                reactor_name="carbothermal_O2H2",
                 inputs=None,
                 outputs={"oxygen": 1.0 - 1.0/9.0, "hydrogen": 1.0/9.0},
                 minimum_mass=400.0,
                 decay_rate=0.1,
                 maintenance_cost=0.05,
-                production_rate=ISRUDesign.get_isru_carbothermal_O2_rate,
-                reactor_mass_commodity="carbothermal_O2_plant",
+                production_rate=ISRUDesign.get_isru_rate_carbothermal_O2H2,
+                is_production_rate_constant=False,
+                reactor_mass_commodity="plant_carbothermal_O2H2",
                 pwl_breakpoints=[0, 400, 2000, 4000, 6000, 8000, 10000],
             )
         ]
     )
+
+    def get_isru_io_list(self) -> list[str]:
+        """Returns a list of all the input and output commodities used by the
+        ISRU designs provided.
+        """
+        isru_io: set[str] = set([])
+        for isru_design in self.isru_designs:
+            isru_io.add(isru_design.reactor_mass_commodity)
+            if isru_design.inputs is not None:
+                for input in isru_design.inputs.keys():
+                    isru_io.add(input)
+            for output in isru_design.outputs.keys():
+                isru_io.add(output)
+        return sorted(list(isru_io))
+
+    @staticmethod
+    def get_mass_upper_bound() -> float:
+        return 100.0e3
 
     def __post_init__(self):
         """Sanity check for input values"""
@@ -423,12 +496,12 @@ class ISRUParameters:
                 List of reactor_names: {}
             """.format(list_of_reactor_names)
 
-            # ZZZ TEMP
-            assert(len(self.isru_designs) == 1),"""
-            For now, only 1 ISRU design is allowed.
-            Received value:
-                Number of ISRU design: {}
-            """.format(len(self.isru_designs))
+            # # ZZZ TEMP
+            # assert(len(self.isru_designs) == 1),"""
+            # For now, only 1 ISRU design is allowed.
+            # Received value:
+            #     Number of ISRU design: {}
+            # """.format(len(self.isru_designs))
 
 
 @dataclass(frozen=True)
@@ -483,6 +556,52 @@ class ALCParameters:
         Weight update fraction must be in (0,1). Recommended value is 0.25.
         Received value: {}""".format(self.weight_update_fraction)
 
+@dataclass(frozen=True)
+class SupplyDemandDetails:
+    """Data class containing details of supply and demand.
+
+    Args:
+        commodity_name: Name of the commodity being supplied or
+            demanded.
+        node_name: Name of the node where the supply or demand occurs.
+        mission: Either a valid integer denoting the mission of
+            interest or the string "all".
+        io: String denoting whether the supply is at mission starts,
+            mission ends, or both. Valid values are "start", "end", or
+            "all".
+        value: Float containing the amount of supply or demand being
+            specified. If positive, it denotes a supply of the
+            commodity at the node. If negative, it specifies a demand.
+            The value may never be zero, but float(inf) and float(-inf)
+            are valid possible values.
+    """
+
+    commodity_name: str
+    node_name: str
+    mission: int | str
+    io: str
+    value: float
+
+    def __post_init__(self):
+        """Sanity checks for input values."""
+        
+        assert(self.mission == "all" or (isinstance(self.mission, int) and self.mission >= 0)),"""
+        The mission input must either be "all" or a positive integer.
+        Received value:
+            mission = {}
+        """.format(self.mission)
+        
+        assert(self.io == "all" or self.io == "start" or self.io == "end"),"""
+        The io input must either be "start", "end", or "all".
+        Received value:
+            io = {}
+        """.format(self.io)
+
+        assert(isinstance(self.value, float | int) and self.value != 0.0), """
+        The value must be a nonzero float.
+        Received value:
+            value = {}
+        """.format(self.value)
 
 @dataclass
 class CommodityDetails:
@@ -492,28 +611,62 @@ class CommodityDetails:
         int_com_costs: List of integer commodity costs per unit
         cnt_com_names: List of continuous commodity names
         prop_com_names (optional): List of propellant commodity names
-        infinite_supply_dict (optional): Dictionary containing data on the
-            commodities, locations, and times of when supply may be infinite.
-            The keys are commodity names, the values are list of subdictionaries.
-            The child dictionaries should have keys "node", "mission", and
-            "io".
+        supply_demand_list (optional): List of SupplyDemandDetails
+            objects specifying which nodes supply or demand which
+            commodities. Note multiple objects may never refer have the
+            same combination of commodity_name, node_name, mission,
+            
     """
 
     int_com_names: list[str]
     int_com_costs: list[float]
     cnt_com_names: list[str]
     prop_com_names: list[str] = field(default_factory=lambda: ["oxygen", "hydrogen"])
-    infinite_supply_dict: dict[str, list[dict[str, Any]]] = field(
-        default_factory=lambda: {
-            "plant":          [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "maintenance":    [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "consumption":    [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "habitat":        [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "oxygen":         [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "hydrogen":       [{ "node": "Earth", "mission": "all", "io": "start" }],
-            "sample":         [{ "node": "LS",    "mission": "all", "io": "end" }],
-        }
+    supply_demand_list: list[SupplyDemandDetails] = field(
+        default_factory = lambda:  CommodityDetails._create_default_supply_demand_list(
+            4, 2, 3, 8.655, [2000.0, 3000.0], [1000.0, 1100.0])
     )
+
+    @staticmethod
+    def _create_default_supply_demand_list(
+            n_crew: int,
+            n_mis: int,
+            t_surf_mis: int,
+            consumption_cost: float,
+            habitat_pl_mass: list[float] | None = None,
+            sample_mass: list[float] | None = None,
+    ) -> list[SupplyDemandDetails]:
+        retval = [
+                SupplyDemandDetails("plant_carbothermal_O2H2", "Earth", "all", "start", float("inf")),
+                SupplyDemandDetails("maintenance",             "Earth", "all", "start", float("inf")),
+                SupplyDemandDetails("oxygen",                  "Earth", "all", "start", float("inf")),
+                SupplyDemandDetails("hydrogen",                "Earth", "all", "start", float("inf")),
+        ]
+        if n_crew > 0:
+            retval.extend([
+                SupplyDemandDetails("consumption",             "Earth", "all", "start", float("inf")),
+                SupplyDemandDetails("consumption",             "LS",    "all", "end",   -n_crew * t_surf_mis * consumption_cost)])
+            retval.extend([
+                SupplyDemandDetails("crew #",                  "Earth", "all", "start",  n_crew),
+                SupplyDemandDetails("crew #",                  "LS",    "all", "start", -n_crew),
+                SupplyDemandDetails("crew #",                  "Earth", "all", "end",   -n_crew),
+                SupplyDemandDetails("crew #",                  "LS",    "all", "end",    n_crew)])
+        if habitat_pl_mass is not None and any(mass > 0.0 for mass in habitat_pl_mass):
+            retval.append(
+                SupplyDemandDetails("habitat",                 "Earth", "all", "start", float("inf")))
+            retval.extend([
+                SupplyDemandDetails("habitat",                 "LS",    i,     "start", -habitat_pl_mass[i])
+                for i in range(n_mis)
+            ])
+        if sample_mass is not None and any(mass > 0.0 for mass in sample_mass):
+            retval.append(
+                SupplyDemandDetails("sample",                  "LS",    "all", "end",   float("inf")))
+            retval.extend([
+                SupplyDemandDetails("sample",                  "Earth", i,     "end",   -sample_mass[i])
+                for i in range(n_mis)
+            ])
+        return retval
+
 
     def __post_init__(self):
         """Sanity check for input values and define derived variables"""
@@ -528,27 +681,31 @@ class CommodityDetails:
         All propellant commodity names must be
         in the continuous commodity names list."""
 
+        supply_demand_tuples = [
+            (detail.commodity_name, detail.node_name, detail.mission, detail.io)
+            for detail in self.supply_demand_list
+        ]
         assert all(
-            com in self.int_com_names + self.cnt_com_names
-            for com in self.infinite_supply_dict.keys()
+            supply_demand[0] in self.int_com_names + self.cnt_com_names
+            for supply_demand in supply_demand_tuples
         ), """
-        All commodity names with unlimited supply from Earth
-        must be in the commodity names list."""
+        All commodity names in the supply_demand_list must be in one of
+        the commodity names lists.
+        Received values:
+            Supply/Demand Commodity Names = {},
+            Integer Commodity Names = {},
+            Continuous Commodity Names = {}
+        """.format(
+            [supply_demand[0] for supply_demand in supply_demand_tuples],
+            self.int_com_names,
+            self.cnt_com_names,
+        )
 
-        acceptable_inf_com_data_keys = ["node", "mission", "io"]
-        for com_name in self.infinite_supply_dict.keys():
-            for com_data in self.infinite_supply_dict[com_name]:
-                assert all(
-                    com_data_key in acceptable_inf_com_data_keys
-                    for com_data_key in com_data.keys()
-                ), """
-                At least one key in commodity data subdictionary unrecognized.
-                    Received values: {}
-                    Expected values: {}""".format(
-                        com_data.keys(),
-                        acceptable_inf_com_data_keys
-                    )
-
+        assert(len(supply_demand_tuples) == len(set(supply_demand_tuples))), """
+        All combinations of commodity_name, node_name, mission, io must be unique.
+        Received values:
+            Supply/Demand List values = {}
+        """.format(supply_demand_tuples)
 
         self.n_int_com: int = len(self.int_com_names)
         self.n_cnt_com: int = len(self.cnt_com_names)
@@ -761,7 +918,7 @@ class InputData:
     def __post_init__(self):
         self._create_bidicts()
         self._check_depots()
-        self._check_infinite_supply_dict()
+        self._check_supply_demand_data()
         self._check_isru_commodity_parameters()
 
         if self.alc.prioritized_var_name:
@@ -805,46 +962,29 @@ class InputData:
                 self.node.holdover_nodes,
             )
 
-    def _check_infinite_supply_dict(self):
-        """Sanity checks for infinite_supply_dict."""
-        for comdty_name in self.comdty.infinite_supply_dict.keys():
-            for comdty_data in self.comdty.infinite_supply_dict[comdty_name]:
-                node_name = comdty_data["node"]
-                assert(node_name in self.node.node_names), """
-                Unrecognized node in infinite_supply_dict subdictionary for commodity {}
-                    Received value: {}
-                    Allowed node names: {}""".format(
-                        comdty_name,
-                        node_name,
-                        self.node.node_names
-                    )
+    def _check_supply_demand_data(self):
+        """Sanity checks for supply_demand_list."""
+        for supply_demand_data in self.comdty.supply_demand_list:
+            comdty_name = supply_demand_data.commodity_name
+            node_name = supply_demand_data.node_name
+            assert(node_name in self.node.node_names), """
+            Unrecognized node in supply_demand_list for commodity {}
+                Received value: {}
+                Allowed node names: {}""".format(
+                    comdty_name,
+                    node_name,
+                    self.node.node_names
+                )
 
-                mission = comdty_data["mission"]
-                assert(mission == "all" or mission.isdigit()),"""
-                "Uncrecognized mission in infinite_supply_dict subdictionary for commodity {}.
-                Mission should be "all" or the string representation of an integer.
-                    Received value: {}""".format(
-                        comdty_name,
-                        mission
-                    )
-                if mission.isdigit():
-                    assert(int(mission) < self.mission.n_mis),"""
-                "Uncrecognized mission in infinite_supply_dict subdictionary for commodity {}.
-                If mission is an integer, it should be less than the total number of missions.
-                    Received value: {}
-                    Number of missions: {}""".format(
-                        comdty_name,
-                        mission,
-                        self.mission.n_mis
-                    )
-
-                io = comdty_data["io"]
-                assert(io == "start" or io == "end" or io == "all"),"""
-                "Uncrecognized io in infinite_supply_dict subdictionary for commodity {}.
-                io should be "start", "end", or "all".
-                    Received value: {}""".format(
-                        comdty_name,
-                        io
+            mission = supply_demand_data.mission
+            if isinstance(mission, int):
+                assert(mission < self.mission.n_mis),"""
+            "If mission is an integer, it should be less than the total number of missions.
+                Received value: {}
+                Number of missions: {}""".format(
+                    comdty_name,
+                    mission,
+                    self.mission.n_mis
                 )
 
     def _check_isru_commodity_parameters(self):
@@ -925,6 +1065,7 @@ class InputData:
         cnt_com_dict: dict[str, int] = {}
         depot_dict: dict[str, int] = {}
         isru_reactor_dict: dict[str, int] = {}
+        isru_io_dict: dict[str, int] = {}
 
         for com_id in range(self.comdty.n_int_com):
             int_com_name = self.comdty.int_com_names[com_id]
@@ -949,6 +1090,11 @@ class InputData:
             isru_reactor_name = self.isru.isru_designs[isru_id].reactor_mass_commodity
             isru_reactor_dict[isru_reactor_name] = isru_id
 
+        isru_io_list = self.isru.get_isru_io_list()
+        for isru_io_id in range(len(isru_io_list)):
+            isru_io_comdty = isru_io_list[isru_io_id]
+            isru_io_dict[isru_io_comdty] = isru_io_id
+
         flow_dict: dict[str, int] = {"out": 0, "in": 1}
 
         sc_var_dict: dict[str, int] = {}
@@ -963,5 +1109,6 @@ class InputData:
         self.node_dict = bidict(node_dict)
         self.depot_dict = bidict(depot_dict)
         self.isru_reactor_dict = bidict(isru_reactor_dict)
+        self.isru_io_dict = bidict(isru_io_dict)
         self.flow_dict = bidict(flow_dict)
         self.sc_var_dict = bidict(sc_var_dict)

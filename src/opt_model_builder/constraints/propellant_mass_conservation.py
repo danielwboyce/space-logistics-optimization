@@ -46,13 +46,11 @@ class PropellantConservation:
             elif prop_name == "oxygen":
                 self.prop_ratio = self.builder.sc.oxi_prop_ratio
             else:
-                NotImplementedError(
+                raise NotImplementedError(
                     "Currently only H2 and O2 are supported as propellant"
                 )
-            if self.builder.can_operate_ISRU(i, j):
-                for isru_des in m.isru_des_idx:
-                    if prop_name in self.builder.isru.isru_designs[isru_des].outputs.keys():
-                        self._set_isru_prop_generation_constraints(m, i, j, t, scnr, prop_name, isru_des)
+            if self.builder.can_operate_ISRU(i, j) and prop_name in self.builder.isru_io_dict:
+                    continue
             else:
                 self._set_flight_prop_consumption_constraint(
                     m, i, j, t, scnr, prop_name
@@ -255,49 +253,3 @@ class PropellantConservation:
                     if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
                 )
             )
-
-    def _set_isru_prop_generation_constraints(self, m, i, j, t, scnr, prop_name, isru_des):
-        """
-        ISRU plants can generate H2 and O2, where production rate is
-        propotional to the mass and work time of the plants.
-        H2 and O2 are two distinct commodities.
-        """
-        prop_id = self.builder.cnt_com_dict[prop_name]
-        t_id = self.builder._network_def.date_to_time_idx_dict[t]
-        m.prop_mass_cnsv[i, j, prop_id, t, scnr] = constraint(
-            sum(
-                m.cnt_com[
-                    sc_des,
-                    sc_cp,
-                    i,
-                    j,
-                    prop_id,
-                    self.builder.flow_dict["in"],
-                    t,
-                    scnr,
-                ]
-                for sc_des in m.sc_des_idx
-                for sc_cp in m.sc_copy_idx
-                if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
-            )
-            <= sum(
-                m.cnt_com[
-                    sc_des,
-                    sc_cp,
-                    i,
-                    j,
-                    prop_id,
-                    self.builder.flow_dict["out"],
-                    t,
-                    scnr,
-                ]
-                for sc_des in m.sc_des_idx
-                for sc_cp in m.sc_copy_idx
-                if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
-            )
-            + (self.builder.isru_work_time[i][t_id] / 365)
-            * self.builder.isru.isru_designs[isru_des].outputs[prop_name]
-            * m.isru_mass[isru_des, t, scnr]
-            * m.isru_rate[isru_des, t, scnr]
-            # FIX: is the production rate fixed here??
-        )

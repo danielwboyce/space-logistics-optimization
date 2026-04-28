@@ -29,39 +29,36 @@ class CntComConservation:
             m = self._set_isru_plant_mass_defition(m)
             # self._set_isru_minimum_mass_constraint(m)
         m.cnt_com_cnsv = constraint_dict()
-        for i, j, pc, t, scnr in product(
+        for i, j, pc_idx, t, scnr in product(
             m.dep_node_idx,
             m.arr_node_idx,
             m.cnt_com_idx,
             m.time_idx,
             m.scnr_idx,
         ):
+            pc_name = self.builder.cnt_com_dict.inverse[pc_idx]
             if not self.builder.is_feasible_arc(i, j):
                 continue
-            elif self.builder.cnt_com_dict.inverse[pc] in self.builder.prop_com_names:
+            elif pc_name in self.builder.prop_com_names:
                 continue
-            if self.builder.cnt_com_dict.inv[pc] in self.builder.isru_reactor_dict.keys():
-                if self.builder.can_operate_ISRU(i, j):
-                    self._set_isru_plant_decay_constraint(m, i, j, pc, t, scnr)
-                else:
-                    self._equalize_outflow_inflow(m, i, j, pc, t, scnr)
-            elif pc == self.builder.cnt_com_dict["maintenance"]:
+            elif (self.builder.can_operate_ISRU(i, j) and pc_name in self.builder.isru_io_dict):
+                continue
+            if pc_idx == self.builder.cnt_com_dict["maintenance"]:
                 if self.builder.is_transportation_arc(i, j):
-                    self._set_sc_maintenance_constraint(m, i, j, pc, t, scnr)
+                    self._set_sc_maintenance_constraint(m, i, j, pc_idx, t, scnr)
                 elif self.builder.can_operate_ISRU(i, j):
-                    self._set_isru_maintenance_constraint(m, i, j, pc, t, scnr)
+                    # This is only executed when maintenance is NOT an ISRU
+                    # commodity!
+                    self._set_isru_maintenance_constraint(m, i, j, pc_idx, t, scnr)
                 else:
-                    self._equalize_outflow_inflow(m, i, j, pc, t, scnr)
-            elif pc == self.builder.cnt_com_dict["consumption"]:
-                self._set_consumable_constaraints(m, i, j, pc, t, scnr)
-            # elif ((pc == self.builder.cnt_com_dict["oxygen_storage"]) or
-            #       (pc == self.builder.cnt_com_dict["oxygen"])):
-            #     self._set_oxygen_storage_constraints(m, i, j, pc, t, scnr)
+                    self._equalize_outflow_inflow(m, i, j, pc_idx, t, scnr)
+            elif pc_idx == self.builder.cnt_com_dict["consumption"]:
+                self._set_consumable_constraints(m, i, j, pc_idx, t, scnr)
             else:
-                self._equalize_outflow_inflow(m, i, j, pc, t, scnr)
+                self._equalize_outflow_inflow(m, i, j, pc_idx, t, scnr)
         return m
 
-    def _set_consumable_constaraints(self, m, i, j, pc, t, scnr):
+    def _set_consumable_constraints(self, m, i, j, pc, t, scnr):
         """
         Crew consumes 'consumable' commodity (e.g. food)
         with mass proportional to number of crew and time of flight
@@ -218,40 +215,40 @@ class CntComConservation:
         )
         return m
 
-    def _set_isru_plant_decay_constraint(self, m, i, j, pc, t, scnr) -> block:
-        """
-        ISRU plants decay proportionally to their work time
-        This decay is expressed as decrease in plant mass
-        """
-        t_id = self.builder._network_def.date_to_time_idx_dict[t]
-        isru_id = self.builder.isru_reactor_dict[self.builder.cnt_com_dict.inv[pc]]
-        m.cnt_com_cnsv[i, j, pc, t, scnr] = constraint(
-            sum(
-                m.cnt_com[
-                    sc_des, sc_cp, i, j, pc, self.builder.flow_dict["in"], t, scnr
-                ]
-                for sc_des in m.sc_des_idx
-                for sc_cp in m.sc_copy_idx
-                if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
-            )
-            == sum(
-                m.cnt_com[
-                    sc_des, sc_cp, i, j, pc, self.builder.flow_dict["out"], t, scnr
-                ]
-                for sc_des in m.sc_des_idx
-                for sc_cp in m.sc_copy_idx
-                if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
-            )
-            * (
-                1
-                - (
-                    self.builder.isru.isru_designs[isru_id].decay_rate
-                    * self.builder.isru_work_time[i][t_id]
-                    / 365
-                )
-            )
-        )
-        return m
+    # def _set_isru_plant_decay_constraint(self, m, i, j, pc, t, scnr) -> block:
+    #     """
+    #     ISRU plants decay proportionally to their work time
+    #     This decay is expressed as decrease in plant mass
+    #     """
+    #     t_id = self.builder._network_def.date_to_time_idx_dict[t]
+    #     isru_id = self.builder.isru_reactor_dict[self.builder.cnt_com_dict.inv[pc]]
+    #     m.cnt_com_cnsv[i, j, pc, t, scnr] = constraint(
+    #         sum(
+    #             m.cnt_com[
+    #                 sc_des, sc_cp, i, j, pc, self.builder.flow_dict["in"], t, scnr
+    #             ]
+    #             for sc_des in m.sc_des_idx
+    #             for sc_cp in m.sc_copy_idx
+    #             if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
+    #         )
+    #         == sum(
+    #             m.cnt_com[
+    #                 sc_des, sc_cp, i, j, pc, self.builder.flow_dict["out"], t, scnr
+    #             ]
+    #             for sc_des in m.sc_des_idx
+    #             for sc_cp in m.sc_copy_idx
+    #             if self.builder.is_feasible_arc(i, j, sc_des, sc_cp)
+    #         )
+    #         * (
+    #             1
+    #             - (
+    #                 self.builder.isru.isru_designs[isru_id].decay_rate
+    #                 * self.builder.isru_work_time[i][t_id]
+    #                 / 365
+    #             )
+    #         )
+    #     )
+    #     return m
 
     def _set_isru_plant_mass_defition(self, m) -> block:
         """Define total ISRU plant mass as constraints"""

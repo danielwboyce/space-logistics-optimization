@@ -294,7 +294,9 @@ class NetworkBuilder(InitMixin):
             return False
 
     def _set_demand(self) -> None:
-        """Define demand of each vertex for deterministic case
+        """Define demand of each vertex for deterministic case.
+
+        Uses the supply_demand list from CommodityDetails.
 
         It first define entries for deterministic case, then calls
         another method for stochastic case (if necessary)
@@ -303,31 +305,39 @@ class NetworkBuilder(InitMixin):
         Positive quantity indicates supply, negative quantity indicates demand
         Some commodities have infinite supply at Earth node.
         """
-        self._set_inf_supply()
-        for mis_id, scnr in product(range(self.n_mis), range(self.n_scenarios)):
-            mis_start_date_id = self.date_to_time_idx_dict[self.mis_start_dates[mis_id]]
-            mis_end_date_id = self.date_to_time_idx_dict[self.mis_end_dates[mis_id]]
-            self.int_com_demand[self.node_dict["Earth"]][self.int_com_dict["crew #"]][
-                mis_start_date_id
-            ][scnr] = self.n_crew
-            self.int_com_demand[self.node_dict["LS"]][self.int_com_dict["crew #"]][
-                mis_start_date_id
-            ][scnr] = -self.n_crew
-            self.cnt_com_demand[self.node_dict["LS"]][self.cnt_com_dict["habitat"]][
-                mis_start_date_id
-            ][scnr] = -self.habit_pl_mass_ls[mis_id]
-            self.int_com_demand[self.node_dict["Earth"]][self.int_com_dict["crew #"]][
-                mis_end_date_id
-            ][scnr] = -self.n_crew
-            self.int_com_demand[self.node_dict["LS"]][self.int_com_dict["crew #"]][
-                mis_end_date_id
-            ][scnr] = self.n_crew
-            self.cnt_com_demand[self.node_dict["LS"]][self.cnt_com_dict["consumption"]][
-                mis_end_date_id
-            ][scnr] = -self.n_crew * self.t_surf_mis * self.mis.consumption_cost
-            self.cnt_com_demand[self.node_dict["Earth"]][self.cnt_com_dict["sample"]][
-                mis_end_date_id
-            ][scnr] = -self.sample_mass_ls[mis_id]
+        for supply_demand_data in self.comdty.supply_demand_list:
+            comdty_name = supply_demand_data.commodity_name
+            node_name = supply_demand_data.node_name
+            node_id = self.node_dict[node_name]
+            mission = supply_demand_data.mission
+            io = supply_demand_data.io
+            value = supply_demand_data.value
+            
+            dates = []
+            if io == "all" or io == "start":
+                if mission == "all":
+                    dates.extend(self.mis_start_dates)
+                else: # if not all, mission will always be a valid integer
+                    dates.extend([self.mis_start_dates[int(mission)]])
+            if io == "all" or io == "end":
+                if mission == "all":
+                    dates.extend(self.mis_end_dates)
+                else: # if not all, mission will always be a valid integer
+                    dates.extend([self.mis_end_dates[int(mission)]])
+
+            for date, scnr in product(
+                dates,
+                range(self.n_scenarios)
+            ):
+                if comdty_name in self.int_com_names:
+                    self.int_com_demand[node_id][self.int_com_dict[comdty_name]][
+                        self.date_to_time_idx_dict[date]
+                    ][scnr] = value
+                elif comdty_name in self.cnt_com_names:
+                    self.cnt_com_demand[node_id][self.cnt_com_dict[comdty_name]][
+                        self.date_to_time_idx_dict[date]
+                    ][scnr] = value
+
         if self.is_stochastic:
             self._set_stochastic_demand()
 
